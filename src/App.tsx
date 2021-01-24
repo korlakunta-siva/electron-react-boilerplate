@@ -53,6 +53,15 @@ const HostErrorLog = (props) => {
             </span>
             Java Tasks
           </button>
+          <button
+            type="button"
+            onClick={() => cli_consolidated_log(props.recvEventsfunc, host)}
+          >
+            <span role="img" aria-label="books">
+              📚
+            </span>
+            QR Events
+          </button>
           <button type="button" onClick={() => cli_logfile(host)}>
             <span role="img" aria-label="books">
               📚
@@ -72,15 +81,6 @@ const HostErrorLog = (props) => {
               📚
             </span>
             WS Log File
-          </button>
-          <button
-            type="button"
-            onClick={() => cli_consolidated_log(props.recvEventsfunc, host)}
-          >
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            QR Events
           </button>
           <button type="button" onClick={() => cli_wslogfolder(host)}>
             <span role="img" aria-label="books">
