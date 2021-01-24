@@ -61,33 +61,43 @@ def parse_file(filename):
     #print("Done parsing")
 
     for row in log_report:
-      event_time = row[0] + ' ' + row[1]
+
       # if "Server:414 - Started" in row[4]:
       #       print(event_time, "QREADS Webservice Started")
       event_desc = ""
 
       if len(row) >4  and  "Logged In User" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             event_desc = "QREADS LOG -> User logged in "
 
       if len(row) >4  and  "Incoming single instance launch data" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             event_desc =  "QREADS LOG -> EPIC Lauched Exam "
 
       if len(row) >4  and  "Startup Param Count (8)" in row[4]  and "SingleInstanceLaunch=EPIC" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             prevent_desc = "QREADS LOG -> EPIC Lauched Exam in New QREADS Instance"
 
       if len(row) >4  and  "Terminating QREADS Application" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             event_desc =  "QREADS LOG -> User Logout "
 
       if len(row) >4  and  "Shutting down QREADS application" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             event_desc =  "QREADS LOG -> QREADS QUIT "
 
 
 
       if len(row) >4  and "Server:414 - Started" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             event_desc = "QREADS Webservice Started"
+
       if len(row) >4  and "Successfully sent request to launch new QREADS instance for EPIC" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             event_desc =  "QREADS Webservice started new QREADS instance for EPIC"
+
       if len(row) >4  and "Successfully sent new context to QREADS for EPIC" in row[4]:
+            event_time = row[0] + ' ' + row[1]
             event_desc =  "QREADS Webservice sent new Exam to QREADS"
 
       if len(row) >4  and "[RunQREADSWeb] - Started Web Service" in row[4]:
@@ -108,18 +118,30 @@ def parse_file(filename):
 
       if len(row) > 4 and event_desc != "" :
 
+        event_datetime = None
+        try:
+          event_datetime = datetime.datetime.strptime(event_time, '%Y-%m-%d %H:%M:%S.%f')
+        except:
+          try:
+            event_datetime = datetime.datetime.strptime(event_time, '%Y-%m-%d %H:%M:%S,%f')
+          except:
+            try:
+              event_datetime = datetime.datetime.strptime(event_time, '%Y-%m-%d %H:%M:%S:%f')
+            except:
+              pass
+
         try :
           newrow = {
-            'event_at' : datetime.datetime.strptime(event_time, '%Y-%m-%d %H:%M:%S.%f'),  'event_desc' : event_desc , 'event_source': filename, 'event_line' : row[4]
+            'event_at' : event_datetime,  'event_desc' : event_desc , 'event_source': filename, 'event_line' : row[4]
           }
-
           file_events.append(newrow)
         except:
-          newrow = {
-            'event_at' : datetime.datetime.strptime(event_time, '%Y-%m-%d %H:%M:%S:%f'),  'event_desc' : event_desc ,'event_source': filename,  'event_line' : row[4]
-          }
+          pass
+          # newrow = {
+          #   'event_at' : datetime.datetime.strptime(event_time, '%Y-%m-%d %H:%M:%S:%f'),  'event_desc' : event_desc ,'event_source': filename,  'event_line' : row[4]
+          # }
 
-          file_events.append(newrow)
+          # file_events.append(newrow)
 
 
 

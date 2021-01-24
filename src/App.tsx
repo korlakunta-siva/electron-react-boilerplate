@@ -310,9 +310,9 @@ const Hello = () => {
       <div className="Hello" style={{ width: '100%' }}>
         <AppBar position="static">
           <Tabs value={value} onChange={handleChange}>
-            <Tab label="Tasklist" />
-            <Tab label="Consolidated QREADS Events" />
-            <Tab label="Item Three" />
+            <Tab label="Java Tasklist" />
+            <Tab label="QREADS Events" />
+            <Tab label="TAB Three" />
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0}>
@@ -321,7 +321,7 @@ const Hello = () => {
 
             <div
               className="ag-theme-balham"
-              style={{ height: 400, width: '100%' }}
+              style={{ height: 425, width: '100%' }}
             >
               <AgGridReact
                 onGridReady={onGridReady}
@@ -367,7 +367,7 @@ const Hello = () => {
           <div className="ag-fresh">
             <div
               className="ag-theme-balham"
-              style={{ height: 400, width: '100%' }}
+              style={{ height: 500 , width: '100%' }}
             >
               <AgGridReact
                 onGridReady={onGridConsEventsReady}
@@ -415,7 +415,7 @@ const Hello = () => {
           </div>
         </TabPanel>
         <TabPanel value={value} index={2}>
-          Item Three
+          Nothing Here Yet
         </TabPanel>
       </div>
     </div>

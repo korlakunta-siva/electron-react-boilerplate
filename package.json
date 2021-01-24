@@ -30,7 +30,7 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
+    "productName": "QREADS Oncall Support Tools",
     "appId": "org.erb.ElectronReact",
     "files": [
       "dist/",
@@ -81,6 +81,10 @@
       "buildResources": "assets",
       "output": "release"
     },
+    "extraFiles": [
+      "api/*.py",
+      "api/*.txt"
+    ],
     "extraResources": [
       "./assets/**"
     ],

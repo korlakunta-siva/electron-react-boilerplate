@@ -173,7 +173,7 @@ export const cli_consolidated_log = (retfunc, hostname) => {
   try {
     exec(
       'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/parselogpy.py -cmd consolog -host ' +
-        hostname,
+        hostname, {maxBuffer: 1024 * 5000},
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
