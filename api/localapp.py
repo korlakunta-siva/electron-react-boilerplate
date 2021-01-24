@@ -40,6 +40,11 @@ def get_logfolder_and_show(hostname) :
     progpath = "start \"C:\\Program Files\\Notepad++\\notepad++.exe\" "
     os.system("start explorer \"" +  source_path  + "\"")
 
+def get_wkslogfolder_and_show(hostname) :
+    print("From Python Open Log Folder : " + hostname)
+    source_path = r"\\" + hostname + "\c$\WKSAdmin\Logs"
+    progpath = "start \"C:\\Program Files\\Notepad++\\notepad++.exe\" "
+    os.system("start explorer \"" +  source_path  + "\"")
 
 
 def get_wslogfile_and_show(hostname) :
@@ -116,6 +121,12 @@ def main():
   if command.strip() == 'logfolder' :
     get_logfolder_and_show(str(hostname))
     return
+
+  if command.strip() == 'wksadmlogfolder' :
+    get_wkslogfolder_and_show(str(hostname))
+    return
+
+
 
   cmd_to_run = ""
 

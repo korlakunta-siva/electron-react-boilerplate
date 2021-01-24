@@ -9,6 +9,7 @@ import {
   cli_logfolder,
   cli_wslogfolder,
   cli_consolidated_log,
+  cli_wksadmlogfolder,
 } from './utils/cli';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 
@@ -87,6 +88,12 @@ const HostErrorLog = (props) => {
               📚
             </span>
             WS Log Folder
+          </button>
+          <button type="button" onClick={() => cli_wksadmlogfolder(host)}>
+            <span role="img" aria-label="books">
+              📚
+            </span>
+            WKSAdmin Log Folder
           </button>
 
           <a
@@ -274,7 +281,13 @@ const Hello = () => {
         <span role="img" aria-label="books">
           📚
         </span>
-        WS Log File
+        WS Log Folder
+      </button>
+      <button type="button" onClick={() => cli_wksadmlogfolder(hostname)}>
+        <span role="img" aria-label="books">
+          📚
+        </span>
+        WKSAdmin Log Folder
       </button>
       <a
         href={'http://' + `${hostname.trim()}:9780/QReadsTestService`}
