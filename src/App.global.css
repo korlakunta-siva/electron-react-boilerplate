@@ -1,22 +1,28 @@
 /*
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports
+
+ linear-gradient(
+    200.96deg,
+    #f5cd04 -29.09%,
+    #5b6332 51.77%,
+    #4c69ee 129.35%
+  );
+
  */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap');
+@import "./App.css";
 
+/*   display: flex; */
 body {
   position: relative;
   color: white;
   height: 100vh;
-  background: linear-gradient(
-    200.96deg,
-    #fedc2a -29.09%,
-    #dd5789 51.77%,
-    #7a2c9e 129.35%
-  );
+  background: lightcoral;
   font-family: 'Noto Sans JP', sans-serif;
-  overflow-y: hidden;
-  display: flex;
+  overflow-y: auto;
+  overflow-x: auto;
+
   justify-content: center;
   align-items: center;
 }
@@ -67,7 +73,7 @@ a:hover {
 }
 
 .Hello {
-  display: flex;
+  display: block;
   justify-content: center;
   align-items: center;
   margin: 20px 0;
