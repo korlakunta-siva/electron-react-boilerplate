@@ -29,7 +29,7 @@ export const cli = () => {
 
 // exec("c:\\programs\\SysinternalsSuite\\psexec \\\\R0303393 netstat -a > ./logFile.log", (error, stdout, stderr) => {
 //  exec("tasklist.exe /s \\\\R0303393  > ./logtlFile.log", (error, stdout, stderr) => {
-// CW/incub/qr-oncall-tools/api/venv/Scripts/python
+// CW/incub/qr-oncall-tools/"api/venv/Scripts/python"
 // \\R0303393\c$\Program Files\Mayo Foundation\QREADS Web Service\appbase\logs
 
 export const cli_logfile = (hostname) => {
@@ -38,7 +38,7 @@ export const cli_logfile = (hostname) => {
   console.log('Gett log file for host: ' + hostname);
   try {
     exec(
-      'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/localapp.py -cmd logfile -host ' +
+      '"api/venv/Scripts/python" api/localapp.py -cmd logfile -host ' +
         hostname,
       (error, stdout, stderr) => {
         if (error) {
@@ -65,7 +65,7 @@ export const cli_wslogfile = (hostname) => {
   console.log('Gett log file for host: ' + hostname);
   try {
     exec(
-      'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/localapp.py -cmd wslogfile -host ' +
+      '"api/venv/Scripts/python" api/localapp.py -cmd wslogfile -host ' +
         hostname,
       (error, stdout, stderr) => {
         if (error) {
@@ -92,7 +92,7 @@ export const cli_wksadmlogfolder = (hostname) => {
   console.log('Gett log file for host: ' + hostname);
   try {
     exec(
-      'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/localapp.py -cmd wksadmlogfolder -host ' +
+      '"api/venv/Scripts/python" api/localapp.py -cmd wksadmlogfolder -host ' +
         hostname,
       (error, stdout, stderr) => {
         if (error) {
@@ -119,7 +119,7 @@ export const cli_wslogfolder = (hostname) => {
   console.log('Gett log file for host: ' + hostname);
   try {
     exec(
-      'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/localapp.py -cmd wslogfolder -host ' +
+      '"api/venv/Scripts/python" api/localapp.py -cmd wslogfolder -host ' +
         hostname,
       (error, stdout, stderr) => {
         if (error) {
@@ -146,7 +146,7 @@ export const cli_logfolder = (hostname) => {
   console.log('Gett log file for host: ' + hostname);
   try {
     exec(
-      'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/localapp.py -cmd logfolder -host ' +
+      '"api/venv/Scripts/python" api/localapp.py -cmd logfolder -host ' +
         hostname,
       (error, stdout, stderr) => {
         if (error) {
@@ -172,8 +172,9 @@ export const cli_consolidated_log = (retfunc, hostname) => {
   let mesg = '';
   try {
     exec(
-      'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/parselogpy.py -cmd consolog -host ' +
-        hostname, {maxBuffer: 1024 * 5000},
+      '"api/venv/Scripts/python" api/parselogpy.py -cmd consolog -host ' +
+        hostname,
+      { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -199,7 +200,7 @@ export const cli_tasklist = (retfunc, hostname) => {
   let mesg = '';
   try {
     exec(
-      'c:/CW/incub/qr-oncall-tools/api/venv/Scripts/python C:/CW/incub/qr-oncall-tools/api/localapp.py -cmd tasklist -host ' +
+      '"api/venv/Scripts/python" api/localapp.py -cmd tasklist -host ' +
         hostname,
       (error, stdout, stderr) => {
         if (error) {
