@@ -114,6 +114,20 @@ const HostErrorLog = (props) => {
   );
 };
 const Hello = () => {
+
+
+  // const [gridApi, setGridApi] = useState([]);
+  // const [gridColumnApi, setGridColumnApi] = useState([]);
+
+  const [gridApi, setGridApi] = useState(null);
+  const [gridColumnApi, setGridColumnApi] = useState(null);
+
+  const [rowData, setRowData] = useState([]);
+
+  const [gridConsEventsApi, setGridConsEventsApi] = useState(null);
+  const [gridConsEventsColumnApi, setGridConsEventsColumnApi] = useState(null);
+  const [rowConsEventsData, setRowConsEventsData] = useState([]);
+
   const retfunc = (data) => {
     //console.log(data);
     //let gotdata = JSON.parse(data);
@@ -151,7 +165,16 @@ const Hello = () => {
       myArray.push(myObject[i]);
     }
 
-    setRowConsEventsData(myArray);
+  //   myObject.forEach(function(element){
+  //     console.log(element);
+  // });
+
+    setRowConsEventsData(myObject);
+    //gridConsEventsApi.setRowData(myObject)
+
+    // var params = getParams();
+    // gridConsEventsApi.getr.exportDataAsCsv(params);
+
   };
 
   const getCmdOut = () => {
@@ -202,13 +225,6 @@ const Hello = () => {
       />
     ));
 
-  const [gridApi, setGridApi] = useState(null);
-  const [gridColumnApi, setGridColumnApi] = useState(null);
-  const [rowData, setRowData] = useState([]);
-
-  const [gridConsEventsApi, setGridConsEventsApi] = useState(null);
-  const [gridConsEventsColumnApi, setGridConsEventsColumnApi] = useState(null);
-  const [rowConsEventsData, setRowConsEventsData] = useState([]);
 
   function onGridReady(params) {
     setGridApi(params.api);
@@ -233,6 +249,40 @@ const Hello = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+
+  function getParams() {
+    return {
+      fileName: "export1.csv",
+      onlySelected: true
+    };
+  }
+
+  const onBtnExport = (api)=> {
+    let params = {}
+
+
+    // if (params.suppressQuotes || params.columnSeparator) {
+    //   alert(
+    //     'NOTE: you are downloading a file with non-standard quotes or separators - it may not render correctly in Excel.'
+    //   );
+    // }
+
+    if( api.getSelectedNodes().length > 0 ) {
+      params = {
+        fileName: "export1.csv",
+        onlySelected: true
+      };
+    } else {
+      params = {
+        fileName: "export1.csv"
+      };
+    }
+
+    //gridApi.forEachNode(node => {console.log(node.data)});
+    api.exportDataAsCsv(params)
+    //console.log(gridApi.exportDataAsCsv(params))
+    //gridApi.exportDataAsCsv(params);
+  }
 
   return (
     <div>
@@ -317,8 +367,8 @@ const Hello = () => {
         </AppBar>
         <TabPanel value={value} index={0}>
           <div className="ag-fresh">
-            <button onClick={onButtonClick}>Get selected rows</button>
-
+            {/* <button onClick={onButtonClick}>Get selected rows</button> */}
+            <button onClick={()=>onBtnExport(gridApi)}>  Download file as CSV </button>
             <div
               className="ag-theme-balham"
               style={{ height: 425, width: '100%' }}
@@ -365,6 +415,7 @@ const Hello = () => {
         </TabPanel>
         <TabPanel value={value} index={1}>
           <div className="ag-fresh">
+          <button onClick={() => onBtnExport(gridConsEventsApi)}>  Download file as CSV </button>
             <div
               className="ag-theme-balham"
               style={{ height: 500 , width: '100%' }}
