@@ -128,9 +128,9 @@ const Hello = () => {
     console.log(myArray);
     //setRowData(myArray);
     setRowData(
-      myArray.filter((row) =>
-        row.cmdline.toLowerCase().includes('java'.toLowerCase())
-      )
+      myArray
+      // .filter((row) =>
+      //   row.cmdline.toLowerCase().includes('java'.toLowerCase()))
     );
 
     //console.log(myObject);

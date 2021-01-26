@@ -67,6 +67,7 @@ export const cli_wslogfile = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd wslogfile -host ' +
         hostname,
+        { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -94,6 +95,7 @@ export const cli_wksadmlogfolder = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd wksadmlogfolder -host ' +
         hostname,
+        { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -121,6 +123,7 @@ export const cli_wslogfolder = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd wslogfolder -host ' +
         hostname,
+        { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -148,6 +151,7 @@ export const cli_logfolder = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd logfolder -host ' +
         hostname,
+        { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -174,7 +178,7 @@ export const cli_consolidated_log = (retfunc, hostname) => {
     exec(
       '"api/venv/Scripts/python" api/parselogpy.py -cmd consolog -host ' +
         hostname,
-      { maxBuffer: 1024 * 5000 },
+      { maxBuffer: 1024 * 50000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -202,6 +206,7 @@ export const cli_tasklist = (retfunc, hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd tasklist -host ' +
         hostname,
+        { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -228,6 +233,7 @@ export const cli_tasklist2 = () => {
   try {
     exec(
       'cmd c c:\\programs\\SysinternalsSuite\\psexec \\\\R0303393 netstat -a > ./logFile.log',
+      { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
