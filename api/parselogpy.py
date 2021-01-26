@@ -24,7 +24,7 @@ def generate_log_report(logfile):
             # append stack trace to the log entry
             r[l-1][len(r[l-1])-1] += " " + line.strip()
         else:
-            m = line.strip().split(" ",4)   # a list of up to 5 elements
+            m = line.strip().replace("\t", " ").split(" ",4)   # a list of up to 5 elements
                                             # timestamp - level - component - ...
                                             # may vary
             i = 0
@@ -45,9 +45,12 @@ def parse_file(filename):
     #infile_name = r"c:\temp\R0301769_qreadsws-2021-01-22-09-44-09.log"
     infile_name = filename
 
+
     try:
         infile=open(infile_name,'r')
     except IOError:
+        pass
+        return file_events
         print ("You must specify a valid file to parse")
         sys.exit(1)
 
@@ -57,9 +60,79 @@ def parse_file(filename):
     # here is an example, what you can do with the list of log file entries:
 
 
-    log_report=generate_log_report(infile)
-    #print("Done parsing")
 
+    log_report=generate_log_report(infile)
+
+
+    if "MFLogon" in infile_name :
+          for row in log_report:
+            if "Setting MAYO_USER_NAME" in row[3]:
+              event_time = row[0] + ' ' + row[1]
+              event_desc = "Windows Logon -> User login "
+              event_line =  row[3]
+
+              #print(event_time, row)
+              event_datetime = None
+              try:
+                event_datetime = datetime.datetime.strptime(event_time, '%m/%d/%Y %H:%M:%S.%f')
+              except:
+                try:
+                  event_datetime = datetime.datetime.strptime(event_time, '%m/%d/%Y %H:%M:%S,%f')
+                except:
+                  try:
+                    event_datetime = datetime.datetime.strptime(event_time, '%m/%d/%Y %H:%M:%S:%f')
+                  except:
+                    pass
+
+              try :
+                newrow = {
+                  'event_at' : event_datetime,  'event_desc' : event_desc , 'event_source': filename, 'event_line' : event_line
+                }
+                file_events.append(newrow)
+              except:
+                pass
+          return file_events
+    # elif 'MayoDoc' in infile_name :
+    #       return file_events
+
+    elif 'EpicWarpDriveLauncher' in infile_name :
+          for row in log_report:
+
+            if len(row) <5 :
+              continue
+
+            if "StartHyperspace" in row[4]:
+
+              event_time = row[0] + ' ' + row[1]
+              event_desc = "Start EPIC "
+              event_line =  row[4]
+
+              #print(event_time, row)
+              event_datetime = None
+              try:
+                event_datetime = datetime.datetime.strptime(event_time, '%m/%d/%Y %H:%M:%S.%f')
+              except:
+                try:
+                  event_datetime = datetime.datetime.strptime(event_time, '%m/%d/%Y %H:%M:%S,%f')
+                except:
+                  try:
+                    event_datetime = datetime.datetime.strptime(event_time, '%m/%d/%Y %H:%M:%S:%f')
+                  except:
+                    pass
+
+              try :
+                newrow = {
+                  'event_at' : event_datetime,  'event_desc' : event_desc , 'event_source': filename, 'event_line' : event_line
+                }
+                file_events.append(newrow)
+              except:
+                pass
+          return file_events
+    else:
+      pass
+
+
+    #print("Done parsing")
     for row in log_report:
 
       # if "Server:414 - Started" in row[4]:
@@ -85,6 +158,10 @@ def parse_file(filename):
       if len(row) >4  and  "Shutting down QREADS application" in row[4]:
             event_time = row[0] + ' ' + row[1]
             event_desc =  "QREADS LOG -> QREADS QUIT "
+
+      if len(row) >4  and  "Startup Param Count" in row[4]:
+            event_time = row[0] + ' ' + row[1]
+            event_desc =  "QREADS LOG -> CMD Start Args "
 
 
 
@@ -112,9 +189,25 @@ def parse_file(filename):
             event_time = row[1] + ' ' + row[2]
             event_desc =  "MayoDock Killed QREADS"
 
-      if len(row) >4 and "Port: 9780" in row[4]  and "[ProcessTasks] TCP Process" in row[4]:
+      if len(row) >4 and "javaw Port: 9780" in row[4]  in row[4]:
             event_time = row[1] + ' ' + row[2]
-            event_desc =  "Process Task : QREADS WebService"
+            event_desc =  "MayoDockStarter ->QRWebservice"
+
+      # if len(row) >4 and "Port: 9780" in row[4]  and "[ProcessTasks] TCP Process" in row[4]:
+      #       event_time = row[1] + ' ' + row[2]
+      #       event_desc =  "Process Task : QREADS WebService"
+
+      if len(row) >4 and "[Program] argument passed" in row[4] in row[4]:
+            event_time = row[1] + ' ' + row[2]
+            event_desc =  "MayoDockStarter -> UserSwitch"
+
+      if len(row) >4 and "[ProcessTasks] Entering" in row[4] in row[4]:
+            event_time = row[1] + ' ' + row[2]
+            event_desc =  "MayoDockStarter -> Clearing Previous User"
+
+      if len(row) >4 and "StartApps] Entering" in row[4] in row[4]:
+            event_time = row[1] + ' ' + row[2]
+            event_desc =  "MayoDockStarter -> Starting New User"
 
       if len(row) > 4 and event_desc != "" :
 
@@ -151,10 +244,19 @@ def parse_file(filename):
 
 def parse_folders(hostname):
 
-
-
   file_events = []
 
+  #files = glob.glob(r'\\' + hostname + '\c$\WKSAdmin\Logs\**\MayoDockStarter*.log*', recursive = True)
+  #files = glob.glob(r'\\' + hostname + '\c$\WKSAdmin\Logs\MayoDock\**\MayoDoc*.log*', recursive = True)
+  files = [r'\\' + hostname + '\c$\WKSAdmin\Logs\EpicWarpDriveLauncher.log']
+  for file in files:
+      #print(file)
+      file_events.extend(parse_file( file))
+
+  files = glob.glob(r'\\' + hostname + '\c$\WKSAdmin\Logs\**\MFLogon*.log*', recursive = True)
+  for file in files:
+      #print(file)
+      file_events.extend(parse_file( file))
 
   files = glob.glob(r'\\' + hostname + '\c$\WKSAdmin\Logs\**\MayoDockStarter*.log*', recursive = True)
   for file in files:
@@ -217,6 +319,22 @@ def main():
     hostname = args.host
   if args.pid :
       pid = args.pid
+
+
+  if command.strip() == 'trylog' :
+    file_events = []
+
+    #files = glob.glob(r'\\' + hostname + '\c$\WKSAdmin\Logs\**\MFLogon*.log*', recursive = True)
+    #files = glob.glob(r'\\' + hostname + '\c$\WKSAdmin\Logs\**\MayoDockStarter*.log*', recursive = True)
+    #files = glob.glob(r'\\' + hostname + '\c$\WKSAdmin\Logs\MayoDock\**\MayoDoc*.log*', recursive = True)
+    files = [r'\\' + hostname + '\c$\WKSAdmin\Logs\EpicWarpDriveLauncher.log']
+
+
+    for file in files:
+      #print(file)
+      file_events = parse_file( file)
+      print(file_events)
+      return
 
   if command.strip() == 'consolog' :
     consolg_events = parse_folders(str(hostname))
