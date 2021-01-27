@@ -35,7 +35,15 @@ import Box from '@material-ui/core/Box';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-  return <div {...other} >{value === index && <Box style={{ padding: 2 }} p={3}>{children}</Box>}</div>;
+  return (
+    <div {...other}>
+      {value === index && (
+        <Box style={{ padding: 2 }} p={3}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
 }
 
 const HostErrorLog = (props) => {
@@ -44,7 +52,7 @@ const HostErrorLog = (props) => {
     <div key={host}>
       {host && host.trim().length > 2 ? (
         <React.Fragment>
-          <span style={{margin: 3}}>{host}</span>
+          <span style={{ margin: 3 }}>{host}</span>
           <button
             type="button"
             onClick={() => cli_tasklist(props.retfunc, host)}
@@ -93,8 +101,6 @@ const HostErrorLog = (props) => {
   );
 };
 const Hello = () => {
-
-
   // const [gridApi, setGridApi] = useState([]);
   // const [gridColumnApi, setGridColumnApi] = useState([]);
 
@@ -144,16 +150,15 @@ const Hello = () => {
       myArray.push(myObject[i]);
     }
 
-  //   myObject.forEach(function(element){
-  //     console.log(element);
-  // });
+    //   myObject.forEach(function(element){
+    //     console.log(element);
+    // });
 
     setRowConsEventsData(myObject);
     //gridConsEventsApi.setRowData(myObject)
 
     // var params = getParams();
     // gridConsEventsApi.getr.exportDataAsCsv(params);
-
   };
 
   const getCmdOut = () => {
@@ -172,11 +177,9 @@ const Hello = () => {
     //console.log(gotProcs);
   };
 
-  const [hostname, setHostname] = useState('r5193050');
+  const [hostname, setHostname] = useState('R5087474');
   //R0295540,
-  const [hostnamelist, setHostnameList] = useState(
-    'R5087474, R0301769,  R0295533, R0302014, R0295534, R0301783, R0303393, R5051265'
-  );
+  const [hostnamelist, setHostnameList] = useState('R5085146');
 
   function useInput({ type /*...*/ }) {
     const [value, setValue] = useState('');
@@ -204,7 +207,6 @@ const Hello = () => {
       />
     ));
 
-
   function onGridReady(params) {
     setGridApi(params.api);
     setGridColumnApi(params.columnApi);
@@ -231,14 +233,13 @@ const Hello = () => {
 
   function getParams() {
     return {
-      fileName: "export1.csv",
-      onlySelected: true
+      fileName: 'export1.csv',
+      onlySelected: true,
     };
   }
 
-  const onBtnExport = (api)=> {
-    let params = {}
-
+  const onBtnExport = (api) => {
+    let params = {};
 
     // if (params.suppressQuotes || params.columnSeparator) {
     //   alert(
@@ -246,22 +247,22 @@ const Hello = () => {
     //   );
     // }
 
-    if( api.getSelectedNodes().length > 0 ) {
+    if (api.getSelectedNodes().length > 0) {
       params = {
-        fileName: "export1.csv",
-        onlySelected: true
+        fileName: 'export1.csv',
+        onlySelected: true,
       };
     } else {
       params = {
-        fileName: "export1.csv"
+        fileName: 'export1.csv',
       };
     }
 
     //gridApi.forEachNode(node => {console.log(node.data)});
-    api.exportDataAsCsv(params)
+    api.exportDataAsCsv(params);
     //console.log(gridApi.exportDataAsCsv(params))
     //gridApi.exportDataAsCsv(params);
-  }
+  };
 
   return (
     <div>
@@ -271,8 +272,12 @@ const Hello = () => {
       <h1>QREADS Support Tools</h1>
       {/* {userInput} -> {username}
       {passwordInput} -> {password} */}
-      <span  style={{ display: 'block-inline', margin: 4 }}>Hostname</span>
-      <input onChange={(e) => setHostname(e.target.value)} value={hostname} style={{ minWidth:8, flex:1 }}/>
+      <span style={{ display: 'block-inline', margin: 4 }}>Hostname</span>
+      <input
+        onChange={(e) => setHostname(e.target.value)}
+        value={hostname}
+        style={{ minWidth: 8, flex: 1 }}
+      />
       <button type="button" onClick={() => cli_tasklist(retfunc, hostname)}>
         Java Tasks
       </button>
@@ -308,7 +313,9 @@ const Hello = () => {
         </button>
       </a>
       <br />
-      <span  style={{ display: 'block-inline', margin: 4 , padding : 4}}>Host List</span>
+      <span style={{ display: 'block-inline', margin: 4, padding: 4 }}>
+        Host List
+      </span>
       <input
         style={{ width: '60%' }}
         onChange={(e) => setHostnameList(e.target.value)}
@@ -316,7 +323,7 @@ const Hello = () => {
       />
       <div>{hostListComponents}</div>
       <div className="Hello1" style={{ width: '100%' }}>
-        <AppBar position="static" style={{ margin: 1}}>
+        <AppBar position="static" style={{ margin: 1 }}>
           <Tabs value={value} onChange={handleChange}>
             <Tab label="Java Tasklist" />
             <Tab label="QREADS Events" />
@@ -326,7 +333,10 @@ const Hello = () => {
         <TabPanel value={value} index={0}>
           <div className="ag-fresh">
             {/* <button onClick={onButtonClick}>Get selected rows</button> */}
-            <button onClick={()=>onBtnExport(gridApi)}>  Download file as CSV </button>
+            <button onClick={() => onBtnExport(gridApi)}>
+              {' '}
+              Download file as CSV{' '}
+            </button>
             <div
               className="ag-theme-balham"
               style={{ height: '70vh', width: '100%' }}
@@ -373,10 +383,13 @@ const Hello = () => {
         </TabPanel>
         <TabPanel value={value} index={1}>
           <div className="ag-fresh">
-          <button onClick={() => onBtnExport(gridConsEventsApi)}>  Download file as CSV </button>
+            <button onClick={() => onBtnExport(gridConsEventsApi)}>
+              {' '}
+              Download file as CSV{' '}
+            </button>
             <div
               className="ag-theme-balham"
-              style={{ height: '70vh' , width: '100%' }}
+              style={{ height: '70vh', width: '100%' }}
             >
               <AgGridReact
                 onGridReady={onGridConsEventsReady}
