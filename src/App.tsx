@@ -35,7 +35,7 @@ import Box from '@material-ui/core/Box';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-  return <div {...other}>{value === index && <Box p={3}>{children}</Box>}</div>;
+  return <div {...other} >{value === index && <Box style={{ padding: 2 }} p={3}>{children}</Box>}</div>;
 }
 
 const HostErrorLog = (props) => {
@@ -44,55 +44,34 @@ const HostErrorLog = (props) => {
     <div key={host}>
       {host && host.trim().length > 2 ? (
         <React.Fragment>
-          {host}
+          <span style={{margin: 3}}>{host}</span>
           <button
             type="button"
             onClick={() => cli_tasklist(props.retfunc, host)}
           >
-            <span role="img" aria-label="books">
-              📚
-            </span>
             Java Tasks
           </button>
           <button
             type="button"
             onClick={() => cli_consolidated_log(props.recvEventsfunc, host)}
           >
-            <span role="img" aria-label="books">
-              📚
-            </span>
             QR Events
           </button>
           <button type="button" onClick={() => cli_logfile(host)}>
-            <span role="img" aria-label="books">
-              📚
-            </span>
             QReads Log File
           </button>
 
           <button type="button" onClick={() => cli_logfolder(host)}>
-            <span role="img" aria-label="books">
-              📚
-            </span>
             Log Folder
           </button>
 
           <button type="button" onClick={() => cli_wslogfile(host)}>
-            <span role="img" aria-label="books">
-              📚
-            </span>
             WS Log File
           </button>
           <button type="button" onClick={() => cli_wslogfolder(host)}>
-            <span role="img" aria-label="books">
-              📚
-            </span>
             WS Log Folder
           </button>
           <button type="button" onClick={() => cli_wksadmlogfolder(host)}>
-            <span role="img" aria-label="books">
-              📚
-            </span>
             WKSAdmin Log Folder
           </button>
 
@@ -292,51 +271,30 @@ const Hello = () => {
       <h1>QREADS Support Tools</h1>
       {/* {userInput} -> {username}
       {passwordInput} -> {password} */}
-      Hostname{' '}
-      <input onChange={(e) => setHostname(e.target.value)} value={hostname} />
+      <span  style={{ display: 'block-inline', margin: 4 }}>Hostname</span>
+      <input onChange={(e) => setHostname(e.target.value)} value={hostname} style={{ minWidth:8, flex:1 }}/>
       <button type="button" onClick={() => cli_tasklist(retfunc, hostname)}>
-        <span role="img" aria-label="books">
-          📚
-        </span>
         Java Tasks
       </button>
       <button
         type="button"
         onClick={() => cli_consolidated_log(recvEventsfunc, hostname)}
       >
-        <span role="img" aria-label="books">
-          📚
-        </span>
         QR Events
       </button>
       <button type="button" onClick={() => cli_logfile(hostname)}>
-        <span role="img" aria-label="books">
-          📚
-        </span>
         Get QReads Log File
       </button>
       <button type="button" onClick={() => cli_logfolder(hostname)}>
-        <span role="img" aria-label="books">
-          📚
-        </span>
         QReads Log Folder
       </button>
       <button type="button" onClick={() => cli_wslogfile(hostname)}>
-        <span role="img" aria-label="books">
-          📚
-        </span>
         WS Log File
       </button>
       <button type="button" onClick={() => cli_wslogfolder(hostname)}>
-        <span role="img" aria-label="books">
-          📚
-        </span>
         WS Log Folder
       </button>
       <button type="button" onClick={() => cli_wksadmlogfolder(hostname)}>
-        <span role="img" aria-label="books">
-          📚
-        </span>
         WKSAdmin Log Folder
       </button>
       <a
@@ -350,15 +308,15 @@ const Hello = () => {
         </button>
       </a>
       <br />
-      Host List{' '}
+      <span  style={{ display: 'block-inline', margin: 4 , padding : 4}}>Host List</span>
       <input
-        style={{ width: '100%' }}
+        style={{ width: '60%' }}
         onChange={(e) => setHostnameList(e.target.value)}
         value={hostnamelist}
       />
       <div>{hostListComponents}</div>
-      <div className="Hello" style={{ width: '100%' }}>
-        <AppBar position="static">
+      <div className="Hello1" style={{ width: '100%' }}>
+        <AppBar position="static" style={{ margin: 1}}>
           <Tabs value={value} onChange={handleChange}>
             <Tab label="Java Tasklist" />
             <Tab label="QREADS Events" />
@@ -371,7 +329,7 @@ const Hello = () => {
             <button onClick={()=>onBtnExport(gridApi)}>  Download file as CSV </button>
             <div
               className="ag-theme-balham"
-              style={{ height: 425, width: '100%' }}
+              style={{ height: '70vh', width: '100%' }}
             >
               <AgGridReact
                 onGridReady={onGridReady}
@@ -418,7 +376,7 @@ const Hello = () => {
           <button onClick={() => onBtnExport(gridConsEventsApi)}>  Download file as CSV </button>
             <div
               className="ag-theme-balham"
-              style={{ height: 500 , width: '100%' }}
+              style={{ height: '70vh' , width: '100%' }}
             >
               <AgGridReact
                 onGridReady={onGridConsEventsReady}
