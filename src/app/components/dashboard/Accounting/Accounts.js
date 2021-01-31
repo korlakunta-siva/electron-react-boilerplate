@@ -16,7 +16,7 @@ import {
   addAccount,
   refreshAccount,
   deleteAccount
-} from "app/redux/actions/accountActions";
+} from "../../../redux/actions/accountActions";
 
 //import MaterialTable from "material-table"; // https://mbrn.github.io/material-table/#/
 //import { DataGrid } from '@material-ui/data-grid';
@@ -27,7 +27,7 @@ import { Toolbar, Data, Filters } from "react-data-grid-addons";
 import DataGrid from "../DataGridNew";
 
 class Accounts extends Component {
-  
+
   constructor (props) {
     super(props);
     this.tranGridElement = React.createRef();
@@ -38,7 +38,7 @@ class Accounts extends Component {
  //   filters : {},
  //   transactionsData : []
   }
-  
+
   componentDidMount() {
     //const { accounts } = this.props;
     //this.props.getTransactions(accounts);
@@ -75,13 +75,13 @@ class Accounts extends Component {
     };
     console.log("Received Public Token: " + token , metadata);
     this.props.refreshAccount(plaidData);
-  };  
+  };
 
   onShowTransactionsClick = id => {
     this.props.getTransactions(id, "view");
   };
 
-  
+
   onGetPlaidTransactionsClick = id => {
     console.log("Called Retrieve-100: " + id);
     this.props.getTransactions(id, "refresh");
@@ -132,7 +132,7 @@ class Accounts extends Component {
 //     return newFilters;
 //   };
 
-   
+
 //    getValidFilterValues = (rows, columnId)  => {
 //     return rows
 //       .map(r => r[columnId])
@@ -147,7 +147,7 @@ class Accounts extends Component {
 //   }
 
 //  // const filteredRows = getRows(this.state.transactionsData, this.state.filters);
-  
+
 //  sortRows = (initialRows, sortColumn, sortDirection) => rows => {
 // const comparer = (a, b) => {
 //   if (sortDirection === "ASC") {
@@ -176,15 +176,15 @@ onRowSelectExam = data => {
     const { transactions, transactionsLoading } = this.props.plaid;
 
 
-    
+
 // {accountItems.map((tile) => (
 //           <GridListTile key={tile.account_id}>
-//             <img src={tile.img} alt={tile.institutionName} />            
+//             <img src={tile.img} alt={tile.institutionName} />
 // {tile}
 //           </GridListTile>
 //         ))
 // }
-  
+
 
     // Setting up data table
     const transactionsColumns = [
@@ -195,7 +195,7 @@ onRowSelectExam = data => {
       { headerName: "Category", field: "category" , width: 150}
     ];
 
-    
+
     const selectors = Data.Selectors;
     const {
       NumericFilter,
@@ -208,7 +208,7 @@ onRowSelectExam = data => {
       filterable: true,
       width: 160
     };
-    
+
 
     const rdg_columns = [
       { key: 'account', name: 'Account' ,  sortable: true, filterable: true, },
@@ -223,14 +223,14 @@ onRowSelectExam = data => {
     const options = {
       filterType: 'checkbox',
     };
-    
 
-    
-     //const filteredRows = this.getRows(this.state.transactionsData, this.state.filters); 
+
+
+     //const filteredRows = this.getRows(this.state.transactionsData, this.state.filters);
 
     // { field: 'firstName', headerName: 'First name', width: 130 },
 
- 
+
     // let transactionsData = [];
     // transactions.forEach(function(account) {
     //   account.transactions.forEach(function(transaction) {
@@ -242,9 +242,9 @@ onRowSelectExam = data => {
     //       amount: transaction.amount
     //     });
     //   });
-    // }); 
+    // });
 
-  
+
 
     //   let rowdata = {
     //     account: row.account.accountName,
@@ -253,10 +253,10 @@ onRowSelectExam = data => {
     //     'name': row.transaction.name,
     //     'amount': row.transaction.amount
     //   }
-    //   return rowdata; 
+    //   return rowdata;
     // });
 
-    
+
     // transactions.map( row => {
     //   let rowdata = {
     //     account: row.account.accountName,
@@ -265,7 +265,7 @@ onRowSelectExam = data => {
     //     'name': row.transaction.name,
     //     'amount': row.transaction.amount
     //   }
-    //   return rowdata; 
+    //   return rowdata;
     // });
 
     // transactions.forEach(function(account) {
@@ -284,7 +284,7 @@ onRowSelectExam = data => {
     let transactionsData = [];
     if (transactions) {
     let trans = transactions.transactions
-       
+
     if (trans && trans.length > 0 ) {
       transactionsData = trans.map( tran => {
           return {
@@ -304,14 +304,14 @@ onRowSelectExam = data => {
       }
     }
 
-    
-    let accountItems =   (   
-      <SingleLineGridList >    
+
+    let accountItems =   (
+      <SingleLineGridList >
         {accounts.map(account => (
 
 <GridListTile key={account.itemId} style={{width: 'auto', height: 'auto' }}>
-    <AccountCard key={account.itemId} account = {account}  
-     onView = {this.onShowTransactionsClick} 
+    <AccountCard key={account.itemId} account = {account}
+     onView = {this.onShowTransactionsClick}
      onUpdateAccounts = {this.onUpdateAccountsClick}
      onRetrieve100 = {this.onGetPlaidTransactionsClick}
      onRetrieveAll = {this.onGetAllPlaidTransactionsClick}
@@ -338,7 +338,7 @@ onRowSelectExam = data => {
                 console.log(err);
                 console.log("plaid link error");
               };
-  
+
               console.log("plaid link exited");
               // metadata contains information about the institution
               // that the user selected and the most recent API request IDs.
@@ -362,7 +362,7 @@ onRowSelectExam = data => {
             Link Account
           </PlaidLink>) : ""
         }
-        
+
         {
           this.state.updateAccessToken ?
 
@@ -406,7 +406,7 @@ onRowSelectExam = data => {
 {
   accountItems
 }
-      
+
                   <DataGrid
                     ref={this.tranGridElement}
                     initialRows={transactionsData}
