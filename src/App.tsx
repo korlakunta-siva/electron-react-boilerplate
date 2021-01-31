@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import icon from '../assets/icon.svg';
+import RendererApp from "./app/RendererApp";
 
 const Hello = () => {
   return (
@@ -43,7 +44,7 @@ export default function App() {
   return (
     <Router>
       <Switch>
-        <Route path="/" component={Hello} />
+        <Route path="/" component={RendererApp} />
       </Switch>
     </Router>
   );
