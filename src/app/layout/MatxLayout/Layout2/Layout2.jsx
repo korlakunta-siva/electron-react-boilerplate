@@ -15,6 +15,8 @@ import SidenavTheme from "../MatxTheme/SidenavTheme/SidenavTheme";
 import Layout1Sidenav from "../Layout1/Layout1Sidenav";
 import useSettings from '../../../hooks/useSettings';
 
+import { Redirect, useLocation, withRouter } from "react-router-dom";
+
 const Layout2 = () => {
   // import layout2 styels
 
@@ -94,4 +96,4 @@ const Layout2 = () => {
   );
 };
 
-export default Layout2;
+export default withRouter(Layout2);

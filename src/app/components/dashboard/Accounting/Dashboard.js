@@ -54,6 +54,7 @@ class Dashboard extends Component {
     //console.log(this.props.auth);
 
 
+    console.log("In Dashboard.")
     const accessToken = localStorage.getItem("accessToken");
 
     const decodedToken = jwtDecode(accessToken);
@@ -178,7 +179,7 @@ Dashboard.propTypes = {
   getLinkToken: PropTypes.func.isRequired,
   getAccounts: PropTypes.func.isRequired,
   addAccount: PropTypes.func.isRequired,
-  auth: PropTypes.object.isRequired,
+  auth: PropTypes.object,
   plaid: PropTypes.object.isRequired
 };
 

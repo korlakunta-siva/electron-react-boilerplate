@@ -17,7 +17,7 @@ export const getLinkToken = () => dispatch => {
   const accessToken = localStorage.getItem("accessToken");
   axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   axios
-    .get("/get_link_token")
+    .get("https://192.168.21.199:8041/get_link_token")
     .then(res => {
       dispatch(setLinkToken(res.data));
     })
@@ -38,7 +38,7 @@ export const getAccounts = () => dispatch => {
   axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   console.log(axios.defaults.headers.common["Authorization"]);
   axios
-    .get("/api/plaid/accounts")
+    .get("https://192.168.21.199:8041/api/plaid/accounts")
     .then(res =>
       dispatch({
         type: GET_ACCOUNTS,
@@ -53,14 +53,14 @@ export const getAccounts = () => dispatch => {
     );
 };
 
- 
+
 // Add account
 export const addAccount = plaidData => dispatch => {
   const accounts = plaidData.accounts;
   const accessToken = localStorage.getItem("accessToken");
-  axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;  
+  axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   axios
-    .post("/api/plaid/accounts/add/", plaidData)
+    .post("https://192.168.21.199:8041/api/plaid/accounts/add/", plaidData)
     .then(res =>
       dispatch({
         type: ADD_ACCOUNT,
@@ -76,7 +76,7 @@ export const addAccount = plaidData => dispatch => {
 // Add account
 export const refreshAccount = plaidData => dispatch => {
   const accessToken = localStorage.getItem("accessToken");
-  axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;  
+  axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   const accounts = plaidData.accounts;
   axios
     .post("/api/plaid/accounts/refresh/", plaidData)
@@ -96,7 +96,7 @@ export const refreshAccount = plaidData => dispatch => {
 export const deleteAccount = id => dispatch => {
   if (window.confirm("Are you sure you want to remove this account?")) {
     axios
-      .delete(`/api/plaid/account/${id}`)
+      .delete(`https://192.168.21.199:8041/api/plaid/account/${id}`)
       .then(res =>
         dispatch({
           type: DELETE_ACCOUNT,
@@ -127,10 +127,10 @@ export const setLinkToken = (linktoken) => {
 export const getTransactions = (id, txnscope) => dispatch => {
   dispatch(setTransactionsLoading());
   const accessToken = localStorage.getItem("accessToken");
-  axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;  
-  
+  axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
   axios
-    .post("/api/plaid/accounts/allhxtransactions/", { 'id': id,  'op' : txnscope})
+    .post("https://192.168.21.199:8041/api/plaid/accounts/allhxtransactions/", { 'id': id,  'op' : txnscope})
     .then(res =>
       dispatch({
         type: GET_TRANSACTIONS,

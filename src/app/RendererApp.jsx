@@ -19,6 +19,7 @@ import { SettingsProvider } from "./contexts/SettingsContext";
 
 import { useLocation } from 'react-router-dom'
 import JwtLogin from "./views/sessions/login/JwtLogin";
+import { Redirect, withRouter } from "react-router-dom";
 
 
 const RendererApp = () => {
@@ -48,11 +49,11 @@ const RendererApp = () => {
                     ))}
                     {/* AUTH PROTECTED DASHBOARD PAGES */}
 
-                    <Route render={() => <Redirect to="/"/>}/>
                     <AuthGuard>
                       <MatxLayout />
                     </AuthGuard>
-                    <Route  component={JwtLogin} />
+                    {/* <Route  component={JwtLogin} />
+                    <Route render={() => <Redirect to="/"/>}/> */}
                   </Switch>
                 </MatxSuspense>
               </AuthProvider>

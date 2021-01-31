@@ -111,6 +111,9 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
+
 /**
  * Add event listeners...
  */

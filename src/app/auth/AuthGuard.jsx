@@ -22,7 +22,7 @@ import JwtLogin from "../views/sessions/login/JwtLogin";
 const AuthGuard = ({ children }) => {
   const {
     isAuthenticated,
-    // user
+    user
   } = useAuth();
 
   const [previouseRoute, setPreviousRoute] = useState(null);
@@ -41,7 +41,7 @@ const AuthGuard = ({ children }) => {
     if (previouseRoute !== null) setPreviousRoute(pathname);
   }, [pathname, previouseRoute]);
 
-  console.log("In AuthGarud", authenticated, previouseRoute);
+  console.log("In AuthGarud", authenticated, user, previouseRoute);
 
   if (authenticated) return <>{children}</>;
   else {
