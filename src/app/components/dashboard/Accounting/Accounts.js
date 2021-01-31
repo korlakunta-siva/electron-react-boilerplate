@@ -8,6 +8,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import GridListTileBar from '@material-ui/core/GridListTileBar';
+import {cli_showfile} from "../../../../utils/cli";
 
 
 import axios from 'axios';
@@ -164,10 +165,12 @@ class Accounts extends Component {
 onRowSelectExam = data => {
 
   let check_num = data[0].row.name.replace("CHECK CLEARED #","");
-  let check_path = `file://\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check.pdf`
-  window.open(check_path)
-  console.log(check_path);
-  console.log(data);
+  let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check`;
+  cli_showfile(check_path);
+
+  // window.open(check_path)
+  // console.log(check_path);
+  // console.log(data);
 };
 
 

@@ -59,6 +59,33 @@ export const cli_logfile = (hostname) => {
   }
 };
 
+export const cli_showfile = (filepath) => {
+  //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+  let mesg = '';
+  console.log('Show file : ' + filepath);
+  try {
+    exec(
+      '"src/api/venv/Scripts/python" src/api/localapp.py -cmd showfile -host ' +
+      filepath,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const cli_wslogfile = (hostname) => {
   //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
   let mesg = '';

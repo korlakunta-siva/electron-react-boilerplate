@@ -4,6 +4,7 @@ import json
 import shutil
 import os
 from datetime import datetime as localdate
+from pathlib import Path
 
 
 # \\R0303393\c$\Program Files\Mayo Foundation\QREADS Web Service\appbase\logs
@@ -66,6 +67,27 @@ def get_wslogfile_and_show(hostname) :
     #subprocess.run([progpath, dest_path + dest_name])
     #runProcess(progpath +  dest_path + dest_name)
 
+def get_file_and_show(hostname) :
+        print("get_file_and_show :From Python Get WS Log : " + hostname)
+
+        #ostname = hostname[:-9] + '6721check'
+        progpath_pdf = hostname + ".pdf"
+        progpath_jpg = hostname + ".jpg"
+        progpath_png = hostname + ".png"
+        print(os.path.isfile(progpath_pdf), Path(progpath_pdf).is_file())
+        if os.path.isfile(progpath_pdf) :
+              print("Open file: " + progpath_pdf)
+              os.system(progpath_pdf)
+        elif os.path.isfile(progpath_jpg) :
+              print("Open file: " + progpath_jpg)
+              os.system(progpath_jpg)
+        elif os.path.isfile(progpath_png) :
+              print("Open file: " + progpath_png)
+              os.system(progpath_png)
+        else:
+          print("Open file???: " + progpath_pdf)
+        # progpath = " \"" + hostname + ".pdf\" "
+        # os.system(progpath)
 
 def runProcess(exe):
     p = subprocess.Popen(exe, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -105,6 +127,9 @@ def main():
   # if pid != None :
   #   print("Got pid: " + str(pid))
 
+  if command.strip() == 'showfile' :
+    get_file_and_show(str(hostname))
+    return
 
   if command.strip() == 'logfile' :
     get_logfile_and_show(str(hostname))
