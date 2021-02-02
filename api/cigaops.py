@@ -50,7 +50,7 @@ def run_unix_process(campus, unixprocess = None):
 
 
     unixprocess = cmd
-    ssh.connect(unix_hostname, username="mra9895", password="Sneha21A")
+    ssh.connect(unix_hostname, username="mra9895", password="MyPass")
     # stdin, stdout, stderr = ssh.exec_command(
     #     "sudo su - ciguser")
 
@@ -222,7 +222,7 @@ def live_ciga_scan_df(campus):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    ssh.connect(unix_hostname, username="mra9895", password="Sneha21A")
+    ssh.connect(unix_hostname, username="mra9895", password="MyPass")
     # stdin, stdout, stderr = ssh.exec_command(
     #     "sudo su - ciguser")
     stdin, stdout, stderr = ssh.exec_command(
@@ -340,12 +340,12 @@ def main():
     print("Started testes")
     es =  Elasticsearch(
               [
-                  'https://slk02:Sneha21A@bigdata.mayo.edu/es/7x/PROD3'
+                  'https://slk02:MyPass@bigdata.mayo.edu/es/7x/PROD3'
               ],
               verify_certs=True
           )
 
-    #  TEST   'https://slk02:Sneha21A@test.bigdata.mayo.edu/es/7x/TEST3'
+    #  TEST   'https://slk02:MyPass@test.bigdata.mayo.edu/es/7x/TEST3'
 
     # json_data = json.dumps({"query": "DESCRIBE \"as-log-metrics-2019.06.14\" "})
     # r = requests.post("http://localhost:9200/_sql?format=csv", data=json_data, headers={'Content-Type':'application/json'})
