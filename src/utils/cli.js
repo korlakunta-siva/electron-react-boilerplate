@@ -1,4 +1,5 @@
 const { exec } = require('child_process');
+const { dialog } = require('electron');
 var fs = require('fs');
 
 //
@@ -280,6 +281,58 @@ export const cli_tasklist0 = () => {
       console.log(`child process exited with code ${code}`);
       console.log(mesg);
     });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+export const selectFiles = ()=> {
+  const options = {
+      //title: 'Open a file or folder',
+      //defaultPath: '/path/to/something/',
+      //buttonLabel: 'Do it',
+      /*filters: [
+        { name: 'xml', extensions: ['xml'] }
+      ],*/
+      //properties: ['showHiddenFiles'],
+      //message: 'This message will only be shown on macOS'
+    };
+
+    dialog.showOpenDialog({
+      properties: ['openDirectory']
+   }).then((data) => {
+      console.log(data.filePaths);
+      return data.filePaths;
+   });
+
+};
+
+
+export const cli_getdicom_meta = (retfunc, filename) => {
+  console.log("JS: " , filename);
+  //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+  let mesg = '';
+  try {
+    exec(
+      '"api/venv/Scripts/python" api/dicom.py -cmd parse -a ' +
+        filename,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        //console.log(stdout);
+        retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
   } catch (error) {
     console.log(error);
   }

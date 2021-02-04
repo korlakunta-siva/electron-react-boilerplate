@@ -340,7 +340,7 @@ def main():
     print("Started testes")
     es =  Elasticsearch(
               [
-                  'https://slk02:MyPass@bigdata.mayo.edu/es/7x/PROD3'
+                  'https://slk02:Sneha21A@bigdata.mayo.edu/es/7x/PROD3'
               ],
               verify_certs=True
           )
@@ -354,16 +354,64 @@ def main():
     json_query_data = json.dumps({"query": "SELECT patient_cmrn, count(*) FROM \"imsu-dashboardusers___cis_storage*\" group by patient_cmrn limit 1000 "})
     json_query_data = json.dumps({"query": "SELECT image_store_name, sum(image_count) FROM \"imsu-dashboardusers___cis_storage*\" group by image_store_name limit 100 "})
     json_query_data = json.dumps({"query": "SELECT * FROM \"imsu-dashboardusers___cis_storage*\" order by patient_cmrn limit 100 "})
+
+
+
+
     # r = requests.post("http://localhost:9200/_sql?format=csv", data=json_data, headers={'Content-Type':'application/json'})
     # print(r.text)
 
-
+    all_indexes = []
     #res = es.sql.query(body = '{ "query": "SELECT \* FROM \"imsu-dashboardusers___cis_storage*\"  DESC LIMIT 5" }', format = 'json')
+    json_query_data = json.dumps({"query": "SELECT   'iims_pending' as \"indexname\", min(event_at) as begin_at, max(event_at) as end_at,  (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS \"diffInSec\" ,  (-3600 + (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000) / 86400 AS \"diffIndays\"  FROM \"imsu-dashboardusers___iims_pending*\" "})
     res = es.sql.query(body = json_query_data , format = 'json')
+
+    #query_result = [zip([ column[0] for column in res['columns'], row) for row in res['rows']]
+    #print ([col['name'] for col in res['columns']])
+    query_result = map(lambda row: dict(zip([col['name'] for col in res['columns']], row)), res['rows'])
+    print (list(query_result))
+
+
+#SELECT   min(event_at) as begin_at, max(event_at) as end_at , (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS "diffInSec" , (-3600 + (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000) / 86400 AS "diffIndays" FROM "imsu-dashboardusers___cis_storage*"
+#SELECT   min(event_at) as begin_at, max(event_at) as end_at ,  (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS "diffInSec"  FROM "imsu-dashboardusers___qreads_perfmertrics_20*"
+#SELECT   min(event_at) as begin_at, max(event_at) as end_at , (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS "diffInSec",  ( (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000) / 86400 AS "diffIndays"  FROM "imsu-dashboardusers___ciga_jobs*"
+# SELECT   min(event_at) as begin_at, max(event_at) as end_at , (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS "diffInSec"  FROM "imsu-dashboardusers___iims_vip_queues*"
+#
+
+
+    json_query_data = json.dumps({"query": "SELECT   'vip_queues' as \"indexname\", min(event_at) as begin_at, max(event_at) as end_at,  (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS \"diffInSec\" , (-3600 + (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000) / 86400 AS \"diffIndays\" FROM \"imsu-dashboardusers___iims_vip_queues*\" "})
+    res = es.sql.query(body = json_query_data , format = 'json')
+    query_result = map(lambda row: dict(zip([col['name'] for col in res['columns']], row)), res['rows'])
+    print (list(query_result))
+    all_indexes.extend(list(query_result))
+
+    json_query_data = json.dumps({"query": "SELECT   'ciga_jobs' as \"indexname\", min(event_at) as begin_at, max(event_at) as end_at,  (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS \"diffInSec\" , (-3600 + (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000) / 86400 AS \"diffIndays\" FROM \"imsu-dashboardusers___ciga_jobs*\" "})
+    res = es.sql.query(body = json_query_data , format = 'json')
+    query_result = map(lambda row: dict(zip([col['name'] for col in res['columns']], row)), res['rows'])
+    print (list(query_result))
+    all_indexes.extend(list(query_result))
+
+    json_query_data = json.dumps({"query": "SELECT   'cis_storage' as \"indexname\", min(event_at) as begin_at, max(event_at) as end_at,  (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS \"diffInSec\" , (-3600 + (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000) / 86400 AS \"diffIndays\" FROM \"imsu-dashboardusers___cis_storage*\" "})
+    res = es.sql.query(body = json_query_data , format = 'json')
+    query_result = map(lambda row: dict(zip([col['name'] for col in res['columns']], row)), res['rows'])
+    print (list(query_result))
+    all_indexes.extend(list(query_result))
+
+    json_query_data = json.dumps({"query": "SELECT   'qr_performance' as \"indexname\", min(event_at) as begin_at, max(event_at) as end_at,  (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000 AS \"diffInSec\" , (-3600 + (CAST(now() AS long) - cast(max(event_at) as long) ) / 1000) / 86400 AS \"diffIndays\" FROM \"imsu-dashboardusers___qreads_perfmertrics_20*\" "})
+    res = es.sql.query(body = json_query_data , format = 'json')
+    query_result = map(lambda row: dict(zip([col['name'] for col in res['columns']], row)), res['rows'])
+    print (list(query_result))
+    all_indexes.extend(list(query_result))
+
+    print(all_indexes)
+
+
+
+    # print(res['columns'])
+    # print(res['rows'])
 
     # res = es.search(index="imsu-dashboardusers___cis_storage*", body={"query": {"match_all": {}}})
     # client.SqlClient.query
-    print(res)
     # print("Got %d Hits:" % res['hits']['total']['value'])
     # for hit in res['hits']['hits']:
     #     print(hit["_source"])

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import icon from '../assets/icon.svg';
 import {
@@ -10,6 +10,8 @@ import {
   cli_wslogfolder,
   cli_consolidated_log,
   cli_wksadmlogfolder,
+  selectFiles,
+  cli_getdicom_meta
 } from './utils/cli';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 
@@ -17,6 +19,10 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
+import DicomSetView from "./components/DicomSetView";
+
+import { ipcRenderer } from  'electron';
+import { PropertyKeys } from 'ag-grid-community';
 
 //import 'ag-grid-enterprise';
 // import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -113,6 +119,54 @@ const Hello = () => {
   const [gridConsEventsColumnApi, setGridConsEventsColumnApi] = useState(null);
   const [rowConsEventsData, setRowConsEventsData] = useState([]);
 
+  const [dicomData, setdicomData] = useState([]);
+
+  const ipc = require('electron').ipcRenderer
+
+  const getDicmFiles = () => {
+
+      // const res = ipcRenderer.sendSync('show-open-dialog', "cmd");
+      // console.log("IN REACT: ", res);
+      // return res;
+
+      ipc.send('open-file-dialog');
+
+      //selectFiles();
+
+  }
+
+
+  useEffect(() => {
+
+    console.log("USEEFFECT CALLED");
+    ipc.on('selected-file', function (event, path) {
+
+      //do what you want with the path/file selected, for example:
+      console.log("REACT: " + path);
+      cli_getdicom_meta(recv_dicom_meta, path);
+
+      });
+
+  },  []);
+
+
+
+  const recv_dicom_meta = (data) => {
+    let modified_data = data.replaceAll("'", '"');
+    //console.log('Received DICOM Data', modified_data);
+    let myObject = JSON.parse(modified_data);
+
+    // let myArray = [];
+    // for (var i in myObject) {
+    //   myArray.push(myObject[i]);
+    // }
+
+    console.log("DICOM", myObject);
+    setdicomData(myObject);
+  }
+
+
+
   const retfunc = (data) => {
     //console.log(data);
     //let gotdata = JSON.parse(data);
@@ -141,6 +195,7 @@ const Hello = () => {
   };
 
   const recvEventsfunc = (data) => {
+
     console.log('Consolidated Events', data);
 
     let myObject = JSON.parse(data);
@@ -437,7 +492,10 @@ const Hello = () => {
           </div>
         </TabPanel>
         <TabPanel value={value} index={2}>
-          Nothing Here Yet
+        <div className="ag-fresh">
+          <button onClick={getDicmFiles}>Select DICOM Files / Folder</button>
+          <DicomSetView dicomData = {dicomData} />
+          </div>
         </TabPanel>
       </div>
     </div>

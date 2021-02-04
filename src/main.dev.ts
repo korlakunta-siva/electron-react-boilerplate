@@ -11,7 +11,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell , ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -132,3 +132,44 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow();
 });
+
+
+// ipcMain.on('show-open-dialog', (event, arg)=> {
+
+//   const options = {
+//       //title: 'Open a file or folder',
+//       //defaultPath: '/path/to/something/',
+//       //buttonLabel: 'Do it',
+//       /*filters: [
+//         { name: 'xml', extensions: ['xml'] }
+//       ],*/
+//       //properties: ['showHiddenFiles'],
+//       //message: 'This message will only be shown on macOS'
+//     };
+
+//     dialog.showOpenDialog({
+//       properties: ['openDirectory']
+//    }).then((data) => {
+//       console.log(data.filePaths);
+//       return data.filePaths;
+//    });
+
+// })
+
+ipcMain.on('runCommand', async (event, arg) => {
+  event.returnValue = await runCommand(arg);
+});
+
+
+ipcMain.on('open-file-dialog', function (event) {
+  dialog.showOpenDialog({
+    properties: ['openDirectory']
+  }).then((data) => {
+    //console.log(data.filePaths);
+    console.log("Ready to send selected-file", data.filePaths);
+    if (data.filePaths) event.sender.send('selected-file', data.filePaths)
+ });
+
+})
+
+//     properties: ['openFile']
