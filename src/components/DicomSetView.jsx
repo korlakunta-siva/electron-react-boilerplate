@@ -8,7 +8,7 @@ import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 
 const colDefsAthleteExcluded = [
-  { field: "age" },
+  { field: "age", rowData : true, checkboxSelection: true },
   { field: "country" },
   { field: "sport" },
   { field: "year" },
@@ -57,13 +57,35 @@ const DicomSetView = (props) => {
 
     if (props.dicomData.length > 0) {
       let firstrow = props.dicomData[0];
-    const cols = Object.keys(firstrow).map( row => {
+    const cols = Object.keys(firstrow).filter(row => {
+      return !row.toLowerCase().includes("file") && !row.toLowerCase().startsWith("patientname")
+      && !row.toLowerCase().startsWith("koseri")
+    }).map( row => {
       let colrow = {
           'field' : row
       }
+
+      if (row.toLowerCase().includes("seriesinstance")) {
+        colrow['width'] = 375;
+      }
+      if (row.toLowerCase().includes("studyinstance")) {
+        colrow['width'] = 400;
+      }
+      if (row.toLowerCase().includes("sopclass")) {
+        colrow['width'] = 175;
+      }
+      if (row.toLowerCase().includes("sopinstance")) {
+        colrow['width'] = 400;
+      }
+      if (row.toLowerCase().includes("moda")) {
+        colrow['width'] = 50;
+      }
+      if (row.toLowerCase().includes("displayname")) {
+        colrow['width'] = 150;
+      }
       return colrow;
     });
-
+    cols[0]["width"] = 150;
     cols[0]["rowDrag"] = true;
     cols[0]["headerCheckboxSelection"] = true;
     cols[0]["checkboxSelection"] = true;
@@ -126,26 +148,14 @@ const DicomSetView = (props) => {
     <div style={{ width: "100%", height: "100%" }}>
       <div className="test-container">
         <div className="test-header">
-          <span className="crud-label">Add Column:</span>
-          <button onClick={onBtIncludeAthleteColumn}>
-            Include Athlete Column
-          </button>
-          <br />
-          <span className="crud-label">Remove Column:</span>
-          <button onClick={onBtExcludeAthleteColumn}>
-            Exclude Athlete Column
-          </button>
-          <br />
-          <span className="crud-label">Update Columns:</span>
-          <button onClick={setHeaderNames}>Set Header Names</button>
-          <button onClick={removeHeaderNames}>Remove Header Names</button>
+
 
           <div
             style={{
-              height: "350px",
+              height: "550px",
               width: "100%"
             }}
-            className="ag-theme-alpine test-grid"
+            className="ag-theme-balham test-grid"
           >
             <AgGridReact
               rowData={rowData}
@@ -156,6 +166,10 @@ const DicomSetView = (props) => {
                 resizable: true,
                 filter: true
               }}
+              rowSelection="multiple"
+              rowDragManaged={true}
+              suppressMoveWhenRowDragging={true}
+              animateRows={true}
               applyColumnDefOrder={true}
             >
               {columns.map(column => (
@@ -170,5 +184,19 @@ const DicomSetView = (props) => {
 };
 
 export default DicomSetView;
+
+          {/* <span className="crud-label">Add Column:</span>
+          <button onClick={onBtIncludeAthleteColumn}>
+            Include Athlete Column
+          </button>
+          <br />
+          <span className="crud-label">Remove Column:</span>
+          <button onClick={onBtExcludeAthleteColumn}>
+            Exclude Athlete Column
+          </button>
+          <br />
+          <span className="crud-label">Update Columns:</span>
+          <button onClick={setHeaderNames}>Set Header Names</button>
+          <button onClick={removeHeaderNames}>Remove Header Names</button> */}
 
 

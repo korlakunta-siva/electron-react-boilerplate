@@ -112,6 +112,12 @@ def parseDicom (folderpath) :
                         ko_series.append(newseries)
 
             if len(ko_series) > 0 :
+              dicom_meta.update({'iocmko' : 'yes'})
+              dicom_meta.update({'iocm_series' : len(ko_series)})
+              imgcount = 0
+              for ser in ko_series:
+                  imgcount = imgcount + len(ser['images'])
+              dicom_meta.update({'iocm_images' : imgcount})
               dicom_meta.update({'koseries' : ko_series})
         except:
           pass
