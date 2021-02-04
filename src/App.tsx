@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import icon from '../assets/icon.svg';
 import {
@@ -11,7 +11,7 @@ import {
   cli_consolidated_log,
   cli_wksadmlogfolder,
   selectFiles,
-  cli_getdicom_meta
+  cli_getdicom_meta,
 } from './utils/cli';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 
@@ -19,9 +19,9 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
-import DicomSetView from "./components/DicomSetView";
+import DicomSetView from './components/DicomSetView';
 
-import { ipcRenderer } from  'electron';
+import { ipcRenderer } from 'electron';
 import { PropertyKeys } from 'ag-grid-community';
 
 //import 'ag-grid-enterprise';
@@ -120,36 +120,62 @@ const Hello = () => {
   const [rowConsEventsData, setRowConsEventsData] = useState([]);
 
   const [dicomData, setdicomData] = useState([]);
+  const [dicomKOData, setdicomKOData] = useState([]);
 
-  const ipc = require('electron').ipcRenderer
+  const ipc = require('electron').ipcRenderer;
 
   const getDicmFiles = () => {
+    // const res = ipcRenderer.sendSync('show-open-dialog', "cmd");
+    // console.log("IN REACT: ", res);
+    // return res;
 
-      // const res = ipcRenderer.sendSync('show-open-dialog', "cmd");
-      // console.log("IN REACT: ", res);
-      // return res;
+    ipc.send('open-file-dialog');
 
-      ipc.send('open-file-dialog');
+    //selectFiles();
+  };
 
-      //selectFiles();
+  function onRowSelected1(event) {
+    //window.alert('row1 ');
+    console.log(event);
+    let selectedNodes = event.api
+      .getSelectedNodes()
+      .filter((node) => node.selected);
+    console.log(selectedNodes);
 
+    try {
+      if (selectedNodes) {
+        let selectedData = selectedNodes.map((node) => node.data);
+        console.log(selectedData[0].koseries);
+        setdicomKOData(selectedData[0].koseries);
+        // alert(`Selected Nodes:\n${JSON.stringify(selectedData)}`);
+        //return selectedData;
+      } else {
+        setdicomKOData([]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log('row1', event);
   }
 
+  function onRowSelected2(event) {
+    console.log('row2', event);
+  }
+
+  // +
+  //       event.node.data.athlete +
+  //       ' selected = ' +
+  //       event.node.isSelected()
 
   useEffect(() => {
-
-    console.log("USEEFFECT CALLED");
+    console.log('USEEFFECT CALLED');
     ipc.on('selected-file', function (event, path) {
-
       //do what you want with the path/file selected, for example:
-      console.log("REACT: " + path);
+      console.log('REACT: ' + path);
       cli_getdicom_meta(recv_dicom_meta, path);
-
-      });
-
-  },  []);
-
-
+    });
+  }, []);
 
   const recv_dicom_meta = (data) => {
     let modified_data = data.replaceAll("'", '"');
@@ -161,11 +187,13 @@ const Hello = () => {
     //   myArray.push(myObject[i]);
     // }
 
-    console.log("DICOM", myObject);
+    console.log('DICOM', myObject);
+    if (myObject.hasOwnProperty('koseries')) {
+      setdicomKOData(myObject['koseries']);
+    }
+
     setdicomData(myObject);
-  }
-
-
+  };
 
   const retfunc = (data) => {
     //console.log(data);
@@ -195,7 +223,6 @@ const Hello = () => {
   };
 
   const recvEventsfunc = (data) => {
-
     console.log('Consolidated Events', data);
 
     let myObject = JSON.parse(data);
@@ -382,7 +409,7 @@ const Hello = () => {
           <Tabs value={value} onChange={handleChange}>
             <Tab label="Java Tasklist" />
             <Tab label="QREADS Events" />
-            <Tab label="TAB Three" />
+            <Tab label="DICOM Files" />
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0}>
@@ -492,9 +519,18 @@ const Hello = () => {
           </div>
         </TabPanel>
         <TabPanel value={value} index={2}>
-        <div className="ag-fresh">
-          <button onClick={getDicmFiles}>Select DICOM Files / Folder</button>
-          <DicomSetView dicomData = {dicomData} />
+          <div className="ag-fresh">
+            <button onClick={getDicmFiles}>Select DICOM Files / Folder</button>
+            <DicomSetView
+              key="parent"
+              dicomData={dicomData}
+              onRowSelected={onRowSelected1}
+            />
+            <DicomSetView
+              key="child"
+              dicomData={dicomKOData}
+              onRowSelected={onRowSelected2}
+            />
           </div>
         </TabPanel>
       </div>

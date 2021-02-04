@@ -12,6 +12,7 @@ def parseDicom (folderpath) :
     files = []
     filesdir = folderpath
     dicom_meta = {}
+    hasKOSeries = False
 
     filepaths = []
     if Path(filesdir).is_dir():
@@ -32,8 +33,14 @@ def parseDicom (folderpath) :
     #if 1 > 2 :
 
         filename = file_full_path
-        dataset = pydicom.dcmread(file_full_path)
-        pat_name = dataset.PatientName
+
+        try:
+          dataset = pydicom.dcmread(file_full_path)
+          pat_name = dataset.PatientName
+        except:
+          pass
+          continue
+
         dicom_meta = {}
         imageInstances = []
 
@@ -46,6 +53,7 @@ def parseDicom (folderpath) :
         dicom_meta.update({'PatientName' : dataset.PatientName})
         dicom_meta.update({'DisplayName' : pat_name.family_name + ", " + pat_name.given_name})
         dicom_meta.update({'Modality' : dataset.Modality})
+        dicom_meta.update({'Accession' : dataset[0x8,0x50].value})
         dicom_meta.update({'StudyDate' : dataset.StudyDate})
         dicom_meta.update({'SOPClassUID' : dataset.SOPClassUID})
         dicom_meta.update({'SOPInstanceUID' : dataset.SOPInstanceUID})
@@ -77,6 +85,7 @@ def parseDicom (folderpath) :
             iocm_reason = (dataset[0x0040,0xa043][0])[0x0008,0x0104].value
             dicom_meta.update({"iocm_code" : iocm_code })
             dicom_meta.update({'iocm_reason' : iocm_reason})
+            hasKOSeries = True
 
             #print(ko_set)
             ko_series = []
@@ -112,6 +121,7 @@ def parseDicom (folderpath) :
                         ko_series.append(newseries)
 
             if len(ko_series) > 0 :
+              hasKOSeries = True
               dicom_meta.update({'iocmko' : 'yes'})
               dicom_meta.update({'iocm_series' : len(ko_series)})
               imgcount = 0
@@ -119,6 +129,11 @@ def parseDicom (folderpath) :
                   imgcount = imgcount + len(ser['images'])
               dicom_meta.update({'iocm_images' : imgcount})
               dicom_meta.update({'koseries' : ko_series})
+            else:
+              dicom_meta.update({'iocmko' : 'no'})
+              dicom_meta.update({'iocm_series' : 0 })
+              dicom_meta.update({'iocm_images' : 0})
+              dicom_meta.update({'koseries' : ''})
         except:
           pass
 
@@ -141,6 +156,25 @@ def parseDicom (folderpath) :
         files.append(dicom_meta)
         #print(dicom_meta)
 
+    if hasKOSeries :
+       pass
+       for dicom_meta in files :
+          try:
+            if (len(dicom_meta['koseries']) > 0):
+                dicom_meta.update({'iocmko' : 'yes'})
+                dicom_meta.update({'iocm_series' : len(ko_series)})
+                imgcount = 0
+                for ser in ko_series:
+                    imgcount = imgcount + len(ser['images'])
+                dicom_meta.update({'iocm_images' : imgcount})
+                dicom_meta.update({'koseries' : ko_series})
+          except:
+              dicom_meta.update({"iocm_code" : '' })
+              dicom_meta.update({'iocm_reason' : ''})
+              dicom_meta.update({'iocmko' : 'no'})
+              dicom_meta.update({'iocm_series' : '' })
+              dicom_meta.update({'iocm_images' : ''})
+              dicom_meta.update({'koseries' : ''})
     return files
 
         # if 'PixelData' in dataset:

@@ -1,35 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { render } from "react-dom";
-import { AgGridColumn, AgGridReact } from "ag-grid-react";
+import React, { useEffect, useState } from 'react';
+import { render } from 'react-dom';
+import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 // import "ag-grid-enterprise";
 // import "./style.css";
 
-import "ag-grid-community/dist/styles/ag-grid.css";
-import "ag-grid-community/dist/styles/ag-theme-alpine.css";
+import 'ag-grid-community/dist/styles/ag-grid.css';
+import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
 
 const colDefsAthleteExcluded = [
-  { field: "age", rowData : true, checkboxSelection: true },
-  { field: "country" },
-  { field: "sport" },
-  { field: "year" },
-  { field: "date" },
-  { field: "gold" },
-  { field: "silver" },
-  { field: "bronze" },
-  { field: "total" }
+  { field: 'age', rowData: true, checkboxSelection: true },
+  { field: 'country' },
+  { field: 'sport' },
+  { field: 'year' },
+  { field: 'date' },
+  { field: 'gold' },
+  { field: 'silver' },
+  { field: 'bronze' },
+  { field: 'total' },
 ];
 
 const colDefsAthleteIncluded = [
-  { field: "athlete" },
-  { field: "age" },
-  { field: "country" },
-  { field: "sport" },
-  { field: "year" },
-  { field: "date" },
-  { field: "gold" },
-  { field: "silver" },
-  { field: "bronze" },
-  { field: "total" }
+  { field: 'athlete' },
+  { field: 'age' },
+  { field: 'country' },
+  { field: 'sport' },
+  { field: 'year' },
+  { field: 'date' },
+  { field: 'gold' },
+  { field: 'silver' },
+  { field: 'bronze' },
+  { field: 'total' },
 ];
 
 const DicomSetView = (props) => {
@@ -38,7 +38,7 @@ const DicomSetView = (props) => {
   const [rowData, setRowData] = useState([]);
   const [columns, setColumns] = useState(colDefsAthleteExcluded);
 
-  const [dicomData, setDicomData] = React.useState({...props.dicomData});
+  const [dicomData, setDicomData] = React.useState({ ...props.dicomData });
 
   const [forceRefresh, setForceRefresh] = useState(false);
 
@@ -53,60 +53,68 @@ const DicomSetView = (props) => {
     //setUser(props.user);
     //console.log("PROPS CHANGED", dicomData);
 
-    console.log("PROPS CHANGED 000", props.dicomData);
+    console.log('PROPS CHANGED 000', props.dicomData);
 
     if (props.dicomData.length > 0) {
       let firstrow = props.dicomData[0];
-    const cols = Object.keys(firstrow).filter(row => {
-      return !row.toLowerCase().includes("file") && !row.toLowerCase().startsWith("patientname")
-      && !row.toLowerCase().startsWith("koseri")
-    }).map( row => {
-      let colrow = {
-          'field' : row
-      }
+      const cols = Object.keys(firstrow)
+        .filter((row) => {
+          return (
+            !row.toLowerCase().startsWith('patientname') &&
+            !row.toLowerCase().startsWith('koseri')
+          );
+        })
+        .map((row) => {
+          let colrow = {
+            field: row,
+          };
 
-      if (row.toLowerCase().includes("seriesinstance")) {
-        colrow['width'] = 375;
-      }
-      if (row.toLowerCase().includes("studyinstance")) {
-        colrow['width'] = 400;
-      }
-      if (row.toLowerCase().includes("sopclass")) {
-        colrow['width'] = 175;
-      }
-      if (row.toLowerCase().includes("sopinstance")) {
-        colrow['width'] = 400;
-      }
-      if (row.toLowerCase().includes("moda")) {
-        colrow['width'] = 50;
-      }
-      if (row.toLowerCase().includes("displayname")) {
-        colrow['width'] = 150;
-      }
-      return colrow;
-    });
-    cols[0]["width"] = 150;
-    cols[0]["rowDrag"] = true;
-    cols[0]["headerCheckboxSelection"] = true;
-    cols[0]["checkboxSelection"] = true;
+          if (row.toLowerCase().includes('seriesinstance')) {
+            colrow['width'] = 375;
+          }
 
-    setColumns(cols);
+          if (row.toLowerCase().includes('file')) {
+            colrow['width'] = 100;
+          }
+          if (row.toLowerCase().includes('studyinstance')) {
+            colrow['width'] = 400;
+          }
+          if (row.toLowerCase().includes('sopclass')) {
+            colrow['width'] = 175;
+          }
+          if (row.toLowerCase().includes('sopinstance')) {
+            colrow['width'] = 400;
+          }
+          if (row.toLowerCase().includes('moda')) {
+            colrow['width'] = 50;
+          }
+          if (row.toLowerCase().includes('displayname')) {
+            colrow['width'] = 150;
+          }
+          return colrow;
+        });
+      cols[0]['width'] = 150;
+      cols[0]['rowDrag'] = true;
+      cols[0]['headerCheckboxSelection'] = true;
+      cols[0]['checkboxSelection'] = true;
 
-    console.log(cols);
-    setRowData(props.dicomData);
+      setColumns(cols);
 
-    };
+      console.log(cols);
+      setRowData(props.dicomData);
+    } else {
+      setRowData([]);
+    }
+  }, [props.dicomData]);
 
-}, [props.dicomData])
-
-  const onGridReady = params => {
+  const onGridReady = (params) => {
     setGridApi(params.api);
     setGridColumnApi(params.columnApi);
 
     const httpRequest = new XMLHttpRequest();
     httpRequest.open(
-      "GET",
-      "https://raw.githubusercontent.com/ag-grid/ag-grid/master/grid-packages/ag-grid-docs/src/olympicWinnersSmall.json"
+      'GET',
+      'https://raw.githubusercontent.com/ag-grid/ag-grid/master/grid-packages/ag-grid-docs/src/olympicWinnersSmall.json'
     );
     httpRequest.send();
     httpRequest.onreadystatechange = () => {
@@ -127,7 +135,7 @@ const DicomSetView = (props) => {
   const setHeaderNames = () => {
     const newColumns = gridApi.getColumnDefs();
     newColumns.forEach((newColumn, index) => {
-      newColumn.headerName = "C" + index;
+      newColumn.headerName = 'C' + index;
     });
     setColumns(newColumns);
   };
@@ -143,17 +151,13 @@ const DicomSetView = (props) => {
   //console.log(props.dicomData);
 
   return (
-
-
-    <div style={{ width: "100%", height: "100%" }}>
+    <div style={{ width: '100%', height: '100%' }}>
       <div className="test-container">
         <div className="test-header">
-
-
           <div
             style={{
-              height: "550px",
-              width: "100%"
+              height: '550px',
+              width: '100%',
             }}
             className="ag-theme-balham test-grid"
           >
@@ -164,15 +168,16 @@ const DicomSetView = (props) => {
                 initialWidth: 100,
                 sortable: true,
                 resizable: true,
-                filter: true
+                filter: true,
               }}
-              rowSelection="multiple"
+              rowSelection="single"
               rowDragManaged={true}
               suppressMoveWhenRowDragging={true}
               animateRows={true}
               applyColumnDefOrder={true}
+              onSelectionChanged={props.onRowSelected}
             >
-              {columns.map(column => (
+              {columns.map((column) => (
                 <AgGridColumn {...column} key={column.field} />
               ))}
             </AgGridReact>
@@ -185,7 +190,8 @@ const DicomSetView = (props) => {
 
 export default DicomSetView;
 
-          {/* <span className="crud-label">Add Column:</span>
+{
+  /* <span className="crud-label">Add Column:</span>
           <button onClick={onBtIncludeAthleteColumn}>
             Include Athlete Column
           </button>
@@ -197,6 +203,5 @@ export default DicomSetView;
           <br />
           <span className="crud-label">Update Columns:</span>
           <button onClick={setHeaderNames}>Set Header Names</button>
-          <button onClick={removeHeaderNames}>Remove Header Names</button> */}
-
-
+          <button onClick={removeHeaderNames}>Remove Header Names</button> */
+}
