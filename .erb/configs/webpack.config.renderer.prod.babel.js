@@ -42,6 +42,16 @@ export default merge(baseConfig, {
   module: {
     rules: [
       {
+        test: /\.[jt]sx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: require.resolve('babel-loader'),
+            options: {            },
+          },
+        ],
+      },
+      {
         test: /.s?css$/,
         use: [
           {
