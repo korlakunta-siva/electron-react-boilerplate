@@ -82,7 +82,7 @@
       "output": "release"
     },
     "extraResources": [
-      "./assets/**"
+      "./assets/**", "./public/**"
     ],
     "publish": {
       "provider": "github",
@@ -248,30 +248,53 @@
     "yarn-deduplicate": "^3.1.0"
   },
   "dependencies": {
+    "@azure/msal-browser": "^2.11.0",
+    "@fortawesome/fontawesome-free": "^5.15.2",
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
+    "@microsoft/microsoft-graph-client": "^2.2.1",
+    "@okta/okta-auth-js": "^4.6.2",
+    "@okta/okta-react": "^4.1.0",
     "axios": "^0.21.1",
+    "bootstrap": "4.5.2",
     "clsx": "^1.1.1",
     "electron-debug": "^3.1.0",
     "electron-log": "^4.2.4",
     "electron-updater": "^4.3.4",
+    "file-saver": "^2.0.5",
     "history": "^5.0.0",
+    "jquery": "^3.5.1",
     "jwt-decode": "^3.1.2",
+    "mdbreact": "^5.0.1",
+    "moment": "^2.29.1",
     "perfect-scrollbar": "^1.5.0",
     "react": "^17.0.1",
     "react-data-grid": "6.1.0",
     "react-data-grid-addons": "6.1.0",
+    "react-datepicker": "^3.4.1",
+    "react-datetime-picker": "^3.0.5",
+    "react-diff-viewer": "^3.1.1",
     "react-dom": "^17.0.1",
+    "react-keyed-file-browser": "1.7.0",
     "react-material-ui-form-validator": "^2.1.2",
+    "react-pdf": "^5.1.0",
     "react-perfect-scrollbar": "^1.5.8",
     "react-plaid-link": "^3.1.0",
+    "react-radio-group": "^3.0.3",
     "react-redux": "^7.2.2",
     "react-router-config": "^5.1.1",
     "react-router-dom": "^5.2.0",
+    "react-select": "^4.0.2",
+    "react-vega": "^7.4.2",
+    "reactstrap": "^8.9.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "regenerator-runtime": "^0.13.5",
-    "source-map-support": "^0.5.19"
+    "semantic-ui-css": "2.4.1",
+    "source-map-support": "^0.5.19",
+    "superagent": "^6.1.0",
+    "vega": "^5.19.1",
+    "vega-lite": "^4.17.0"
   },
   "devEngines": {
     "node": ">=10.x",

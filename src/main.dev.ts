@@ -15,6 +15,11 @@ import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
+const {ipcMain} = require('electron')
+
+//const { dialog } = require('electron').remote;
+// const path = require('path');
+
 
 export default class AppUpdater {
   constructor() {
@@ -133,3 +138,41 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow();
 });
+
+const { dialog } = require('electron');
+
+ipcMain.on('show-file', (event, arg) => {
+  console.log(arg)
+
+  const files = dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile']
+      }).then((data) => {
+
+        if (!files) { return; }
+
+        event.sender.send('selectedFile', data.filePaths);
+
+        //show_selected_file(arg);
+
+      });
+
+
+})
+
+
+
+
+const show_selected_file = (filePath) => {
+
+    console.log("Ready to show: " + filePath);
+
+    const viewerEle = document.getElementById('viewer');
+    viewerEle.innerHTML = ''; // destroy the old instance of PDF.js (if it exists)
+
+    // Create an iframe that points to our PDF.js viewer, and tell PDF.js to open the file that was selected from the file picker.
+    const iframe = document.createElement('iframe');
+    iframe.src = path.resolve(__dirname, `../public/pdfjs/web/viewer.html?file=${filePath}`);
+
+    // Add the iframe to our UI.
+    viewerEle.appendChild(iframe);
+};
