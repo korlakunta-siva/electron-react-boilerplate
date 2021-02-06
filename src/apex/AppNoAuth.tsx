@@ -36,9 +36,6 @@ class AppNoAuth extends Component {
        const iframePdf = this.iframePdf.contentWindow;
        iframePdf.print();
     }
-
-
-
   };
 
   nextPDFPage = () => {
@@ -108,25 +105,6 @@ class AppNoAuth extends Component {
 
     return (
         <div style={{width: "100%"}}>
-             <div class='picker'>
-      <button  id='myButton' onClick={this.openPDF} >Select PDF to view</button>
-      <button  id='myButton' onClick={this.getPDFPage} >GetPageNumber</button>
-      <button  id='myButton' onClick={this.nextPDFPage} >Next Page </button>
-
-    </div>
-
-
-{/*
-    <div style={{width: "100%", minHeight: 600, backgroundColor: 'orange' }} dangerouslySetInnerHTML={{ __html: this.state.filepath }} /> */}
-
-<div style={{width: "100%", minHeight: 600, backgroundColor: 'orange' }} >
-
-<iframe width="100%" height="600px" ref={this.state.iframeRef}
-      src = { this.state.filepath}
-      />
-
-  </div>
-
             <Docubrowser />
           </div>
     );
@@ -134,3 +112,24 @@ class AppNoAuth extends Component {
 }
 
 export default AppNoAuth;
+
+
+
+{/* <div class='picker'>
+<button  id='myButton' onClick={this.openPDF} >Select PDF to view</button>
+<button  id='myButton' onClick={this.getPDFPage} >GetPageNumber</button>
+<button  id='myButton' onClick={this.nextPDFPage} >Next Page </button>
+
+</div>
+
+
+{/*
+<div style={{width: "100%", minHeight: 600, backgroundColor: 'orange' }} dangerouslySetInnerHTML={{ __html: this.state.filepath }} />
+
+<div style={{width: "100%", minHeight: 600, backgroundColor: 'orange' }} >
+
+<iframe width="100%" height="600px" ref={this.state.iframeRef}
+src = { this.state.filepath}
+/>
+
+</div> */}

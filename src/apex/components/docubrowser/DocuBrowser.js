@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component , createRef} from 'react'
 import Select from 'react-select'
 import CreatableSelect from 'react-select/creatable';
 import PropTypes from 'prop-types';
@@ -14,7 +14,7 @@ import DataGrid from "../common/DataGridNew";
 import { Toolbar, Data } from "react-data-grid-addons";
 import MyGrid from "../unused/MyGrid";
 import axios from 'axios'
-import CSRFToken, { getCookie } from '../common/csrftoken'; 
+import CSRFToken, { getCookie } from '../common/csrftoken';
 import request from 'superagent';
 import { RadioGroup, Radio } from 'react-radio-group';
 import { Button, Progress, Input, CustomInput } from 'reactstrap';
@@ -48,6 +48,8 @@ console.log("Directory: " + __dirname);
 
 let csrftoken = getCookie('csrftoken');
 
+const { ipcRenderer } = window.require("electron");
+
 // let   eventDataGrid = {
 //   onClick: (ev, args) => {
 //     const idx = args.idx;
@@ -78,7 +80,7 @@ const columns = [
     name: "Birth Date",
     frozen: false,
     resizable: false,
-    width: 120, 
+    width: 120,
     editable: true,
     editor: DatePicker
     //,  events: eventDataGrid
@@ -171,7 +173,7 @@ const getColumnsList =datarow => {
       //console.log(columnList);
       return columnList;
 
-};  
+};
 
 
 function a11yProps(index) {
@@ -191,14 +193,14 @@ function a11yProps(index) {
 
 
 export default class DocuBrowser extends React.Component {
- 
+
 
   endpoint_curr_linqdocs =
   `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20100%20  select doc.docID, doc.customName , doc.scanDate, doc.ScannedBy, doc.Review, doc.ReviewerId, doc.ReviewerName , doc.delFlag,  doc.PatientId, apex.dbo.PatientName(doc.patientid) as PatientName, doc.dirpath, doc.fileName from mobiledoc..document doc where doc.patientid = arg_ecwpatid and doc.doc_Type in  (114, 115,116,117,119,121,154,157,174) and delflag = 0 order by customName desc `
 
   endpoint_invcpt =
   `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%2010%20 select convert(varchar(10),claimdate,121) as claimdate, billedfee, Cpt_Allowed, inspaid, patpaid, insbal, patbal, PatientName, cptcode, cptdesc, pinsname from apex.rc.Apex_Invoice_Cpt_Summary where InvoiceId = arg_invoiceid `
-  
+
   endpoint_ecwenc =
   `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%2010%20  select convert(varchar(10),date,121) as date, convert(varchar(10),dateadd(dd, 32, date),121) as next_date, reason, VisitType, STATUS, enclock,  InvoiceId  from mobiledoc..enc e0 where e0.patientID = arg_ecwpatid and VisitType = 'NV' and deleteflag = 0 order by date desc `
 
@@ -207,7 +209,40 @@ export default class DocuBrowser extends React.Component {
     this.setState({ tablValue : newValue });
   };
 
+  openPDF = () => {
+    console.log("Renderer sending message to main");
+    ipcRenderer.send('show-file', 'ping')
+  }
+
+  getPDFPage = () => {
+
+    console.log("Called Get Page Number");
+
+    const iframePdf = this.state.iframeRef.current.contentWindow;
+    console.log(iframePdf);
+    console.log(iframePdf.PDFViewerApplication.pdfViewer.currentPageNumber);
+    if (this.iframePdf !== undefined) {
+       const iframePdf = this.iframePdf.contentWindow;
+       iframePdf.print();
+    }
+  };
+
+  nextPDFPage = () => {
+
+    console.log("Called Next Page Number");
+
+    const iframePdf = this.state.iframeRef.current.contentWindow;
+    console.log(iframePdf);
+    console.log(iframePdf.PDFViewerApplication.pdfViewer.currentPageNumber += 1 );
+
+    iframePdf.PDFViewerApplication.pdfDocument.getPage(1).then(pdfPage => { pdfPage.getTextContent().then(data => { console.log(data); }); });
+
+  };
+
+
   state = {
+    filepath : "",
+    iframeRef : createRef(),
     tablValue: 0,
     filetodisplay: "0",
     patientid: 0,
@@ -289,6 +324,33 @@ export default class DocuBrowser extends React.Component {
 
   componentDidMount() {
     console.log('GrandChild did mount.');
+
+    ipcRenderer.on ('selectedFile', (event, path) => {
+      console.log("Client got: Show file " + path);
+
+      const element = `<h1>Hello, world</h1> ${path}`;
+
+      // const iframe = document.createElement('iframe');
+      // iframe.src = `../public/pdfjs/web/viewer.html?file=${path}`;
+
+      // const frame_element = `
+      // <iframe width="100%" height="600px"
+      // src = "${path}"
+      // />
+      // `;
+
+      //       const frame_element = `
+      // <iframe width="100%" height="600px"
+      // src = "../public/pdfjs/web/viewer.html?file=${path}"
+      // />
+      // `;
+
+       const frame_element = `../public/pdfjs/web/viewer.html?file=${path}`;
+
+      this.setState( { filepath : frame_element});
+    });
+
+
     this.checkinDjangoApi();
 
     // folderContext
@@ -345,12 +407,12 @@ export default class DocuBrowser extends React.Component {
             }
           );
         });
-        
+
 
     });
   };
 
-  onRowSelectExam = data => { 
+  onRowSelectExam = data => {
     console.log("Called onRowSelectExam", data);
   };
 
@@ -384,12 +446,12 @@ export default class DocuBrowser extends React.Component {
           },
           () => {
             //console.log("Changed state", this.state.series.length);
-            this.linqGridElement.current.changeGridData(this.state.linq_docs,getColumnsList(data2[0]) );    
+            this.linqGridElement.current.changeGridData(this.state.linq_docs,getColumnsList(data2[0]) );
           }
         );
       });
 
-      
+
       fetch(this.endpoint_ecwenc.replace('arg_ecwpatid', this.state.patientid ), {})
       .then(response => {
         if (response.status !== 200) {
@@ -553,6 +615,15 @@ export default class DocuBrowser extends React.Component {
         console.log("To Display mesg: " + this.state.filetodisplay);
       });
     console.log("File Clicked mesg:" + file.key);
+
+    let file_name = file.key;
+    file_name = "\\" + file_name.replace("/mnt/scanhome", "\\192.168.1.17\\scanhome").replace("/", "\\");
+    console.log("Getting windows file: ", file_name);
+
+    const frame_element = `../public/pdfjs/web/viewer.html?file=${file_name}`;
+
+    this.setState( { filepath : frame_element});
+
   }
 
   checkinDjangoApi = () => {
@@ -591,9 +662,9 @@ export default class DocuBrowser extends React.Component {
         .then(this.handleErrors)
         .then(r => r.blob())
         .then(this.showFilePdf);
-  };   
-  
-      
+  };
+
+
  showFilePdf = (blob) => {
   // It is necessary to create a new blob object with mime-type explicitly set
   // otherwise only Chrome works like it should
@@ -608,7 +679,7 @@ export default class DocuBrowser extends React.Component {
       return;
   }
 
-  // For other browsers: 
+  // For other browsers:
   // Create a link pointing to the ObjectURL containing the blob.
   const data = window.URL.createObjectURL(newBlob);
   var link = document.createElement('a');
@@ -634,7 +705,7 @@ showFilePng = (blob) => {
       return;
   }
 
-  // For other browsers: 
+  // For other browsers:
   // Create a link pointing to the ObjectURL containing the blob.
   const data = window.URL.createObjectURL(newBlob);
   var link = document.createElement('a');
@@ -846,7 +917,7 @@ showFilePng = (blob) => {
     console.log("Change to target name4: ", target_name);
 
     let arg_file_operation = "uploademr";
-            
+
     if (this.state.docuContext == 'EMR') {
         arg_file_operation = "uploademr";
     }
@@ -966,7 +1037,7 @@ showFilePng = (blob) => {
         .then(this.handleErrors)
         .then(r => r.blob())
         .then(showFile);
-  }; 
+  };
 
 
 
@@ -986,12 +1057,12 @@ showFilePng = (blob) => {
     //endpoint_patients = backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
 
     let endpoint_patients = backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  activity_date = (select max(scandate) from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.patientid = pat.patientid and doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ), * from apex..vPatient pat where patientid in (select distinct patientid from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ) order by 1 desc ";
-    
+
     //backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
 
     // if (  this.state.showMonitoringPatientsOnly  ) {
     //    endpoint_patients = backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
-    // } 
+    // }
 
     return (
       <React.Fragment>
@@ -1015,7 +1086,7 @@ showFilePng = (blob) => {
               </Button>
               <div className="d-inline">
               <Select
-                
+
                 value={this.state.folderType}
                 onChange={this.handleFolderChange}
                 options={folderPaths}
@@ -1044,10 +1115,10 @@ showFilePng = (blob) => {
 
             </div>
 
-        
+
       </div>
 
-              
+
 
             <div className="col-5 py-3 overflow-auto" style={{ height: '100vh', backgroundColor: 'lightgrey' }}>
 
@@ -1057,15 +1128,24 @@ showFilePng = (blob) => {
           <Tab label="Tab3" {...a11yProps(2)} />
         </Tabs>
       <TabPanel value={this.state.tablValue} index={0}>
-        
+
       <nav>
                 <button onClick={this.goToPrevPage}>Prev</button>
                 <button onClick={this.goToNextPage}>Next</button>
                 Viewing Page {this.state.filepagenum} of total {this.state.filetotalpages}
-              </nav>
-              <ShowPDF patid={this.state.filetodisplay} filename={this.state.filetodisplay} style={{ width: '100%', backgroundColor: 'lightgrey' }} onDocumentLoaded={this.updateTotalPages} pageNumber={this.state.filepagenum} />
 
-     
+
+      <button  id='myButton' onClick={this.openPDF} >Select PDF to view</button>
+      <button  id='myButton' onClick={this.getPDFPage} >GetPageNumber</button>
+      <button  id='myButton' onClick={this.nextPDFPage} >Next Page </button>
+
+      </nav>
+
+              <iframe width="100%" height="600px"  backgroundcolor = 'lightgrey' ref={this.state.iframeRef} src = { this.state.filepath}     />
+
+              {/* <ShowPDF patid={this.state.filetodisplay} filename={this.state.filetodisplay} style={{ width: '100%', backgroundColor: 'lightgrey' }} onDocumentLoaded={this.updateTotalPages} pageNumber={this.state.filepagenum} /> */}
+
+
       </TabPanel>
       <TabPanel value={this.state.tablValue} index={1}>
                   <label>Encounters</label>
@@ -1092,8 +1172,8 @@ showFilePng = (blob) => {
       <TabPanel value={this.state.tablValue} index={2}>
         Item Three
       </TabPanel>
- 
- 
+
+
             </div>
 
             <div className="col-4 py-3" style={{ height: '100vh' }}>
@@ -1154,11 +1234,11 @@ showFilePng = (blob) => {
                 <Radio value="OPMT" />OPMT
                 <Radio value="BL" />BL
                 <Radio value="RETMAIL" />RETMAIL */}
-                <Radio value="MCOT Daily" />MCOT Daily                
+                <Radio value="MCOT Daily" />MCOT Daily
                 <Radio value="LINQ Report" />LINQ Rep
                 <Radio value="LINQ QL" />LINQ QL
                 <Radio value="PM Remote QL" />PM Remote QL
-                <Radio value="Event Report" />Event Report                   
+                <Radio value="Event Report" />Event Report
               </RadioGroup>
               </div>
 
@@ -1180,8 +1260,8 @@ showFilePng = (blob) => {
                     }
                     gridname={"linq_reports"}
                     onRowSelect={this.onRowSelectLinqReport}
-                  />{" "}   
-{/* 
+                  />{" "}
+{/*
               <p className="mb-1">Action Needed:</p>
               <Input id="actiontext" type="textarea" name="actiontext" rows="4" cols="50" onChange={this.handleActionTextChange} /> */}
               <button type="button" onClick={this.handleProcessDocument} >Process Document</button>
@@ -1197,7 +1277,7 @@ showFilePng = (blob) => {
       <MDBCardBody>
         <MDBTableEditable data={data0} columns={columns0} striped bordered
         onChange={this.updateStatemdb}
-        
+
          />
       </MDBCardBody>
     </MDBCard> */}
@@ -1209,7 +1289,7 @@ showFilePng = (blob) => {
                     initialRows={data}
                     enableFilter
                     toolbarStatement
-                    OnToolbarStatement={this.handleStatement}                    
+                    OnToolbarStatement={this.handleStatement}
                     columns={this.state.patientGrid_columns}
                     gridheight={400}
                     gridname={"patient_list"}
