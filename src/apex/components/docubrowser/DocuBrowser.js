@@ -345,7 +345,7 @@ export default class DocuBrowser extends React.Component {
       // />
       // `;
 
-       const frame_element = `../public/pdfjs/web/viewer.html?file=${path}`;
+       const frame_element = `/pdfjs/web/viewer.html?file=${path}`;
 
       this.setState( { filepath : frame_element});
     });
