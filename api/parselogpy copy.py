@@ -66,16 +66,11 @@ def parse_file(filename):
 
     if "MFLogon" in infile_name :
         try:
-          #print(log_report)
           for row in log_report:
-            #print( len(row))
-            #print("BEFORE", row[3], len(row))
-            if len(row) >3 and "User DN =" in row[3]:
-              #print("AFTER", row[3:])
-              #print(row[0], row[1], row[2:])
+            if "Setting MAYO_USER_NAME" in row[3]:
               event_time = row[0] + ' ' + row[1]
               event_desc = "Windows Logon -> User login "
-              event_line =  row[2:]
+              event_line =  row[3]
 
               #print(event_time, row)
               event_datetime = None
@@ -87,12 +82,9 @@ def parse_file(filename):
                 except:
                   try:
                     event_datetime = datetime.datetime.strptime(event_time, '%m/%d/%Y %H:%M:%S:%f')
-                  except Exception as er:
-                    print(er)
-                    continue
+                  except:
                     pass
 
-              #print(event_datetime)
               try :
                 newrow = {
                   'event_at' : event_datetime,  'event_desc' : event_desc , 'event_source': filename, 'event_line' : event_line
@@ -100,13 +92,9 @@ def parse_file(filename):
                 file_events.append(newrow)
               except:
                 pass
-
-          #print(file_events)
-          return file_events
-        except Exception as err :
-              print (err)
-              sys.exit(0)
+          except err:
               pass
+          return file_events
     # elif 'MayoDoc' in infile_name :
     #       return file_events
 
@@ -177,14 +165,6 @@ def parse_file(filename):
       if len(row) >4  and  "Startup Param Count" in row[4]:
             event_time = row[0] + ' ' + row[1]
             event_desc =  "QREADS LOG -> CMD Start Args "
-      if len(row) >4  and  "Listening for CCOW" in row[4]:
-            event_time = row[0] + ' ' + row[1]
-            event_desc =  "QREADS LOG -> CCOW "
-      if len(row) >4  and  "Receiving ccow patient" in row[4]:
-            event_time = row[0] + ' ' + row[1]
-            event_desc =  "QREADS LOG -> CCOW "
-
-
 
 
 

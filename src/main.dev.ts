@@ -11,10 +11,11 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import { app, BrowserWindow, shell , ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
+const { exec } = require('child_process');
 
 export default class AppUpdater {
   constructor() {
@@ -133,7 +134,6 @@ app.on('activate', () => {
   if (mainWindow === null) createWindow();
 });
 
-
 // ipcMain.on('show-open-dialog', (event, arg)=> {
 
 //   const options = {
@@ -160,16 +160,63 @@ ipcMain.on('runCommand', async (event, arg) => {
   event.returnValue = await runCommand(arg);
 });
 
-
 ipcMain.on('open-file-dialog', function (event) {
-  dialog.showOpenDialog({
-    properties: ['openDirectory']
-  }).then((data) => {
-    //console.log(data.filePaths);
-    console.log("Ready to send selected-file", data.filePaths);
-    if (data.filePaths) event.sender.send('selected-file', data.filePaths)
- });
+  dialog
+    .showOpenDialog({
+      properties: ['openDirectory'],
+    })
+    .then((data) => {
+      //console.log(data.filePaths);
+      console.log('Ready to send selected-file', data.filePaths);
+      if (data.filePaths) event.sender.send('selected-file', data.filePaths);
+    });
+});
 
-})
+ipcMain.on('open-elq-dialog', function (event) {
+  dialog
+    .showOpenDialog({
+      properties: ['openDirectory'],
+    })
+    .then((data) => {
+      //console.log(data.filePaths);
+      console.log(
+        'Ready to Generate ELQ File and Open in QREADS. selected-folder : ',
+        data.filePaths
+      );
+
+      cli_exec_qreads(data.filePaths);
+      //if (data.filePaths) event.sender.send('selected-file', data.filePaths)
+    });
+});
 
 //     properties: ['openFile']
+
+export const cli_exec_qreads = (folderpath) => {
+  console.log('JS to run qreads: ', folderpath);
+  let mesg = '';
+  console.log(
+    '"api/venv/Scripts/python" api/qr_util.py -cmd parse -a ' + folderpath
+  );
+  try {
+    exec(
+      '"api/venv/Scripts/python" api/qr_util.py -cmd parse -a ' + folderpath,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};

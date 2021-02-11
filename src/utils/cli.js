@@ -68,7 +68,7 @@ export const cli_wslogfile = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd wslogfile -host ' +
         hostname,
-        { maxBuffer: 1024 * 5000 },
+      { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -96,7 +96,7 @@ export const cli_wksadmlogfolder = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd wksadmlogfolder -host ' +
         hostname,
-        { maxBuffer: 1024 * 5000 },
+      { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -124,7 +124,7 @@ export const cli_wslogfolder = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd wslogfolder -host ' +
         hostname,
-        { maxBuffer: 1024 * 5000 },
+      { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -152,7 +152,7 @@ export const cli_logfolder = (hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd logfolder -host ' +
         hostname,
-        { maxBuffer: 1024 * 5000 },
+      { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -207,7 +207,7 @@ export const cli_tasklist = (retfunc, hostname) => {
     exec(
       '"api/venv/Scripts/python" api/localapp.py -cmd tasklist -host ' +
         hostname,
-        { maxBuffer: 1024 * 5000 },
+      { maxBuffer: 1024 * 5000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -286,37 +286,68 @@ export const cli_tasklist0 = () => {
   }
 };
 
-
-export const selectFiles = ()=> {
+export const selectFiles = () => {
   const options = {
-      //title: 'Open a file or folder',
-      //defaultPath: '/path/to/something/',
-      //buttonLabel: 'Do it',
-      /*filters: [
+    //title: 'Open a file or folder',
+    //defaultPath: '/path/to/something/',
+    //buttonLabel: 'Do it',
+    /*filters: [
         { name: 'xml', extensions: ['xml'] }
       ],*/
-      //properties: ['showHiddenFiles'],
-      //message: 'This message will only be shown on macOS'
-    };
+    //properties: ['showHiddenFiles'],
+    //message: 'This message will only be shown on macOS'
+  };
 
-    dialog.showOpenDialog({
-      properties: ['openDirectory']
-   }).then((data) => {
+  dialog
+    .showOpenDialog({
+      properties: ['openDirectory'],
+    })
+    .then((data) => {
       console.log(data.filePaths);
       return data.filePaths;
-   });
-
+    });
 };
 
+export const cli_viewdicom_file = (filename) => {
+  //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+  let mesg = '';
+  console.log('C:\\Programs\\microdicom\\mDicom.exe  ' + filename);
+  try {
+    exec(
+      'C:\\Programs\\microdicom\\mDicom.exe ' + filename,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        //console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const cli_getdicom_meta = (retfunc, filename) => {
-  console.log("JS: " , filename);
+  console.log(
+    'JS: ',
+    filename,
+    '"api/venv/Scripts/python" api/dicom.py -cmd parse -a ' + filename
+  );
+
   //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
   let mesg = '';
   try {
     exec(
-      '"api/venv/Scripts/python" api/dicom.py -cmd parse -a ' +
-        filename,
+      '"api/venv/Scripts/python" api/dicom.py -cmd parse -a ' + filename,
       { maxBuffer: 1024 * 50000 },
       (error, stdout, stderr) => {
         if (error) {

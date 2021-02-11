@@ -12,6 +12,7 @@ import {
   cli_wksadmlogfolder,
   selectFiles,
   cli_getdicom_meta,
+  cli_viewdicom_file,
 } from './utils/cli';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 
@@ -130,6 +131,16 @@ const Hello = () => {
     // return res;
 
     ipc.send('open-file-dialog');
+
+    //selectFiles();
+  };
+
+  const getELQFile = () => {
+    // const res = ipcRenderer.sendSync('show-open-dialog', "cmd");
+    // console.log("IN REACT: ", res);
+    // return res;
+
+    ipc.send('open-elq-dialog');
 
     //selectFiles();
   };
@@ -346,6 +357,11 @@ const Hello = () => {
     //gridApi.exportDataAsCsv(params);
   };
 
+  const onImageView = (filepath) => {
+    console.log('READY TO OPEN: ', filepath);
+    cli_viewdicom_file(filepath);
+  };
+
   return (
     <div>
       {/* <div className="Hello">
@@ -521,10 +537,14 @@ const Hello = () => {
         <TabPanel value={value} index={2}>
           <div className="ag-fresh">
             <button onClick={getDicmFiles}>Select DICOM Files / Folder</button>
+            <button onClick={getELQFile}>
+              Generate ExamList.qreads File For DCM Folder
+            </button>
             <DicomSetView
               key="parent"
               dicomData={dicomData}
               onRowSelected={onRowSelected1}
+              onImageView={onImageView}
             />
             <DicomSetView
               key="child"

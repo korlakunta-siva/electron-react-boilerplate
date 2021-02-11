@@ -6,6 +6,7 @@ import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
+import BtnCellRenderer from './BtnCellRenderer';
 
 const colDefsAthleteExcluded = [
   { field: 'age', rowData: true, checkboxSelection: true },
@@ -54,6 +55,7 @@ const DicomSetView = (props) => {
     //console.log("PROPS CHANGED", dicomData);
 
     console.log('PROPS CHANGED 000', props.dicomData);
+    if (props.dicomData == undefined) return;
 
     if (props.dicomData.length > 0) {
       let firstrow = props.dicomData[0];
@@ -97,6 +99,18 @@ const DicomSetView = (props) => {
       cols[0]['rowDrag'] = true;
       cols[0]['headerCheckboxSelection'] = true;
       cols[0]['checkboxSelection'] = true;
+      //months.splice(1, 0, 'Feb');
+      cols.splice(1, 0, {
+        field: 'file',
+        cellRenderer: 'btnCellRenderer',
+        cellRendererParams: {
+          btnLabel: 'View Image',
+          clicked: function (field) {
+            console.log(`OPEN IMAGE : ${field} , was clicked`);
+            props.onImageView(` ${field}`);
+          },
+        },
+      });
 
       setColumns(cols);
 
@@ -176,6 +190,9 @@ const DicomSetView = (props) => {
               animateRows={true}
               applyColumnDefOrder={true}
               onSelectionChanged={props.onRowSelected}
+              frameworkComponents={{
+                btnCellRenderer: BtnCellRenderer,
+              }}
             >
               {columns.map((column) => (
                 <AgGridColumn {...column} key={column.field} />
