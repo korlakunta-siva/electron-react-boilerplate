@@ -16,6 +16,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 const { exec } = require('child_process');
+var history = require('connect-history-api-fallback');
 
 export default class AppUpdater {
   constructor() {
@@ -39,25 +40,25 @@ if (
   require('electron-debug')();
 }
 
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
+// const installExtensions = async () => {
+//   const installer = require('electron-devtools-installer');
+//   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+//   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload
-    )
-    .catch(console.log);
-};
+//   return installer
+//     .default(
+//       extensions.map((name) => installer[name]),
+//       forceDownload
+//     )
+//     .catch(console.log);
+// };
 
 const createWindow = async () => {
   if (
     process.env.NODE_ENV === 'development' ||
     process.env.DEBUG_PROD === 'true'
   ) {
-    await installExtensions();
+    //await installExtensions();
   }
 
   const RESOURCES_PATH = app.isPackaged
@@ -79,6 +80,7 @@ const createWindow = async () => {
     },
   });
 
+  console.log(`file://${__dirname}/index.html`);
   mainWindow.loadURL(`file://${__dirname}/index.html`);
   //mainWindow.webContents.openDevTools();
 
@@ -126,7 +128,12 @@ app.on('window-all-closed', () => {
   }
 });
 
+app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
+
 app.whenReady().then(createWindow).catch(console.log);
+
+app.on('ready', () => console.log('Ready', history({ index: 'index.html' })));
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the

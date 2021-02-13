@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+// import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import icon from '../assets/icon.svg';
 import {
   cli,
@@ -13,17 +13,18 @@ import {
   selectFiles,
   cli_getdicom_meta,
   cli_viewdicom_file,
-} from './utils/cli';
+} from '../../utils/cli';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
 
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
-import DicomSetView from './components/DicomSetView';
+import DicomSetView from '../common/DicomSetView';
 
 import { ipcRenderer } from 'electron';
 import { PropertyKeys } from 'ag-grid-community';
+import { withRouter } from 'react-router-dom';
 
 //import 'ag-grid-enterprise';
 // import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -107,7 +108,7 @@ const HostErrorLog = (props) => {
     </div>
   );
 };
-const Hello = () => {
+const App = (props) => {
   // const [gridApi, setGridApi] = useState([]);
   // const [gridColumnApi, setGridColumnApi] = useState([]);
 
@@ -363,207 +364,205 @@ const Hello = () => {
   };
 
   return (
-    <div>
-      {/* <div className="Hello">
+    <React.Fragment>
+      <h1>Log Browser</h1>
+      <div>
+        {/* <div className="Hello">
         <img width="200px" alt="icon" src={icon} />
       </div> */}
-      <h1>QREADS Support Tools</h1>
-      {/* {userInput} -> {username}
+        <h1>QREADS Support Tools</h1>
+        {/* {userInput} -> {username}
       {passwordInput} -> {password} */}
-      <span style={{ display: 'block-inline', margin: 4 }}>Hostname</span>
-      <input
-        onChange={(e) => setHostname(e.target.value)}
-        value={hostname}
-        style={{ minWidth: 8, flex: 1 }}
-      />
-      <button type="button" onClick={() => cli_tasklist(retfunc, hostname)}>
-        Java Tasks
-      </button>
-      <button
-        type="button"
-        onClick={() => cli_consolidated_log(recvEventsfunc, hostname)}
-      >
-        QR Events
-      </button>
-      <button type="button" onClick={() => cli_logfile(hostname)}>
-        Get QReads Log File
-      </button>
-      <button type="button" onClick={() => cli_logfolder(hostname)}>
-        QReads Log Folder
-      </button>
-      <button type="button" onClick={() => cli_wslogfile(hostname)}>
-        WS Log File
-      </button>
-      <button type="button" onClick={() => cli_wslogfolder(hostname)}>
-        WS Log Folder
-      </button>
-      <button type="button" onClick={() => cli_wksadmlogfolder(hostname)}>
-        WKSAdmin Log Folder
-      </button>
-      <a
-        href={'http://' + `${hostname.trim()}:9780/QReadsTestService`}
-        target="qrws_check"
-        rel="noreferrer"
-      >
-        <button type="button">
-          <span role="img" aria-label="books"></span>
-          Check Webservice
+        <span style={{ display: 'block-inline', margin: 4 }}>Hostname</span>
+        <input
+          onChange={(e) => setHostname(e.target.value)}
+          value={hostname}
+          style={{ minWidth: 8, flex: 1 }}
+        />
+        <button type="button" onClick={() => cli_tasklist(retfunc, hostname)}>
+          Java Tasks
         </button>
-      </a>
-      <br />
-      <span style={{ display: 'block-inline', margin: 4, padding: 4 }}>
-        Host List
-      </span>
-      <input
-        style={{ width: '60%' }}
-        onChange={(e) => setHostnameList(e.target.value)}
-        value={hostnamelist}
-      />
-      <div>{hostListComponents}</div>
-      <div className="Hello1" style={{ width: '100%' }}>
-        <AppBar position="static" style={{ margin: 1 }}>
-          <Tabs value={value} onChange={handleChange}>
-            <Tab label="Java Tasklist" />
-            <Tab label="QREADS Events" />
-            <Tab label="DICOM Files" />
-          </Tabs>
-        </AppBar>
-        <TabPanel value={value} index={0}>
-          <div className="ag-fresh">
-            {/* <button onClick={onButtonClick}>Get selected rows</button> */}
-            <button onClick={() => onBtnExport(gridApi)}>
-              {' '}
-              Download file as CSV{' '}
-            </button>
-            <div
-              className="ag-theme-balham"
-              style={{ height: '70vh', width: '100%' }}
-            >
-              <AgGridReact
-                onGridReady={onGridReady}
-                rowData={rowData}
-                rowSelection="multiple"
-                rowDragManaged={true}
-                suppressMoveWhenRowDragging={true}
-                animateRows={true}
-                width="100%"
+        <button
+          type="button"
+          onClick={() => cli_consolidated_log(recvEventsfunc, hostname)}
+        >
+          QR Events
+        </button>
+        <button type="button" onClick={() => cli_logfile(hostname)}>
+          Get QReads Log File
+        </button>
+        <button type="button" onClick={() => cli_logfolder(hostname)}>
+          QReads Log Folder
+        </button>
+        <button type="button" onClick={() => cli_wslogfile(hostname)}>
+          WS Log File
+        </button>
+        <button type="button" onClick={() => cli_wslogfolder(hostname)}>
+          WS Log Folder
+        </button>
+        <button type="button" onClick={() => cli_wksadmlogfolder(hostname)}>
+          WKSAdmin Log Folder
+        </button>
+        <a
+          href={'http://' + `${hostname.trim()}:9780/QReadsTestService`}
+          target="qrws_check"
+          rel="noreferrer"
+        >
+          <button type="button">
+            <span role="img" aria-label="books"></span>
+            Check Webservice
+          </button>
+        </a>
+        <br />
+        <span style={{ display: 'block-inline', margin: 4, padding: 4 }}>
+          Host List
+        </span>
+        <input
+          style={{ width: '60%' }}
+          onChange={(e) => setHostnameList(e.target.value)}
+          value={hostnamelist}
+        />
+        <div>{hostListComponents}</div>
+        <div className="Hello1" style={{ width: '100%' }}>
+          <AppBar position="static" style={{ margin: 1 }}>
+            <Tabs value={value} onChange={handleChange}>
+              <Tab label="Java Tasklist" />
+              <Tab label="QREADS Events" />
+              <Tab label="DICOM Files" />
+            </Tabs>
+          </AppBar>
+          <TabPanel value={value} index={0}>
+            <div className="ag-fresh">
+              {/* <button onClick={onButtonClick}>Get selected rows</button> */}
+              <button onClick={() => onBtnExport(gridApi)}>
+                {' '}
+                Download file as CSV{' '}
+              </button>
+              <div
+                className="ag-theme-balham"
+                style={{ height: '70vh', width: '100%' }}
               >
-                <AgGridColumn
-                  field="pid"
-                  rowDrag={true}
-                  headerCheckboxSelection={true}
-                  checkboxSelection={true}
-                  sortable={true}
-                  filter={true}
-                ></AgGridColumn>
-                <AgGridColumn
-                  field="created"
-                  sortable={true}
-                  filter={true}
-                ></AgGridColumn>
-                <AgGridColumn
-                  field="host"
-                  sortable={true}
-                  filter={true}
-                  width="100px"
-                ></AgGridColumn>
-                <AgGridColumn
-                  field="cmdline"
-                  sortable={true}
-                  filter={true}
-                  floatingFilter={true}
-                  filter={'agTextColumnFilter'}
-                  width="2600"
-                ></AgGridColumn>
-              </AgGridReact>
+                <AgGridReact
+                  onGridReady={onGridReady}
+                  rowData={rowData}
+                  rowSelection="multiple"
+                  rowDragManaged={true}
+                  suppressMoveWhenRowDragging={true}
+                  animateRows={true}
+                  width="100%"
+                >
+                  <AgGridColumn
+                    field="pid"
+                    rowDrag={true}
+                    headerCheckboxSelection={true}
+                    checkboxSelection={true}
+                    sortable={true}
+                    filter={true}
+                  ></AgGridColumn>
+                  <AgGridColumn
+                    field="created"
+                    sortable={true}
+                    filter={true}
+                  ></AgGridColumn>
+                  <AgGridColumn
+                    field="host"
+                    sortable={true}
+                    filter={true}
+                    width="100px"
+                  ></AgGridColumn>
+                  <AgGridColumn
+                    field="cmdline"
+                    sortable={true}
+                    filter={true}
+                    floatingFilter={true}
+                    filter={'agTextColumnFilter'}
+                    width="2600"
+                    editable={true}
+                  ></AgGridColumn>
+                </AgGridReact>
+              </div>
             </div>
-          </div>
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          <div className="ag-fresh">
-            <button onClick={() => onBtnExport(gridConsEventsApi)}>
-              {' '}
-              Download file as CSV{' '}
-            </button>
-            <div
-              className="ag-theme-balham"
-              style={{ height: '70vh', width: '100%' }}
-            >
-              <AgGridReact
-                onGridReady={onGridConsEventsReady}
-                rowData={rowConsEventsData}
-                rowSelection="multiple"
-                rowDragManaged={true}
-                suppressMoveWhenRowDragging={true}
-                animateRows={true}
-                width="100%"
+          </TabPanel>
+          <TabPanel value={value} index={1}>
+            <div className="ag-fresh">
+              <button onClick={() => onBtnExport(gridConsEventsApi)}>
+                {' '}
+                Download file as CSV{' '}
+              </button>
+              <div
+                className="ag-theme-balham"
+                style={{ height: '70vh', width: '100%' }}
               >
-                <AgGridColumn
-                  field="event_at"
-                  rowDrag={true}
-                  headerCheckboxSelection={true}
-                  checkboxSelection={true}
-                  width="250px"
-                  sortable={true}
-                  filter={true}
-                ></AgGridColumn>
-                <AgGridColumn
-                  field="event_desc"
-                  sortable={true}
-                  filter={true}
-                  floatingFilter={true}
-                  width="300px"
-                ></AgGridColumn>
-                <AgGridColumn
-                  field="event_source"
-                  sortable={true}
-                  filter={true}
-                  floatingFilter={true}
-                  filter={'agTextColumnFilter'}
-                  width="500"
-                ></AgGridColumn>
-                <AgGridColumn
-                  field="event_line"
-                  sortable={true}
-                  filter={true}
-                  floatingFilter={true}
-                  filter={'agTextColumnFilter'}
-                  width="1600"
-                ></AgGridColumn>
-              </AgGridReact>
+                <AgGridReact
+                  onGridReady={onGridConsEventsReady}
+                  rowData={rowConsEventsData}
+                  rowSelection="multiple"
+                  rowDragManaged={true}
+                  suppressMoveWhenRowDragging={true}
+                  animateRows={true}
+                  width="100%"
+                >
+                  <AgGridColumn
+                    field="event_at"
+                    rowDrag={true}
+                    headerCheckboxSelection={true}
+                    checkboxSelection={true}
+                    width="250px"
+                    sortable={true}
+                    filter={true}
+                  ></AgGridColumn>
+                  <AgGridColumn
+                    field="event_desc"
+                    sortable={true}
+                    filter={true}
+                    floatingFilter={true}
+                    width="300px"
+                  ></AgGridColumn>
+                  <AgGridColumn
+                    field="event_source"
+                    sortable={true}
+                    filter={true}
+                    floatingFilter={true}
+                    filter={'agTextColumnFilter'}
+                    width="500"
+                  ></AgGridColumn>
+                  <AgGridColumn
+                    field="event_line"
+                    sortable={true}
+                    filter={true}
+                    floatingFilter={true}
+                    filter={'agTextColumnFilter'}
+                    width="1600"
+                  ></AgGridColumn>
+                </AgGridReact>
+              </div>
             </div>
-          </div>
-        </TabPanel>
-        <TabPanel value={value} index={2}>
-          <div className="ag-fresh">
-            <button onClick={getDicmFiles}>Select DICOM Files / Folder</button>
-            <button onClick={getELQFile}>
-              Generate ExamList.qreads File For DCM Folder
-            </button>
-            <DicomSetView
-              key="parent"
-              dicomData={dicomData}
-              onRowSelected={onRowSelected1}
-              onImageView={onImageView}
-            />
-            <DicomSetView
-              key="child"
-              dicomData={dicomKOData}
-              onRowSelected={onRowSelected2}
-            />
-          </div>
-        </TabPanel>
+          </TabPanel>
+          <TabPanel value={value} index={2}>
+            <div className="ag-fresh">
+              <button onClick={getDicmFiles}>
+                Select DICOM Files / Folder
+              </button>
+              <button onClick={getELQFile}>
+                Generate ExamList.qreads File For DCM Folder
+              </button>
+              <DicomSetView
+                key="parent"
+                dicomData={dicomData}
+                onRowSelected={onRowSelected1}
+                onImageView={onImageView}
+              />
+              <DicomSetView
+                key="child"
+                dicomData={dicomKOData}
+                onRowSelected={onRowSelected2}
+              />
+            </div>
+          </TabPanel>
+        </div>
       </div>
-    </div>
+    </React.Fragment>
   );
 };
 
-export default function App() {
-  return (
-    <Router>
-      <Switch>
-        <Route path="/" component={Hello} />
-      </Switch>
-    </Router>
-  );
-}
+export default withRouter(App);

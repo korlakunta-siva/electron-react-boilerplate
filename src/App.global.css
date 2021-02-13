@@ -11,14 +11,14 @@
 
  */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap');
-@import "./App.css";
+@import './App.css';
 
 /*   display: flex;
 height: 100vh;
 */
 body {
   position: relative;
-  color: white;
+  color: black;
 
   background: lightcoral;
   font-family: 'Noto Sans JP', sans-serif;
@@ -54,7 +54,7 @@ button {
   border-radius: 1px;
   border: none;
   appearance: none;
-  font-size: .8rem;
+  font-size: 0.8rem;
   box-shadow: 0px 1px 2px -1px rgba(24, 39, 75, 0.12),
     0px 1px 8px -1px rgba(24, 39, 75, 0.14);
   transition: transform ease-in 0.1s;
@@ -73,7 +73,7 @@ li {
 }
 
 a {
-  color: white;
+  color: black;
   opacity: 0.75;
   text-decoration: none;
 }
