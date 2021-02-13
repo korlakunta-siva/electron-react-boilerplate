@@ -1067,9 +1067,9 @@ showFilePng = (blob) => {
     return (
       <React.Fragment>
 
-        <div className="container-fluid">
+        <div className="container-fluid" style={{ height: "100%", width: "100%" }}>
 
-          <div className="row justify-content-start">
+          <div className="row justify-content-start" style={{ height: "100%", width: "100%" }} >
             <div className="col-3 py-3 overflow-auto" style={{ height: '100vh', width: '100%', backgroundColor: 'powderblue' }}>
             <div>
               <div className="App">
@@ -1127,21 +1127,14 @@ showFilePng = (blob) => {
           <Tab label="Claims" {...a11yProps(1)} />
           <Tab label="Tab3" {...a11yProps(2)} />
         </Tabs>
-      <TabPanel value={this.state.tablValue} index={0}>
+      <TabPanel value={this.state.tablValue} index={0} style={{ height: "90%", width: "100%" }}>
 
-      <nav>
-                <button onClick={this.goToPrevPage}>Prev</button>
-                <button onClick={this.goToNextPage}>Next</button>
-                Viewing Page {this.state.filepagenum} of total {this.state.filetotalpages}
-
-
-      <button  id='myButton' onClick={this.openPDF} >Select PDF to view</button>
-      <button  id='myButton' onClick={this.getPDFPage} >GetPageNumber</button>
-      <button  id='myButton' onClick={this.nextPDFPage} >Next Page </button>
-
-      </nav>
-
-              <iframe width="100%" height="600px"  backgroundcolor = 'lightgrey' ref={this.state.iframeRef} src = { this.state.filepath}     />
+      <div style={{ height: "90%", width: "100%" , margin: 0}}>
+            <button id='myButton1' onClick={this.openPDF} >GetPageNumber</button>
+            <button id='myButton3' onClick={this.nextPDFPage} >Previous Page </button>
+            <button id='myButton4' onClick={this.nextPDFPage} >Next Page </button>
+            <iframe width="100%" height="850px" backgroundcolor='lightgrey' ref={this.state.iframeRef} src = { this.state.filepath} />
+          </div>
 
               {/* <ShowPDF patid={this.state.filetodisplay} filename={this.state.filetodisplay} style={{ width: '100%', backgroundColor: 'lightgrey' }} onDocumentLoaded={this.updateTotalPages} pageNumber={this.state.filepagenum} /> */}
 
