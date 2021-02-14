@@ -1069,8 +1069,8 @@ showFilePng = (blob) => {
 
         <div className="container-fluid" style={{ height: "100%", width: "100%" }}>
 
-          <div className="row justify-content-start" style={{ height: "100%", width: "100%" }} >
-            <div className="col-3 py-3 overflow-auto" style={{ height: '100vh', width: '100%', backgroundColor: 'powderblue' }}>
+          <div className="row justify-content-start" style={{ height: "100%", width: "100%" , marginTop: '50px'}} >
+            <div className="col-3 py-3 overflow-auto" style={{ height: '90vh', width: '100%', backgroundColor: 'powderblue' }}>
             <div>
               <div className="App">
                 <Input className="mb-2" type="file"  key={this.state.inputRestKey} name="" id="" multiple onChange={this.handleselectedFile}  />
@@ -1120,7 +1120,7 @@ showFilePng = (blob) => {
 
 
 
-            <div className="col-5 py-3 overflow-auto" style={{ height: '100vh', backgroundColor: 'lightgrey' }}>
+            <div className="col-5 py-3 overflow-auto" style={{ height: '90vh', backgroundColor: 'lightgrey' }}>
 
             <Tabs value={this.state.tablValue} onChange={this.handleTabChange} aria-label="simple tabs example">
           <Tab label="Files" {...a11yProps(0)} />
@@ -1133,7 +1133,7 @@ showFilePng = (blob) => {
             <button id='myButton1' onClick={this.openPDF} >GetPageNumber</button>
             <button id='myButton3' onClick={this.nextPDFPage} >Previous Page </button>
             <button id='myButton4' onClick={this.nextPDFPage} >Next Page </button>
-            <iframe width="100%" height="850px" backgroundcolor='lightgrey' ref={this.state.iframeRef} src = { this.state.filepath} />
+            <iframe width="100%" height="800px" backgroundcolor='lightgrey' ref={this.state.iframeRef} src = { this.state.filepath} />
           </div>
 
               {/* <ShowPDF patid={this.state.filetodisplay} filename={this.state.filetodisplay} style={{ width: '100%', backgroundColor: 'lightgrey' }} onDocumentLoaded={this.updateTotalPages} pageNumber={this.state.filepagenum} /> */}

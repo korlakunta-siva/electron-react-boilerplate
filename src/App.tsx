@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import icon from '../assets/icon.svg';
 import RendererApp from "./apex/";
+import Header from './components/header/Header';
 
 const Hello = () => {
   return (
@@ -40,12 +41,15 @@ const Hello = () => {
   );
 };
 
-export default function App() {
+export default function App(props) {
   return (
-    <Router>
+    <Router history={props.history}>
       <Switch>
-        <Route path="/" component={RendererApp} />
+        <Route path="/"
+        render={(props) => <RendererApp {...props} />}
+        />
       </Switch>
+      <Header history={history} />
     </Router>
   );
 }
