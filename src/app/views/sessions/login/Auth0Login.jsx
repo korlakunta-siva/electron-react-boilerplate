@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Grid, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import history from "history.js";
+//import history from "../../../../components/common/history.js";
 import clsx from "clsx";
 import useAuth from "app/hooks/useAuth";
 
@@ -27,6 +27,7 @@ const Auth0Login = () => {
   const { loginWithPopup } = useAuth();
 
   const classes = useStyles();
+  const { history } = this.props;
 
   const handleLogin = async (event) => {
     try {

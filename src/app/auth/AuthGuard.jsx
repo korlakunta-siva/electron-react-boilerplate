@@ -19,7 +19,7 @@ import JwtLogin from "../views/sessions/login/JwtLogin";
 //   return authenticated;
 // };
 
-const AuthGuard = ({ children }) => {
+const AuthGuard = ({ history, children }) => {
   const {
     isAuthenticated,
     user
@@ -41,13 +41,13 @@ const AuthGuard = ({ children }) => {
     if (previouseRoute !== null) setPreviousRoute(pathname);
   }, [pathname, previouseRoute]);
 
-  console.log("In AuthGarud", authenticated, user, previouseRoute);
+  console.log("In AuthGarud", authenticated, user, previouseRoute, history);
 
   if (authenticated) return <>{children}</>;
   else {
     return (
 
-      <JwtLogin />
+      <JwtLogin history = {history} />
 
       // <Route  component={JwtLogin} />
       // // <Redirect

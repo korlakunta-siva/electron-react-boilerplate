@@ -10,7 +10,7 @@ import {
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import {MatxLogo, MatxDivider} from "matx";
 import { makeStyles } from "@material-ui/core/styles";
-import history from "history.js";
+//import history from "../../../../components/common/history.js";
 import clsx from "clsx";
 import useAuth from "app/hooks/useAuth";
 
@@ -78,7 +78,7 @@ const useStyles = makeStyles(({ palette, ...theme }) => ({
   },
 }));
 
-const FirebaseLogin = () => {
+const FirebaseLogin = (props) => {
   const [loading, setLoading] = useState(false);
   const [userInfo, setUserInfo] = useState({
     email: "jason@ui-lib.com",
@@ -89,6 +89,7 @@ const FirebaseLogin = () => {
   const { signInWithEmailAndPassword, signInWithGoogle } = useAuth();
 
   const classes = useStyles();
+  const { history } = props;
 
   const handleChange = ({ target: { name, value } }) => {
     let temp = { ...userInfo };
@@ -135,7 +136,7 @@ const FirebaseLogin = () => {
               })}
             >
               <div className={classes.logo}>
-                <MatxLogo className="mr-2"/> <span>MatX Pro</span> 
+                <MatxLogo className="mr-2"/> <span>MatX Pro</span>
               </div>
               <h1 className={classes.mainTitle}>
                 Admin Dashboard

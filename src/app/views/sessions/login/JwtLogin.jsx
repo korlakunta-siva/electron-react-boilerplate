@@ -34,7 +34,7 @@ const useStyles = makeStyles(({ palette, ...theme }) => ({
   },
 }));
 
-const JwtLogin = () => {
+const JwtLogin = (props) => {
 
   console.log("IN LOGIN");
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,8 @@ const JwtLogin = () => {
   const [message, setMessage] = useState('');
   const { login } = useAuth();
   // const { match, location, history } = props;
-  const history = useHistory();
+  // const history = useHistory();
+  const { history } = props;
 
   const classes = useStyles();
 

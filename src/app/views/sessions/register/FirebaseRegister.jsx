@@ -12,7 +12,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import useAuth from 'app/hooks/useAuth';
-import history from "history.js";
+//import history from "../../../../components/common/history.js";
 
 const useStyles = makeStyles(({ palette, ...theme }) => ({
   cardHolder: {
@@ -48,6 +48,8 @@ const FirebaseRegister = () => {
   const classes = useStyles();
   const [message, setMessage] = useState('');
   const { createUserWithEmailAndPassword, signInWithGoogle } = useAuth();
+
+  const { history } = props;
 
   const handleChange = ({ target: { name, value } }) => {
     setState({

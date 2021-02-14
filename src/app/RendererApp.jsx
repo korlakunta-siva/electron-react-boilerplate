@@ -1,9 +1,8 @@
 
 import React from "react";
 import { Provider } from "react-redux";
-import { Router, Switch, Route } from "react-router-dom";
+import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import AppContext from "./contexts/AppContext";
-import history from "../history.js";
 import routes from "./RootRoutes";
 import { Store } from "./redux/Store";
 import MatxLayout  from "./layout/MatxLayout/Layout2/Layout2";
@@ -20,6 +19,9 @@ import { SettingsProvider } from "./contexts/SettingsContext";
 import { useLocation } from 'react-router-dom'
 import JwtLogin from "./views/sessions/login/JwtLogin";
 import { Redirect, withRouter } from "react-router-dom";
+import Dashboard from "./components/dashboard/Accounting/Dashboard";
+import Header from "../components/common/header/Header";
+import history from "../components/common/history.js";
 
 
 const RendererApp = () => {
@@ -36,6 +38,7 @@ const RendererApp = () => {
           <MatxTheme>
             {/* <GlobalCss /> */}
             <Router history={history}>
+              <Header />
               <AuthProvider>
                 <MatxSuspense>
                   <Switch>
@@ -50,7 +53,8 @@ const RendererApp = () => {
                     {/* AUTH PROTECTED DASHBOARD PAGES */}
 
                     <AuthGuard>
-                      <MatxLayout />
+                      <Dashboard />
+                      {/* <MatxLayout /> */}
                     </AuthGuard>
                     {/* <Route  component={JwtLogin} />
                     <Route render={() => <Redirect to="/"/>}/> */}
