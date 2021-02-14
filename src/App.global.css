@@ -22,7 +22,7 @@ body {
 
   background: lightcoral;
   font-family: 'Noto Sans JP', sans-serif;
-  overflow-y: hidden;
+  overflow-y: auto;
   overflow-x: auto;
 
   justify-content: center;
