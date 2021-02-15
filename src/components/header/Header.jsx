@@ -41,6 +41,7 @@ const navLinks = [
   { title: `Pine`, path: `/pinestatus` },
   { title: `processor`, path: `/cigprocessor` },
   { title: `receiver`, path: `/cigreceiver` },
+  { title: `dashboard`, path: `/imsudashboard` },
 ];
 
 const Header = (props) => {

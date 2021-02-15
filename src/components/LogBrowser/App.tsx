@@ -365,12 +365,10 @@ const App = (props) => {
 
   return (
     <React.Fragment>
-      <h1>Log Browser</h1>
-      <div>
+      <div style={{ marginTop: '50px' }}>
         {/* <div className="Hello">
         <img width="200px" alt="icon" src={icon} />
       </div> */}
-        <h1>QREADS Support Tools</h1>
         {/* {userInput} -> {username}
       {passwordInput} -> {password} */}
         <span style={{ display: 'block-inline', margin: 4 }}>Hostname</span>

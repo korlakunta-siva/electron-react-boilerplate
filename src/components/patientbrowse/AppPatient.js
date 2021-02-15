@@ -951,7 +951,6 @@ class App extends Component {
 
     return this.state.columns_loaded ? (
       <div>
-        <h1>Patient Browser</h1>
         <React.Fragment>
           <div
             className="container-fluid "

@@ -12,6 +12,7 @@ import CigaOps from './components/cigaops/AppCigaOps';
 import PineStatus from './components/statuspages/PINEStatus';
 import CIGProcessor from './components/statuspages/CIGProcessors';
 import CIGReceiver from './components/statuspages/CIGReceivers';
+import IMSUDashboard from './components/imsudashboard/App';
 import Navbar from './components/Navbar';
 import Header from './components/header/Header';
 
@@ -65,6 +66,12 @@ const AppWithRouterAccess = (props) => {
           path="/cigreceiver"
           render={(props) => <CIGReceiver {...props} />}
         />
+
+        <Route
+          path="/imsudashboard"
+          render={(props) => <IMSUDashboard {...props} />}
+        />
+
         <Header history={history} />
       </Router>
     </>
