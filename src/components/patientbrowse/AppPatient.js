@@ -30,6 +30,109 @@ export const ExportJson = ({ jsonData, fileName }) => {
   );
 };
 
+export const getOSFriendlyPath = (PathName, pathstyle) => {
+  let MappedPath = '';
+  if (pathstyle == 'win') {
+    MappedPath = reverseMountPoints(PathName);
+  } else {
+    MappedPath = configureMountPoint(PathName);
+  }
+
+  return MappedPath;
+};
+
+export const configureMountPoint = (uncPathName) => {
+  console.log(
+    'START',
+    uncPathName.toLowerCase().startsWith('\\\\mfad.mfroot.org\\rchdept'),
+    uncPathName
+  );
+  let MappedPath = '';
+  if (uncPathName != '') {
+    if (uncPathName.toLowerCase().startsWith('\\\\mfad.mfroot.org\\rchdept'))
+      MappedPath = uncPathName
+        .toLowerCase()
+        .replaceAll('\\\\mfad.mfroot.org\\rchdept\\', '/qreadscis/mcr/');
+    else if (uncPathName.toLowerCase().startsWith('\\\\mfad\\rchdept'))
+      MappedPath = uncPathName.replaceAll(
+        '\\\\mfad\\rchdept\\',
+        '/qreadscis/mcr/'
+      );
+    else if (uncPathName.toLowerCase().startsWith('\\\\mcsqread11'))
+      MappedPath = uncPathName.replaceAll(
+        '\\\\mcsqread11\\',
+        '/qreadscis/mca/'
+      );
+    else if (uncPathName.toLowerCase().startsWith('\\\\mfad\\mcaapp\\qreads'))
+      MappedPath = uncPathName.replaceAll(
+        '\\\\mfad\\mcaapp\\QREADS\\',
+        '/qreadscis/mcs/'
+      );
+    else if (
+      uncPathName
+        .toLowerCase()
+        .startsWith('\\\\mfad.mfroot.org\\mcaapp\\qreads')
+    )
+      MappedPath = uncPathName.replaceAll(
+        '\\\\mfad.mfroot.org\\mcaapp\\QREADS\\',
+        '/qreadscis/mcs/'
+      );
+    else if (
+      uncPathName.toLowerCase().startsWith('\\\\mfad.mfroot.org\\rchdept')
+    )
+      MappedPath = uncPathName.replaceAll(
+        '\\\\mfad.mfroot.org\\rchdept\\',
+        '/qreadscis/mcr/'
+      );
+    else if (uncPathName.toLowerCase().startsWith('\\\\mfad\\mcf'))
+      MappedPath = uncPathName.replaceAll('\\\\mfad\\mcf\\', '/cig/mcf/');
+    else if (uncPathName.toLowerCase().startsWith('\\\\mfad.mfroot.org\\mcf'))
+      MappedPath = uncPathName.replaceAll(
+        '\\\\mfad.mfroot.org\\mcf\\',
+        '/cig/mcf/'
+      );
+    else MappedPath = uncPathName;
+  }
+
+  MappedPath = MappedPath.replaceAll('\\', '/');
+  console.log('END', MappedPath);
+  return MappedPath;
+};
+
+export const reverseMountPoints = (uncPathName) => {
+  let MappedPath = '';
+  if (uncPathName != None) {
+    if (uncPathName.startsWith('/qreadscis/mcr/'))
+      uncPathName = uncPathName.replaceAll(
+        '/qreadscis/mcr/',
+        '\\mfad.mfroot.org\\RCHDept\\'
+      );
+    else if (uncPathName.startsWith('/qreadscis/mca/'))
+      uncPathName = uncPathName.replaceAll('/qreadscis/mca/', '\\mcsqread11\\');
+    else if (uncPathName.startsWith('/qreadscis/mcs/'))
+      uncPathName = uncPathName.replaceAll(
+        '/qreadscis/mcs/',
+        '\\mfad.mfroot.org\\mcaapp\\QREADS\\'
+      );
+    else if (uncPathName.startsWith('/cig/mcf/'))
+      uncPathName = uncPathName.replaceAll(
+        '/cig/mcf/',
+        '\\mfad.mfroot.org\\mcf\\'
+      );
+    else if (uncPathName.startsWith('/cig/mcr/'))
+      uncPathName = uncPathName.replaceAll('/cig/mcr/', '\\\\rchqrdvs01\\cig');
+    else
+      uncPathName = uncPathName.replaceAll(
+        '/cig/mcf/',
+        '\\mfad.mfroot.orgmcf\\'
+      );
+
+    MappedPath = uncPathName.replaceAll('/', '\\');
+  }
+
+  return MappedPath;
+};
+
 class App extends Component {
   DbEnv = {
     iimsRepl: 'iimsTest',
@@ -585,6 +688,19 @@ class App extends Component {
             let dframe = data['frame0'];
             let myObj = JSON.parse(dframe);
             data = myObj['rows'];
+            data = data.map((row) => {
+              let filepaths = {
+                winpath: row.store_p + '\\' + row.file_path,
+                unixpath: configureMountPoint(
+                  row.store_p + '\\' + row.file_path
+                ),
+              };
+              let newrow = { ...filepaths, ...row };
+              return newrow;
+
+              // row['unixpath'] = 'UNIXPATH';
+              // row['winpath'] = 'WINPATH';
+            });
             this.setState({ series_locations: data, loaded: true }, () => {
               //console.log("Changed state", this.state.series_locations.length);
               this.seriesLocationsGridElement.current.changeGridData(
@@ -972,10 +1088,10 @@ class App extends Component {
                     console.log(
                       'CMRN Input Field New Value:',
                       event.target.value,
-                      event.target.value.replace(/\D/g, '')
+                      event.target.value.replaceAll(/\D/g, '')
                     );
                     this.setState({
-                      patient_cmrn: event.target.value.replace(/\D/g, ''),
+                      patient_cmrn: event.target.value.replaceAll(/\D/g, ''),
                     });
                   }}
                   onKeyPress={(event) => {
@@ -1019,10 +1135,10 @@ class App extends Component {
                     console.log(
                       'EXAMID New value:',
                       event.target.value,
-                      event.target.value.replace(/\D/g, '')
+                      event.target.value.replaceAll(/\D/g, '')
                     );
                     this.setState({
-                      exam_id: event.target.value.replace(/\D/g, ''),
+                      exam_id: event.target.value.replaceAll(/\D/g, ''),
                     });
                   }}
                   onKeyPress={(event) => {

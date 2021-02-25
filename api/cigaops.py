@@ -10,6 +10,7 @@ import sys
 from elasticsearch import Elasticsearch
 from elasticsearch.client import SqlClient
 import urllib3
+import shlex
 
 
 def sudo_run_commands_remote(command, server_address, server_username, server_pass, server_key_file):
@@ -29,16 +30,21 @@ def sudo_run_commands_remote(command, server_address, server_username, server_pa
     stdin.flush()
     print(stdout.read().decode("utf-8"))
 
+def run_unix_process(campus = None, unixprocess = None):
+    return run_unix_ps (campus, unixprocess)
 
-def run_unix_process(campus, unixprocess = None):
+def run_unix_ps(campus = None, systemenv = None, hostname = None , unixprocess = None):
 
-    unix_hostname = 'iasq1mr2'
-    if campus == 'R' :
-           unix_hostname = 'iasq1mr2'   #iasp1fo1
-    if campus == 'S' :
-           unix_hostname = 'iasp1ma1'
-    if campus == 'J' :
-           unix_hostname = 'iasp1mf2'
+    if hostname == None :
+        unix_hostname = 'iasq1mr2'
+        if campus == 'R' :
+              unix_hostname = 'iasq1mr2'   #iasp1fo1
+        if campus == 'S' :
+              unix_hostname = 'iasp1ma1'
+        if campus == 'J' :
+              unix_hostname = 'iasp1mf2'
+    else:
+        unix_hostname = hostname
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -48,9 +54,8 @@ def run_unix_process(campus, unixprocess = None):
     # cmd = 'sudo -u ciguser  /cigaapp/ciguser/bin/scripts/start_processor.pl 3 2'
     # cmd = 'sudo -u ciguser  kill -9 29163632'
 
-
     unixprocess = cmd
-    ssh.connect(unix_hostname, username="mra9895", password="MyPass")
+    ssh.connect(unix_hostname, username="mra9895", password="Sneha21A")
     # stdin, stdout, stderr = ssh.exec_command(
     #     "sudo su - ciguser")
 
@@ -287,6 +292,7 @@ def main():
   parser.add_argument("-host", "--host",  help="hostname", default=None)
   parser.add_argument("-cmd",  help="command_to_run")
   parser.add_argument("-p", "--pid", type=int, help="pid", default=None)
+  parser.add_argument("-a", "--arg",  help="args", default=None)
   args = parser.parse_args()
 
   command = None
@@ -297,6 +303,8 @@ def main():
     command = args.cmd
   if args.host :
     hostname = args.host
+  if args.arg :
+    arguments = args.arg
   if args.pid :
       pid = args.pid
 
@@ -480,6 +488,94 @@ def main():
     except Exception as e:
                 print (e)
                 pass
+
+  if command.strip() == 'cigvm' :
+    #print("Started cigvms", arguments)
+    hostnames = arguments
+    try :
+                ps_data = run_unix_ps(hostname = hostnames)
+                #print(ps_data)
+                #TESTDATA = StringIO(ps_data)
+                #df = pd.read_csv(TESTDATA, sep=",")
+                ps_output = []
+                ps_receivers = []
+                ps_processors = []
+                ps_qmanager = []
+                head_rowline = ps_data[0].decode('ascii')
+                head_rowline = re.sub(' +', ' ', head_rowline)
+                head_rowline = re.sub('^ *', '', head_rowline)
+                head_rowline = re.sub(' ', ',', head_rowline)
+
+                    #rowline = re.sub(' +', ' ', rowline)
+                column_names = [col for col in head_rowline.split(',') ] # Get column names from output
+                column_names[-1] = "CommandArgs"
+
+
+                for line in ps_data[1:] :
+                    #print ("Received {0}", line.decode('ascii'))
+                    rowdict = {}
+                    rowline = line.decode('ascii')
+                    row = rowline.split(',')
+                    rowdict.update({name: row[i] for i, name in enumerate(column_names)})
+                    cmdargArr = shlex.split(rowdict['CommandArgs'].strip(' '))
+                    rowdict.update({'cmdarr' : cmdargArr})
+                    if rowdict['USER'].strip(' ') == 'ciguser' :
+                        ps_output.append(rowdict)
+                    if 'CIGQ' in rowdict['CommandArgs'].strip(' ') :
+                      for argindex, argitem in enumerate(cmdargArr) :
+                         if "queue" in argitem:
+                          rowdict.update({'QUEUE' : argitem})
+                          try :
+                            rowdict.update({'CAMPUS' : cmdargArr[argindex + 1]})
+                          except:
+                            pass
+                         if "logDir" in argitem:
+                          rowdict.update({'LOGDIR' : argitem})
+                      ps_qmanager.append(rowdict)
+                    if 'CIGDicomReceiver' in rowdict['CommandArgs'].strip(' ') :
+                      for argindex, argitem in enumerate(cmdargArr) :
+                         if "queue" in argitem:
+                          rowdict.update({'QUEUE' : argitem})
+                         if "@" in argitem:
+                          rowdict.update({'PORT' : argitem})
+                         if "logDir" in argitem:
+                          rowdict.update({'LOGDIR' : argitem})
+                      ps_receivers.append(rowdict)
+                    if 'CIGProcessor' in rowdict['CommandArgs'].strip(' ') :
+                      for argindex, argitem in enumerate(cmdargArr ) :
+                         if "queue" in argitem:
+                          rowdict.update({'QUEUE' : argitem})
+                          rowdict.update({'PRIORITY' : cmdargArr[argindex + 1]})
+                          rowdict.update({'SERIAL' : cmdargArr[argindex + 2]})
+                         if "logDir" in argitem:
+                          rowdict.update({'LOGDIR' : argitem})
+                      ps_processors.append(rowdict)
+
+                html_table = html_table + "<h2 align='center'>CIG Processes in Campus: " + campus + " at: " + datetime.datetime.now().strftime("%m-%d-%Y %H:%M") + " </h2>"
+                #df = pd.read_sql(dbspace_sql,cnxn)
+                pd.set_option('display.max_columns', None)
+                pd.set_option('display.max_colwidth', None)
+                df = pd.DataFrame(ps_output)  #.sort_values(['server', 'database', 'table'], ascending=[1, 1, 1])
+                df_receivers = pd.DataFrame(ps_receivers)
+                df_processors = pd.DataFrame(ps_processors)
+
+                html_table = html_table + "<h3 align='center'>Receivers : " + str(len(ps_receivers)) + "</h3>" + df_receivers.to_html()
+                html_table = html_table + "<h3 align='center'>Processors : " + str(len(ps_processors)) + "</h3>" + df_processors.to_html()
+                host_ps = {
+                  'campus': campus,
+                  'receivers': ps_receivers,
+                  'processors' : ps_processors,
+                  'qmanager' : ps_qmanager
+                }
+                print(host_ps)
+
+                #html_table = html_table + df.to_html(index=False) #,  columns = ['s_table', 's_daystokeep', 'd_table', 'd_daystokeep', 's_host', 's_db',  'd_host', 'd_db'  ])
+
+                #print(ps_output)
+    except Exception as e:
+                print (e)
+                pass
+
 
 if __name__ == "__main__":
     main()

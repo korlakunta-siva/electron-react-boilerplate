@@ -6,8 +6,8 @@ export default class BtnCellRenderer extends Component {
     this.btnClickedHandler = this.btnClickedHandler.bind(this);
   }
   btnClickedHandler() {
-    console.log('Clicked', this.props.data.filepath);
-    this.props.clicked(this.props.data.filepath);
+    console.log('Clicked', this.props.data);
+    this.props.clicked(this.props.data);
   }
   render() {
     return (

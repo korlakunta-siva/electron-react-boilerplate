@@ -45,31 +45,56 @@ const App = (props) => {
       document.querySelector(`${hashAnchor}`).classList.add('show');
       document.querySelector(`${hashAnchor}`).classList.add('active');
       //document.querySelector(`${hashAnchor}`).scrollIntoView();
+
+      if (hashAnchor == '#iims_queues') {
+        document.querySelector('#iims_queues_summary').classList.add('show');
+        document.querySelector('#iims_queues_summary').classList.add('active');
+      }
+
+      if (hashAnchor == '#ciga') {
+        document.querySelector('#ciga_24hour_snapshot').classList.add('show');
+        document.querySelector('#ciga_24hour_snapshot').classList.add('active');
+      }
+
+      if (hashAnchor == '#cis-storage') {
+        document.querySelector('#cis_storage_activity').classList.add('show');
+        document.querySelector('#cis_storage_activity').classList.add('active');
+      }
+
       hashLinks.forEach((hashlink) => {
         console.log('Inactivating hashlink:', hashlink);
         if (hashAnchor != hashlink) {
           const elem = document.querySelector(hashlink);
           if (elem) {
             if (
-              (hashAnchor == '#iims_queues_summary' ||
+              ((hashAnchor == '#iims_queues_summary' ||
                 hashAnchor == '#iims-queues_detail') &&
-              hashlink == '#iims-queues'
+                hashlink == '#iims-queues') ||
+              ((hashAnchor == '#ciga_24hour_snapshot' ||
+                hashAnchor == '#ciga_non-prefetch_processing' ||
+                hashAnchor == '#ciga_prefetch_processing' ||
+                hashAnchor == '#ciga_receivers') &&
+                hashlink == '#ciga') ||
+              ((hashAnchor == '#cis_storage_activity' ||
+                hashAnchor == '#cis_storage_weekly_summary') &&
+                hashlink == '#cis-storage')
             ) {
               document.querySelector(`${hashlink}`).classList.add('show');
             } else {
               elem.classList.add('hide');
               elem.classList.remove('active');
             }
-            if (
-              hashAnchor == '#iims_queues_summary' ||
-              hashAnchor == '#iims-queues_detail'
-            ) {
-              const elem2 = document.querySelector('#iims-queues');
-              if (elem2) {
-                elem2.classList.add('show');
-                //elem.classList.remove('active');
-              }
-            }
+
+            // if (
+            //   hashAnchor == '#iims_queues_summary' ||
+            //   hashAnchor == '#iims-queues_detail'
+            // ) {
+            //   const elem2 = document.querySelector('#iims-queues');
+            //   if (elem2) {
+            //     elem2.classList.add('show');
+            //     //elem.classList.remove('active');
+            //   }
+            // }
             //document.querySelector(hashlink).classList.remove('active');
           }
         }

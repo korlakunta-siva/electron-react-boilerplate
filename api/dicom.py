@@ -98,28 +98,76 @@ def parseDicom (folderpath) :
             #         print ("Image", item2[0][0x8,0x1150].value , '  ==>  ', item2[0][0x8,0x1155].value )
             # print()
 
-            for item in dataset[0x40,0xa730].value :
-              for item2 in item:
-                #print (item2.tag, item2)
-                if item2.tag == (0x8,0x1199) :
-                    #print ("Image", item2[0][0x8,0x1150].value , '  ==>  ', item2[0][0x8,0x1155].value )
-                    ser_uid = item2[0][0x8,0x1150].value
-                    img_uid = item2[0][0x8,0x1155].value
-                    found_series = False
-                    for seruid in ko_series :
-                      if seruid['seruid'] == ser_uid :
-                          found_series = True
-                          imageuids = seruid['images']
-                          imageuids.append(img_uid)
-                          break
-                    if (found_series == False) :
-                        newseries = {}
-                        newseries.update({'seruid': ser_uid})
-                        newseries_images = []
-                        newseries_images.append(img_uid)
-                        newseries.update({'images': newseries_images})
-                        ko_series.append(newseries)
+            #for item in dataset[0x40,0xa730].value :
 
+            for item in dataset[0x40,0xa375].value :
+              #print("SERIES",item)
+              for item2 in item:
+
+                if item2.tag == (0x8,0x1115) :
+                  #print ("ITEM2 ", item2.value)
+                  try:
+                    for item3 in item2.value:
+                      #print ("ITEM3-SERIES ", item3[0x20,0x000e].value)
+                      #print ("ITEM3-IMAGE ", item3[0x8,0x1199].value)
+                      #if item2.tag == (0x0020,0x000e) :
+                      #     print("IN KO a", item2)
+                      # if item3.tag == (0x0020,0x000e) :
+                      ser_uid = item3[0x20,0x000e].value
+                      #   print("GOT SERIES_UID", ser_uid)
+                      for item4 in item3[0x8,0x1199].value :
+                            #print("IN KO b", item4[0x8,0x1155])
+                            #print ("Image", item3[0][0x8,0x1150].value , '  ==>  ', item2[0][0x8,0x1155].value )
+                            img_uid = item4[0x8,0x1155].value
+                            #print("GOT IMG_UID", ser_uid, img_uid)
+
+                            #print("IN KO", ser_uid, img_uid)
+                            found_series = False
+                            for seruid in ko_series :
+                              if seruid['seruid'] == ser_uid :
+                                  found_series = True
+                                  imageuids = seruid['images']
+                                  imageuids.append(img_uid)
+                                  break
+                            if (found_series == False) :
+                                newseries = {}
+                                newseries.update({'seruid': ser_uid})
+                                newseries_images = []
+                                newseries_images.append(img_uid)
+                                newseries.update({'images': newseries_images})
+                                ko_series.append(newseries)                            
+
+                  except Excetion as ex2:
+                    #print("ERROR", ex2)
+                    pass
+
+                # # if item2.tag == (0x0020,0x000e) :
+                # #     print("IN KO a", item2)
+                # if item2.tag == (0x8,0x1199) :
+
+                #     print("IN KO b", item2[0][0x8,0x1155])
+
+                #     #print ("Image", item2[0][0x8,0x1150].value , '  ==>  ', item2[0][0x8,0x1155].value )
+                #     ser_uid = '123' #item2[0][0x0020,0x000e].value
+                #     img_uid = item2[0][0x8,0x1155].value
+                #     #print("IN KO", ser_uid, img_uid)
+                #     print(ser_uid, img_uid)
+                #     found_series = False
+                #     for seruid in ko_series :
+                #       if seruid['seruid'] == ser_uid :
+                #           found_series = True
+                #           imageuids = seruid['images']
+                #           imageuids.append(img_uid)
+                #           break
+                #     if (found_series == False) :
+                #         newseries = {}
+                #         newseries.update({'seruid': ser_uid})
+                #         newseries_images = []
+                #         newseries_images.append(img_uid)
+                #         newseries.update({'images': newseries_images})
+                #         ko_series.append(newseries)
+
+            #print("DONE PARSNG FOR KO")
             if len(ko_series) > 0 :
               hasKOSeries = True
               dicom_meta.update({'iocmko' : 'yes'})
@@ -134,7 +182,8 @@ def parseDicom (folderpath) :
               dicom_meta.update({'iocm_series' : 0 })
               dicom_meta.update({'iocm_images' : 0})
               dicom_meta.update({'koseries' : ''})
-        except:
+        except Exception as err:
+          #print ("ERROR", err)
           pass
 
         # print("Patient's name...:", dicom_meta['DisplayName'])
@@ -222,7 +271,8 @@ def main():
   try:
 
     if command.strip() == 'parse' :
-      #  print("parse -> path: " + str(arguments))
+       #print("parse -> path: " + str(arguments))
+       #parseDicom(arguments)
        print(parseDicom(arguments))
        sys.exit(0)
 

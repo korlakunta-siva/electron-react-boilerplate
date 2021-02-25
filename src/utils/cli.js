@@ -336,6 +336,47 @@ export const cli_viewdicom_file = (filename) => {
   }
 };
 
+//  SLK_CIGA_MCR_ORD@172.24.110.220:6200
+// -b Compass -c CIGA_MCR_ORD_EV@cigaint:6200
+// preintg  CIGA_MCR_ORDSTG@10.128.232.147:6109
+
+// CIGA_MCR_ORDSTG@10.128.232.151:6109
+// CIGA_MCR_ORDSTG@10.128.232.152:6109
+
+// SLK_CIGA_MCR_ORD@172.24.110.220:6200
+
+export const cli_sendtociga_folder = (folderpath) => {
+  //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+  let mesg = '';
+  console.log(
+    'C:\\Programs\\dcm4che\\bin\\storescu -b TEAM_SCU -c CIGA_MCR_ORDSTG@10.128.232.152:6109  ' +
+      folderpath
+  );
+  try {
+    exec(
+      'C:\\Programs\\dcm4che\\bin\\storescu -b TEAM_SCU -c CIGA_MCR_ORDSTG@10.128.232.152:6109 ' +
+        folderpath,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const cli_getdicom_meta = (retfunc, filename) => {
   console.log(
     'JS: ',

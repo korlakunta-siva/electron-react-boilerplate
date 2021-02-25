@@ -11,7 +11,14 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  dialog,
+  BrowserView,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -27,6 +34,7 @@ export default class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let patientWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -70,7 +78,18 @@ const createWindow = async () => {
   };
 
   mainWindow = new BrowserWindow({
-    show: false,
+    show: true,
+    width: 1024,
+    height: 728,
+    icon: getAssetPath('icon.png'),
+    webPreferences: {
+      nodeIntegration: true,
+      devTools: true,
+    },
+  });
+
+  patientWindow = new BrowserWindow({
+    show: true,
     width: 1024,
     height: 728,
     icon: getAssetPath('icon.png'),
@@ -82,7 +101,9 @@ const createWindow = async () => {
 
   console.log(`file://${__dirname}/index.html`);
   mainWindow.loadURL(`file://${__dirname}/index.html`);
-  //mainWindow.webContents.openDevTools();
+
+  patientWindow.loadURL(`file://${__dirname}/index.html`);
+  mainWindow.webContents.openDevTools();
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
@@ -102,7 +123,7 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
+  const menuBuilder = new MenuBuilder(mainWindow, patientWindow);
   menuBuilder.buildMenu();
 
   // Open urls in the user's browser
@@ -114,6 +135,30 @@ const createWindow = async () => {
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
+
+  //twoViews(mainWindow);
+
+  // let view1 = new BrowserView({
+  //   webPreferences: {
+  //     nodeIntegration: true,
+  //   },
+  // });
+
+  // view1.setBounds({ x: 120, y: 150, width: 300, height: 300 });
+  // view1.webContents.loadURL(`file://${__dirname}/index.html`);
+
+  // mainWindow.setBrowserView(view1);
+
+  // let view2 = new BrowserView({
+  //   webPreferences: {
+  //     nodeIntegration: true,
+  //   },
+  // });
+
+  // view2.setBounds({ x: 230, y: 300, width: 300, height: 300 });
+  // view2.webContents.loadURL(`file://${__dirname}/index.html`);
+
+  // mainWindow.setBrowserView(view2);
 };
 
 /**
@@ -133,7 +178,39 @@ app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
 
 app.whenReady().then(createWindow).catch(console.log);
 
-app.on('ready', () => console.log('Ready', history({ index: 'index.html' })));
+app.on('ready', () => {
+  console.log('Ready', history({ index: 'index.html' }));
+});
+
+const twoViews = (topwindow) => {
+  //const win = new BrowserWindow({ width: 800, height: 600 })
+
+  let view1 = new BrowserView({
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
+
+  let view2 = new BrowserView({
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
+
+  // mainWindow.setBrowserView(view1);
+  // mainWindow.setBrowserView(view2);
+  view1.setBounds({ x: 10, y: 10, width: 300, height: 300 });
+  view1.webContents.loadURL(`file://${__dirname}/index.html`);
+
+  view2.setBounds({ x: 40, y: 60, width: 200, height: 500 });
+  view2.webContents.loadURL(`file://${__dirname}/index.html`);
+
+  console.log('Two browser views created');
+  topwindow.setBrowserView(view1);
+  topwindow.setBrowserView(view2);
+};
+
+//app.whenReady().then(twoViews);
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
@@ -196,6 +273,60 @@ ipcMain.on('open-elq-dialog', function (event) {
     });
 });
 
+// CIGA_MCR_ORDSTG@10.128.232.151:6109
+// CIGA_MCR_ORDSTG@10.128.232.152:6109
+
+//  CIGA_MCR_ORDSTG@10.128.232.147:6109
+
+export const cli_send2ciga = (folderpath) => {
+  //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+  let mesg = '';
+  console.log(
+    'C:\\Programs\\dcm4che\\bin\\storescu -b TEAM_SCU -c CIGA_MCR_ORDSTG@10.128.232.152:6109   ' +
+      folderpath
+  );
+  try {
+    exec(
+      'C:\\Programs\\dcm4che\\bin\\storescu -b TEAM_SCU -c CIGA_MCR_ORDSTG@10.128.232.152:6109  ' +
+        folderpath,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+ipcMain.on('open-file-dialog-send2ciga', function (event) {
+  dialog
+    .showOpenDialog({
+      properties: ['openDirectory'],
+    })
+    .then((data) => {
+      //console.log(data.filePaths);
+      console.log(
+        'Ready to Generate ELQ File and Open in QREADS. selected-folder : ',
+        data.filePaths
+      );
+
+      cli_send2ciga(data.filePaths);
+      //if (data.filePaths) event.sender.send('selected-file', data.filePaths)
+    });
+});
+
 //     properties: ['openFile']
 
 export const cli_exec_qreads = (folderpath) => {
@@ -227,3 +358,25 @@ export const cli_exec_qreads = (folderpath) => {
     console.log(error);
   }
 };
+
+// function openAboutWindow() {
+//   if (newWindow) {
+//     newWindow.focus()
+//     return
+//   }
+
+//   newWindow = new BrowserWindow({
+//     height: 185,
+//     resizable: false,
+//     width: 270,
+//     title: '',
+//     minimizable: false,
+//     fullscreenable: false
+//   })
+
+//   newWindow.loadURL('file://' + __dirname + '/views/about.html')
+
+//   newWindow.on('closed', function() {
+//     newWindow = null
+//   })
+// }

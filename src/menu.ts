@@ -13,9 +13,11 @@ interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
 
 export default class MenuBuilder {
   mainWindow: BrowserWindow;
+  patientWindow: BrowserWindow;
 
-  constructor(mainWindow: BrowserWindow) {
+  constructor(mainWindow: BrowserWindow, patientWindow: BrowserWindow) {
     this.mainWindow = mainWindow;
+    this.patientWindow = patientWindow;
   }
 
   buildMenu(): Menu {
@@ -110,6 +112,13 @@ export default class MenuBuilder {
           accelerator: 'Command+R',
           click: () => {
             this.mainWindow.webContents.reload();
+          },
+        },
+        {
+          label: 'Patient Browser',
+          accelerator: 'Command+K',
+          click: () => {
+            this.patientWindow.show();
           },
         },
         {
@@ -218,6 +227,21 @@ export default class MenuBuilder {
           process.env.NODE_ENV === 'development' ||
           process.env.DEBUG_PROD === 'true'
             ? [
+                {
+                  label: 'Patient Browser',
+                  accelerator: 'Command+K',
+                  type: 'checkbox',
+                  checked: true,
+                  click: (item) => {
+                    if (this.patientWindow.isVisible()) {
+                      this.patientWindow.hide();
+                      item.checked = false;
+                    } else {
+                      this.patientWindow.show();
+                      item.checkbox = true;
+                    }
+                  },
+                },
                 {
                   label: '&Reload',
                   accelerator: 'Ctrl+R',

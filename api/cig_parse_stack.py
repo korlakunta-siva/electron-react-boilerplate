@@ -83,9 +83,14 @@ def parsestack(stackpath):
     offsetArray = []
     uidArray = []
     #integers = struct.unpack('H'*count, barray)
+    shutil.rmtree('img')
+    try:
+      os.makedirs('img')
+    except OSError as e:
+      pass
 
-    if os.path.isfile("api/" + stackpath):
-        fh = open("api/" + stackpath, 'rb')
+    if os.path.isfile( stackpath):
+        fh = open(stackpath, 'rb')
         m = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
         ba = bytearray(m)
         print(ba[0:6], str(ba[0:6]))
@@ -130,14 +135,14 @@ def parsestack(stackpath):
 
             #print(i,   prevOffset,  offsetArray[i], offsetArray[i+1] - offsetArray[i])
             filebytes = ba[offsetArray[i]:offsetArray[i+1]]
-            writeImgFile(filebytes, "api/" + uid + '.dcm')
+            writeImgFile(filebytes, "img/" + uid + '.dcm')
 
 
         # print (convertBytesToShort(ba[7:9], 0))
         # print(struct.unpack('H'*1,ba[7:9]))
         print(len(ba))
     else:
-      print("File does not exist: ", "api/" +stackpath)
+      print("File does not exist: ", stackpath)
 
 def main():
 
@@ -165,9 +170,9 @@ def main():
   try:
 
     if command.strip() == 'parse' :
-       filepath = "42_19780259-1_1.2.840.113717.2.19780259.1_1.3.6.1.4.1.25403.1322.6188.20120314113107.1717.2.19780259.1.img"
-       createStackFile("api/")
-       #parsestack(filepath)
+       filepath = arguments #"42_19780259-1_1.2.840.113717.2.19780259.1_1.3.6.1.4.1.25403.1322.6188.20120314113107.1717.2.19780259.1.img"
+       #createStackFile("api/")
+       parsestack(filepath)
 
        sys.exit(0)
 

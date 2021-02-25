@@ -13,8 +13,11 @@ import {
   selectFiles,
   cli_getdicom_meta,
   cli_viewdicom_file,
+  cli_sendtociga_folder,
 } from '../../utils/cli';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
+
+const { exec } = require('child_process');
 
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
@@ -123,6 +126,7 @@ const App = (props) => {
 
   const [dicomData, setdicomData] = useState([]);
   const [dicomKOData, setdicomKOData] = useState([]);
+  const [dicomMetaData, setdicomMetaData] = useState([]);
 
   const ipc = require('electron').ipcRenderer;
 
@@ -134,6 +138,10 @@ const App = (props) => {
     ipc.send('open-file-dialog');
 
     //selectFiles();
+  };
+
+  const onSendExam2CIGA = () => {
+    ipc.send('open-file-dialog-send2ciga');
   };
 
   const getELQFile = () => {
@@ -154,25 +162,30 @@ const App = (props) => {
       .filter((node) => node.selected);
     console.log(selectedNodes);
 
-    try {
-      if (selectedNodes) {
-        let selectedData = selectedNodes.map((node) => node.data);
-        console.log(selectedData[0].koseries);
-        setdicomKOData(selectedData[0].koseries);
-        // alert(`Selected Nodes:\n${JSON.stringify(selectedData)}`);
-        //return selectedData;
-      } else {
-        setdicomKOData([]);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    // try {
+    //   if (selectedNodes) {
+    //     let selectedData = selectedNodes.map((node) => node.data);
+    //     console.log('KO SERES', selectedData[0].koseries);
+    //     setdicomKOData(selectedData[0].koseries);
+    //     // alert(`Selected Nodes:\n${JSON.stringify(selectedData)}`);
+    //     //return selectedData;
+    //   } else {
+    //     setdicomKOData([]);
+    //   }
+    // } catch (error) {
+    //   console.log(error);
+    // }
 
     console.log('row1', event);
   }
 
   function onRowSelected2(event) {
-    console.log('row2', event);
+    let selectedNodes = event.api
+      .getSelectedNodes()
+      .filter((node) => node.selected);
+    console.log(selectedNodes);
+
+    console.log('row2', selectedNodes[0].data, event);
   }
 
   // +
@@ -200,11 +213,96 @@ const App = (props) => {
     // }
 
     console.log('DICOM', myObject);
-    if (myObject.hasOwnProperty('koseries')) {
-      setdicomKOData(myObject['koseries']);
-    }
+    // if (myObject.hasOwnProperty('koseries')) {
+    //   setdicomKOData(myObject['koseries']);
+    // }
 
     setdicomData(myObject);
+
+    let dicomMeta = [];
+    let unique_series = myObject.reduce((accumulator, currentValue) => {
+      //console.log('image Instance Row:', accumulator, currentValue);
+
+      let found = false;
+      for (let i = 0; i < accumulator.length; i++) {
+        if (
+          accumulator[i].SeriesInstanceUID == currentValue.SeriesInstanceUID
+        ) {
+          found = true;
+          accumulator[i].ImageCount += 1;
+          break;
+        }
+      }
+      if (!found) {
+        let IsKO = false;
+        if (currentValue.hasOwnProperty('koseries')) {
+          let ko_series = currentValue['koseries'];
+          if (ko_series != '') {
+            IsKO = true;
+          }
+          //console.log('KO INFO', IsKO, currentValue['koseries'], currentValue);
+        }
+        console.log();
+        accumulator.push({
+          IsKO: IsKO,
+          ImageCount: 1,
+          RejectedCount: 0,
+          SeriesInstanceUID: currentValue.SeriesInstanceUID,
+          StudyInstanceUID: currentValue.StudyInstanceUID,
+          SOPClassUID: currentValue.SOPClassUID,
+          SeriesPath: currentValue.filepath.match(/(.*)[\/\\]/)[1] || '',
+          Accession: currentValue.Accession,
+          DisplayName: currentValue.DisplayName,
+          Modality: currentValue.Modality,
+          PatientID: currentValue.PatientID,
+          PatientName: currentValue.PatientName,
+          AffectedSeries: currentValue['koseries'],
+        });
+      }
+      //console.log('ACCUMULATOR', accumulator);
+
+      //console.log('FOUND KO', currentValue['koseries']);
+      return accumulator;
+
+      //accumulator.concat(currentValue)
+    }, []);
+
+    for (let i = 0; i < unique_series.length; i++) {
+      if (unique_series[i].IsKO) {
+        //console.log('PROCESS THIS', unique_series[i].AffectedSeries);
+        unique_series[i].AffectedSeries.forEach((element) => {
+          // console.log(
+          //   'PROCESS THIS',
+          //   element.seruid,
+          //   element.images,
+          //   element.images.length
+          // );
+
+          for (let j = 0; j < unique_series.length; j++) {
+            console.log(
+              'CHECKING',
+              unique_series[j].SeriesInstanceUID == element.seruid,
+              unique_series[j].SeriesInstanceUID,
+              element.seruid
+            );
+            if (unique_series[j].SeriesInstanceUID == element.seruid) {
+              unique_series[j].RejectedCount += element.images.length;
+              console.log(
+                'CHECKING-TRUE',
+                unique_series[j].SeriesInstanceUID == element.seruid,
+                unique_series[j].SeriesInstanceUID,
+                element.seruid
+              );
+              break;
+            }
+          }
+        });
+      }
+    }
+
+    console.log('Summary', unique_series, myObject['koseries']);
+
+    setdicomKOData(unique_series);
   };
 
   const retfunc = (data) => {
@@ -218,7 +316,7 @@ const App = (props) => {
       myArray.push(myObject[i]);
     }
 
-    console.log(myArray);
+    console.log('RETFUNC DATA', myArray);
     //setRowData(myArray);
     setRowData(
       myArray
@@ -358,9 +456,45 @@ const App = (props) => {
     //gridApi.exportDataAsCsv(params);
   };
 
-  const onImageView = (filepath) => {
+  const onImageView = ({ filepath }) => {
     console.log('READY TO OPEN: ', filepath);
     cli_viewdicom_file(filepath);
+  };
+
+  const onSendSeries = (rowdata) => {
+    console.log('READY SEND: ', rowdata);
+    cli_sendtociga_folder(rowdata.SeriesPath);
+  };
+
+  // INT Server  SERVER=http://qreadsq3ha1.mayo.edu:9082/MCRQREADS/
+
+  const onOpenQREADS = (rowdata) => {
+    console.log('READY OPEN IN QREADS: ', rowdata);
+    try {
+      exec(
+        '"C:\\WKSAdmin\\Replicated Files\\Local Launchers\\Qreads.vbs" PARENTAPP=SIVA ENVIRONMENT=PROD  MODE=ONLINE CLINICNUMBER=' +
+          rowdata.PatientID +
+          ' ACCESSION=' +
+          rowdata.Accession,
+        { maxBuffer: 1024 * 50000 },
+        (error, stdout, stderr) => {
+          if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+          }
+          //console.log(`stdout: ${stdout}`);
+          console.log(stdout);
+          //retfunc(stdout);
+          //retfunc ((JSON.stringify(stdout)));
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -541,6 +675,7 @@ const App = (props) => {
               <button onClick={getDicmFiles}>
                 Select DICOM Files / Folder
               </button>
+              <button onClick={onSendExam2CIGA}>Selectto CIGA-INT</button>
               <button onClick={getELQFile}>
                 Generate ExamList.qreads File For DCM Folder
               </button>
@@ -548,12 +683,17 @@ const App = (props) => {
                 key="parent"
                 dicomData={dicomData}
                 onRowSelected={onRowSelected1}
+                buttonLabel="View Image"
                 onImageView={onImageView}
               />
               <DicomSetView
                 key="child"
                 dicomData={dicomKOData}
                 onRowSelected={onRowSelected2}
+                buttonLabel="Send to CIGA"
+                onImageView={onSendSeries}
+                button2Label="Open in QREADS"
+                onButton2Callback={onOpenQREADS}
               />
             </div>
           </TabPanel>

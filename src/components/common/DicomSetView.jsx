@@ -99,18 +99,41 @@ const DicomSetView = (props) => {
       cols[0]['rowDrag'] = true;
       cols[0]['headerCheckboxSelection'] = true;
       cols[0]['checkboxSelection'] = true;
+
       //months.splice(1, 0, 'Feb');
-      cols.splice(1, 0, {
-        field: 'file',
-        cellRenderer: 'btnCellRenderer',
-        cellRendererParams: {
-          btnLabel: 'View Image',
-          clicked: function (field) {
-            console.log(`OPEN IMAGE : ${field} , was clicked`);
-            props.onImageView(` ${field}`);
+      if (props.buttonLabel) {
+        cols.splice(1, 0, {
+          field: 'file',
+          cellRenderer: 'btnCellRenderer',
+          cellRendererParams: {
+            btnLabel: props.buttonLabel,
+            clicked: function (rowdata) {
+              // console.log(
+              //   `OPEN IMAGE : ${props.buttonLabel} , was clicked`,
+              //   rowdata
+              // );
+              props.onImageView(rowdata);
+            },
           },
-        },
-      });
+        });
+      }
+
+      if (props.button2Label) {
+        cols.splice(2, 0, {
+          field: 'file',
+          cellRenderer: 'btnCellRenderer',
+          cellRendererParams: {
+            btnLabel: props.button2Label,
+            clicked: function (rowdata) {
+              // console.log(
+              //   `OPEN IMAGE : ${props.buttonLabel} , was clicked`,
+              //   rowdata
+              // );
+              props.onButton2Callback(rowdata);
+            },
+          },
+        });
+      }
 
       setColumns(cols);
 

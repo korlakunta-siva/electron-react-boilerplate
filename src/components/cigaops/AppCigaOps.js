@@ -66,7 +66,6 @@ class App extends Component {
               {this.state.cigahosts.map((row, index) => (
                 <CigaHost key={row} hostname={row} />
               ))}
-              ;
             </div>
           </div>
         </div>
