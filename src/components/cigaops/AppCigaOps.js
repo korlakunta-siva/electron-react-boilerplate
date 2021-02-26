@@ -29,10 +29,14 @@ class App extends Component {
       'iasp1ei1',
       'iasp1fo1',
       'iasp2ei1',
+      'iasp2ha1',
       'iasp1ma1',
       'iasp1ma2',
       'iasp1mf1',
       'iasp1mf2',
+      'cigadmr01',
+      'iasq1mr1',
+      'iasq1mr2',
     ],
 
     customsqltext:
@@ -53,16 +57,20 @@ class App extends Component {
   render() {
     return this.state.columns_loaded ? (
       <React.Fragment>
-        <div
-          className="container-fluid "
-          style={{ width: '90%', paddingTop: '65px' }}
-        >
+        <div className="container-fluid  " style={{ whiteSpace: 'nowrap' }}>
           <div
             className="form-group"
-            style={{ dislplay: 'inline-block' }}
+            style={{
+              dislplay: 'inline-block',
+              margin: '10px',
+              float: 'left',
+            }}
             width="200px"
           >
-            <div>
+            <div
+              className="row "
+              style={{ dislplay: 'inline-block', margin: '10px' }}
+            >
               {this.state.cigahosts.map((row, index) => (
                 <CigaHost key={row} hostname={row} />
               ))}

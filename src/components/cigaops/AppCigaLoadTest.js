@@ -45,16 +45,20 @@ class App extends Component {
   render() {
     return this.state.columns_loaded ? (
       <React.Fragment>
-        <div
-          className="container-fluid "
-          style={{ width: '90%', paddingTop: '65px' }}
-        >
+        <div className="container-fluid  " style={{ whiteSpace: 'nowrap' }}>
           <div
             className="form-group"
-            style={{ dislplay: 'inline-block' }}
+            style={{
+              dislplay: 'inline-block',
+              margin: '10px',
+              float: 'left',
+            }}
             width="200px"
           >
-            <div>
+            <div
+              className="row "
+              style={{ dislplay: 'inline-block', margin: '10px' }}
+            >
               {this.state.cigahosts.map((row, index) => (
                 <CigaHost key={row} hostname={row} />
               ))}

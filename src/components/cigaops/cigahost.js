@@ -13,17 +13,21 @@ import Collapse from '@material-ui/core/Collapse';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import { red } from '@material-ui/core/colors';
+import { red, lightBlue } from '@material-ui/core/colors';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import ShareIcon from '@material-ui/icons/Share';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
+import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+
 const { exec } = require('child_process');
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    maxWidth: 345,
+    maxWidth: 250,
   },
   media: {
     height: 0,
@@ -84,12 +88,26 @@ const CigaHost = (props) => {
     expanded: false,
   });
 
+  const [hostSummary, sethostSummary] = React.useState([]);
+
   const classes = useStyles();
 
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleClick = (event) => {
+    //alert('Got CLick1' + event.currentTarget);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = (event) => {
+    //alert('Got CLick2' + event.currentTarget);
+    setAnchorEl(null);
+  };
+
   const handleExpandClick = () => {
-    console.log('before', stateData);
+    //console.log('before', stateData);
     setstateData({ ...stateData, expanded: !stateData.expanded });
-    console.log('After', stateData);
+    //console.log('After', stateData);
   };
 
   React.useEffect(() => {
@@ -110,7 +128,7 @@ const CigaHost = (props) => {
           }
           //console.log(`stdout: ${stdout}`);
 
-          console.log(stdout);
+          // console.log(stdout);
           //let myObject = JSON.parse(stdout);
           //console.log(myObject);
 
@@ -121,10 +139,10 @@ const CigaHost = (props) => {
           let receivers = [];
           if (psdata.hasOwnProperty('receivers')) {
             try {
-              console.log(psdata.receivers);
+              //console.log(psdata.receivers);
               receivers = psdata.receivers; //JSON.parse(psdata.receivers);
               receivers.map((row, index) => {
-                console.log(row.CommandArgs);
+                //console.log(row.CommandArgs);
 
                 //console.log('RECEIVERS ARGS', argv);
                 if (row.CommandArgs) {
@@ -171,7 +189,7 @@ const CigaHost = (props) => {
               processors = psdata.processors; //JSON.parse(psdata.processors);
 
               processors.map((row, index) => {
-                console.log(row.CommandArgs);
+                //console.log(row.CommandArgs);
 
                 row['priority'] = ''; //args.p;
                 row['processorid'] = ''; //args.t;
@@ -212,7 +230,7 @@ const CigaHost = (props) => {
           if (psdata.hasOwnProperty('qmanager')) {
             try {
               qmanager = psdata.qmanager; // JSON.parse(psdata.qmanager); //
-              console.log(qmanager);
+              //console.log(qmanager);
               qmanager.map((row, index) => {
                 if (row.CommandArgs) {
                   if (row.CommandArgs.toLowerCase().includes('queue=test'))
@@ -247,13 +265,18 @@ const CigaHost = (props) => {
             } catch (err) {}
           }
 
-          setstateData({
+          let newData = {
             hostname: props.hostname,
             psdata: psdata,
             receivers: receivers,
             processors: processors,
             qmanager: qmanager,
-          });
+          };
+
+          setstateData(newData);
+
+          prepSummary(newData);
+          console.log('HOST SUMMARY', newData);
         }
       );
     } catch (error) {
@@ -330,82 +353,222 @@ const CigaHost = (props) => {
     // };
   }, [props.hostname]);
 
+  const prepSummary = (newData) => {
+    let host_summary = [];
+
+    host_summary = newData.processors.reduce((accumulator, currentValue) => {
+      let found = false;
+      for (let i = 0; i < accumulator.length; i++) {
+        if (accumulator[i].queuekey == currentValue.QUEUE) {
+          found = true;
+          accumulator[i].processorCount += 1;
+          accumulator[i].procesors.push(currentValue);
+          break;
+        }
+      }
+      if (!found) {
+        let emptyRow = {
+          queuekey: currentValue.QUEUE,
+          campus: '',
+          processorCount: 0,
+          receiverCount: 0,
+          qmanagerCount: 0,
+          procesors: [],
+          receivers: [],
+          qmanagers: [],
+        };
+        switch (stateData.hostname) {
+          case 'iasp1fo1':
+          case 'iasp1ei1':
+          case 'iasp2ei1':
+          case 'cigadmr01':
+          case 'iasp2ha1':
+          case 'iasq1mr1':
+          case 'iasq1mr2':
+            emptyRow.campus = 'MCR';
+            emptyRow.campusColor = 'deepskyblue';
+            break;
+          case 'iasp1mf1':
+          case 'iasp1mf2':
+            emptyRow.campus = 'MCF';
+            emptyRow.campusColor = 'darkturquoise';
+            break;
+          case 'iasp1ma1':
+          case 'iasp1ma2':
+            emptyRow.campus = 'MCA';
+            emptyRow.campusColor = 'darksalmon';
+            break;
+          default:
+            emptyRow.campus = '';
+            emptyRow.campusColor = 'lightgrey';
+        }
+        emptyRow.processorCount += 1;
+        emptyRow.procesors.push(currentValue);
+        accumulator.push(emptyRow);
+      }
+      return accumulator;
+    }, host_summary);
+
+    host_summary = newData.receivers.reduce((accumulator, currentValue) => {
+      let found = false;
+      for (let i = 0; i < accumulator.length; i++) {
+        if (accumulator[i].queuekey == currentValue.QUEUE) {
+          found = true;
+          accumulator[i].receiverCount += 1;
+          accumulator[i].receivers.push(currentValue);
+          break;
+        }
+      }
+      if (!found) {
+        let emptyRow = {
+          queuekey: currentValue.QUEUE,
+          campus: '',
+          processorCount: 0,
+          receiverCount: 0,
+          qmanagerCount: 0,
+          procesors: [],
+          receivers: [],
+          qmanagers: [],
+        };
+        switch (stateData.hostname) {
+          case 'iasp1fo1':
+          case 'iasp1ei1':
+          case 'iasp2ei1':
+          case 'cigadmr01':
+          case 'iasp2ha1':
+          case 'iasq1mr1':
+          case 'iasq1mr2':
+            emptyRow.campus = 'MCR';
+            emptyRow.campusColor = 'deepskyblue';
+            break;
+          case 'iasp1mf1':
+          case 'iasp1mf2':
+            emptyRow.campus = 'MCF';
+            emptyRow.campusColor = 'darkturquoise';
+            break;
+          case 'iasp1ma1':
+          case 'iasp1ma2':
+            emptyRow.campus = 'MCA';
+            emptyRow.campusColor = 'darksalmon';
+            break;
+          default:
+            emptyRow.campus = '';
+            emptyRow.campusColor = 'lightgrey';
+        }
+        emptyRow.receiverCount += 1;
+        emptyRow.receivers.push(currentValue);
+        accumulator.push(emptyRow);
+      }
+      return accumulator;
+    }, host_summary);
+
+    host_summary = newData.qmanager.reduce((accumulator, currentValue) => {
+      let found = false;
+      for (let i = 0; i < accumulator.length; i++) {
+        if (accumulator[i].queuekey == currentValue.QUEUE) {
+          found = true;
+          accumulator[i].qmanagerCount += 1;
+          accumulator[i].qmanagers.push(currentValue);
+          break;
+        }
+      }
+      if (!found) {
+        let emptyRow = {
+          queuekey: currentValue.QUEUE,
+          campus: '',
+          processorCount: 0,
+          receiverCount: 0,
+          qmanagerCount: 0,
+          procesors: [],
+          receivers: [],
+          qmanagers: [],
+        };
+        switch (stateData.hostname) {
+          case 'iasp1fo1':
+          case 'iasp1ei1':
+          case 'iasp2ei1':
+          case 'cigadmr01':
+          case 'iasp2ha1':
+          case 'iasq1mr1':
+          case 'iasq1mr2':
+            emptyRow.campus = 'MCR';
+            emptyRow.campusColor = 'deepskyblue';
+            break;
+          case 'iasp1mf1':
+          case 'iasp1mf2':
+            emptyRow.campus = 'MCF';
+            emptyRow.campusColor = 'darkturquoise';
+            break;
+          case 'iasp1ma1':
+          case 'iasp1ma2':
+            emptyRow.campus = 'MCA';
+            emptyRow.campusColor = 'darksalmon';
+            break;
+          default:
+            emptyRow.campus = '';
+            emptyRow.campusColor = 'lightgrey';
+        }
+        emptyRow.qmanagerCount += 1;
+        emptyRow.qmanagers.push(currentValue);
+        accumulator.push(emptyRow);
+      }
+      return accumulator;
+    }, host_summary);
+
+    sethostSummary(host_summary);
+    console.log('Hostsummary set', hostSummary);
+  };
+
   return (
     <Card className={classes.root}>
       <CardHeader
         avatar={
-          <Avatar aria-label="recipe" className={classes.avatar}>
-            R
+          <Avatar
+            aria-label="recipe"
+            className={classes.avatar}
+            style={{
+              backgroundColor:
+                hostSummary.length > 0
+                  ? hostSummary[0].campusColor
+                  : 'lightred',
+            }}
+          >
+            {hostSummary.length > 0 ? hostSummary[0].campus[2] : ''}
           </Avatar>
         }
         action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon />
-          </IconButton>
+          <div>
+            <IconButton aria-label="settings" onClick={handleClick}>
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>Profile</MenuItem>
+              <MenuItem onClick={handleClose}>My account</MenuItem>
+              <MenuItem onClick={handleClose}>Logout</MenuItem>
+            </Menu>
+          </div>
         }
         title={stateData.hostname}
         subheader="September 14, 2016"
       />
       <CardContent>
         <Typography variant="body2" color="textSecondary" component="p">
-          {stateData.qmanager.map((row, index) => (
+          {hostSummary.map((row, index) => (
             <span>
-              <Avatar
-                key={row.PID}
-                aria-label="recipe"
-                className={classes.avatar}
-              >
-                M
-              </Avatar>
-              {row.QUEUE}
+              <h4>
+                {row.campus} {row.queuekey.replace('queue=', '')}
+              </h4>
+              Processors {row.processorCount} <br />
+              Receivers {row.receiverCount} <br />
+              QManagers {row.qmanagerCount}
             </span>
           ))}
-
-          {stateData.receivers
-            .sort((a, b) => {
-              //return a.processorid - b.processorid;
-              return (
-                '' +
-                a.args.queue +
-                ('0' + a.PID).slice(-2)
-              ).localeCompare('' + b.args.queue + ('0' + b.PID).slice(-2));
-            })
-            .map((row, index) => (
-              <span>
-                <Avatar
-                  key={row.PID}
-                  aria-label="recipe"
-                  className={classes.avatar}
-                >
-                  R
-                </Avatar>
-                {row.QUEUE}
-              </span>
-            ))}
-
-          {stateData.processors
-            .sort((a, b) => {
-              //return a.processorid - b.processorid;
-              return (
-                a.SERIAL +
-                a.QUEUE +
-                ('0' + a.processorid).slice(-2)
-              ).localeCompare(
-                b.SERIAL + b.QUEUE + ('0' + b.processorid).slice(-2)
-              );
-            })
-            .map((row, index) => (
-              <span>
-                <Avatar
-                  key={row.PID}
-                  aria-label="recipe"
-                  className={classes.avatar}
-                >
-                  P
-                </Avatar>
-                {row.QUEUE}
-              </span>
-            ))}
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
