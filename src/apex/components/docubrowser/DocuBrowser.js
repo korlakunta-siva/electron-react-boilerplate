@@ -1,54 +1,61 @@
-import React, { Component , createRef} from 'react'
-import Select from 'react-select'
+import React, { Component, createRef } from 'react';
+import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import PropTypes from 'prop-types';
 
-import ReactDOM from 'react-dom'
-import Moment from 'moment'
-import './DocuBrowser.css'
-import ShowPDF from "../common/pdf/PdfView";
+import ReactDOM from 'react-dom';
+import Moment from 'moment';
+import './DocuBrowser.css';
+import ShowPDF from '../common/pdf/PdfView';
 import DatePicker from 'react-datepicker';
 import DateTimePicker from 'react-datetime-picker';
-import DataProvider from "../common/DataProvider";
-import DataGrid from "../common/DataGridNew";
-import { Toolbar, Data } from "react-data-grid-addons";
-import MyGrid from "../unused/MyGrid";
-import axios from 'axios'
+import DataProvider from '../common/DataProvider';
+import DataGrid from '../common/DataGridNew';
+import { Toolbar, Data } from 'react-data-grid-addons';
+import MyGrid from '../unused/MyGrid';
+
+import axios from 'axios';
 import CSRFToken, { getCookie } from '../common/csrftoken';
 import request from 'superagent';
 import { RadioGroup, Radio } from 'react-radio-group';
 import { Button, Progress, Input, CustomInput } from 'reactstrap';
 
-import {Tabs, Tab} from '@material-ui/core';
+import { Tabs, Tab } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 
-import {showFile} from "../common/Utils"
+import { showFile } from '../common/Utils';
 
+import { withRouter } from 'react-router-dom';
 
-import { withRouter } from "react-router-dom";
+axios.defaults.xsrfCookieName = 'csrftoken';
+axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 
-axios.defaults.xsrfCookieName = 'csrftoken'
-axios.defaults.xsrfHeaderName = 'X-CSRFToken'
-
-const backend_api_endpoint = "https://192.168.21.199:8040/"
+const backend_api_endpoint = 'https://192.168.21.199:8040/';
 //const backend_api_endpoint_local = "http://127.0.0.1:8000/"
-const backend_db_endpoint = "https://192.168.21.199:8044/"
+const backend_db_endpoint = 'https://192.168.21.199:8044/';
 //const backend_db_endpoint_local = "http://127.0.0.1:8000/"
 
-const endpoint = backend_api_endpoint + 'uploadfiles/'
-const endpoint_processing = backend_api_endpoint + 'processfile/'
+const endpoint = backend_api_endpoint + 'uploadfiles/';
+const endpoint_processing = backend_api_endpoint + 'processfile/';
 
-import FileBrowser, { Icons } from 'react-keyed-file-browser'
+import FileBrowser, { Icons } from 'react-keyed-file-browser';
 
-import { MDBCard, MDBCardHeader, MDBCardBody, MDBTableEditable,  } from "mdbreact";
-import {DateEditor, DateFormater} from '../common/DateEditor';
+import {
+  MDBCard,
+  MDBCardHeader,
+  MDBCardBody,
+  MDBTableEditable,
+} from 'mdbreact';
+import { DateEditor, DateFormater } from '../common/DateEditor';
 
-console.log("Directory: " + __dirname);
+import ApexDataGrid from '../../../components/datagrid/ApexDataGrid';
+
+console.log('Directory: ' + __dirname);
 
 let csrftoken = getCookie('csrftoken');
 
-const { ipcRenderer } = window.require("electron");
+const { ipcRenderer } = window.require('electron');
 
 // let   eventDataGrid = {
 //   onClick: (ev, args) => {
@@ -62,54 +69,49 @@ const defaultColumnProperties = {
   sortable: true,
   filterable: true,
   resizable: true,
-  editable: false
+  editable: false,
 };
 
 const columns = [
   {
-    key: "Name",
-    name: "Name",
+    key: 'Name',
+    name: 'Name',
     sortDescendingFirst: false,
     frozen: true,
     resizable: true,
-    width: 225
-
+    width: 225,
   },
   {
-    key: "DOB",
-    name: "Birth Date",
+    key: 'DOB',
+    name: 'Birth Date',
     frozen: false,
     resizable: false,
     width: 120,
     editable: true,
-    editor: DatePicker
+    editor: DatePicker,
     //,  events: eventDataGrid
-  }
-  ,
+  },
   {
-    key: "PatientId",
-    name: "ID",
+    key: 'PatientId',
+    name: 'ID',
     editable: true,
     resizable: false,
-    width: 100
+    width: 100,
   },
   {
-    key: "Phone1",
-    name: "Phone",
+    key: 'Phone1',
+    name: 'Phone',
     frozen: false,
     resizable: false,
-    width: 125
-  }
-  ,
-  {
-    key: "City",
-    name: "City",
-    frozen: false,
-    width: 150
+    width: 125,
   },
-
-
-].map(c => ({ ...c, ...defaultColumnProperties }));
+  {
+    key: 'City',
+    name: 'City',
+    frozen: false,
+    width: 150,
+  },
+].map((c) => ({ ...c, ...defaultColumnProperties }));
 
 export const colourOptions = [
   { value: 'ocean', label: 'Ocean', color: '#00B8D9', isFixed: true },
@@ -124,15 +126,14 @@ export const colourOptions = [
   { value: 'silver', label: 'Silver', color: '#666666' },
 ];
 
-const columns0 = ["Person Name", "Age", "Company Name", "Country", "City"];
+const columns0 = ['Person Name', 'Age', 'Company Name', 'Country', 'City'];
 
 const data0 = [
-  ["Aurelia Vega", 30, "Deepends", "Spain", "Madrid"],
-  ["Guerra Cortez", 45, "Insectus", "USA", "San Francisco"],
-  ["Guadalupe House", 26, "Isotronic", "Germany", "Frankfurt am Main"],
-  ["Elisa Gallagher", 31, "Portica", "United Kingdom", "London"]
+  ['Aurelia Vega', 30, 'Deepends', 'Spain', 'Madrid'],
+  ['Guerra Cortez', 45, 'Insectus', 'USA', 'San Francisco'],
+  ['Guadalupe House', 26, 'Isotronic', 'Germany', 'Frankfurt am Main'],
+  ['Elisa Gallagher', 31, 'Portica', 'United Kingdom', 'London'],
 ];
-
 
 // const defaultColumnProperties = {
 //   sortable: true,
@@ -141,40 +142,34 @@ const data0 = [
 //   editable: true
 // };
 
-
-const getColumnsList =datarow => {
-
+const getColumnsList = (datarow) => {
   let columnList = [];
   if (datarow == undefined || datarow.length == 0) return [];
-      //console.log(Object.keys(datarow));
-      columnList = Object.keys(datarow).map(function(key) {
-        let dict1 = {};
-        //console.log(key);
-        Object.assign(
-          dict1,
-          {
-            key: key,
-            name: key,
-            width: datarow[key]
-              ? datarow[key].toString().length * 7 + 50
-              : 100
-          },
-          {}
-        );
+  //console.log(Object.keys(datarow));
+  columnList = Object.keys(datarow).map(function (key) {
+    let dict1 = {};
+    //console.log(key);
+    Object.assign(
+      dict1,
+      {
+        key: key,
+        name: key,
+        width: datarow[key] ? datarow[key].toString().length * 7 + 50 : 100,
+      },
+      {}
+    );
 
-        return dict1;
-      });
+    return dict1;
+  });
 
-      columnList = columnList.map(c => ({
-        ...c,
-        ...defaultColumnProperties
-      }));
+  columnList = columnList.map((c) => ({
+    ...c,
+    ...defaultColumnProperties,
+  }));
 
-      //console.log(columnList);
-      return columnList;
-
+  //console.log(columnList);
+  return columnList;
 };
-
 
 function a11yProps(index) {
   return {
@@ -190,80 +185,74 @@ function a11yProps(index) {
 //   },
 // }));
 
-
-
 export default class DocuBrowser extends React.Component {
+  endpoint_curr_linqdocs = `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20100%20  select doc.docID, doc.customName , doc.scanDate, doc.ScannedBy, doc.Review, doc.ReviewerId, doc.ReviewerName , doc.delFlag,  doc.PatientId, apex.dbo.PatientName(doc.patientid) as PatientName, doc.dirpath, doc.fileName from mobiledoc..document doc where doc.patientid = arg_ecwpatid and doc.doc_Type in  (114, 115,116,117,119,121,154,157,174) and delflag = 0 order by customName desc `;
 
+  endpoint_invcpt = `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%2010%20 select convert(varchar(10),claimdate,121) as claimdate, billedfee, Cpt_Allowed, inspaid, patpaid, insbal, patbal, PatientName, cptcode, cptdesc, pinsname from apex.rc.Apex_Invoice_Cpt_Summary where InvoiceId = arg_invoiceid `;
 
-  endpoint_curr_linqdocs =
-  `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20100%20  select doc.docID, doc.customName , doc.scanDate, doc.ScannedBy, doc.Review, doc.ReviewerId, doc.ReviewerName , doc.delFlag,  doc.PatientId, apex.dbo.PatientName(doc.patientid) as PatientName, doc.dirpath, doc.fileName from mobiledoc..document doc where doc.patientid = arg_ecwpatid and doc.doc_Type in  (114, 115,116,117,119,121,154,157,174) and delflag = 0 order by customName desc `
-
-  endpoint_invcpt =
-  `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%2010%20 select convert(varchar(10),claimdate,121) as claimdate, billedfee, Cpt_Allowed, inspaid, patpaid, insbal, patbal, PatientName, cptcode, cptdesc, pinsname from apex.rc.Apex_Invoice_Cpt_Summary where InvoiceId = arg_invoiceid `
-
-  endpoint_ecwenc =
-  `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%2010%20  select convert(varchar(10),date,121) as date, convert(varchar(10),dateadd(dd, 32, date),121) as next_date, reason, VisitType, STATUS, enclock,  InvoiceId  from mobiledoc..enc e0 where e0.patientID = arg_ecwpatid and VisitType = 'NV' and deleteflag = 0 order by date desc `
-
+  endpoint_ecwenc = `https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%2010%20  select convert(varchar(10),date,121) as date, convert(varchar(10),dateadd(dd, 32, date),121) as next_date, reason, VisitType, STATUS, enclock,  InvoiceId  from mobiledoc..enc e0 where e0.patientID = arg_ecwpatid and VisitType = 'NV' and deleteflag = 0 order by date desc `;
 
   handleTabChange = (event, newValue) => {
-    this.setState({ tablValue : newValue });
+    this.setState({ tablValue: newValue });
   };
 
   openPDF = () => {
-    console.log("Renderer sending message to main");
-    ipcRenderer.send('show-file', 'ping')
-  }
+    console.log('Renderer sending message to main');
+    ipcRenderer.send('show-file', 'ping');
+  };
 
   getPDFPage = () => {
-
-    console.log("Called Get Page Number");
+    console.log('Called Get Page Number');
 
     const iframePdf = this.state.iframeRef.current.contentWindow;
     console.log(iframePdf);
     console.log(iframePdf.PDFViewerApplication.pdfViewer.currentPageNumber);
     if (this.iframePdf !== undefined) {
-       const iframePdf = this.iframePdf.contentWindow;
-       iframePdf.print();
+      const iframePdf = this.iframePdf.contentWindow;
+      iframePdf.print();
     }
   };
 
   nextPDFPage = () => {
-
-    console.log("Called Next Page Number");
+    console.log('Called Next Page Number');
 
     const iframePdf = this.state.iframeRef.current.contentWindow;
     console.log(iframePdf);
-    console.log(iframePdf.PDFViewerApplication.pdfViewer.currentPageNumber += 1 );
+    console.log(
+      (iframePdf.PDFViewerApplication.pdfViewer.currentPageNumber += 1)
+    );
 
-    iframePdf.PDFViewerApplication.pdfDocument.getPage(1).then(pdfPage => { pdfPage.getTextContent().then(data => { console.log(data); }); });
-
+    iframePdf.PDFViewerApplication.pdfDocument.getPage(1).then((pdfPage) => {
+      pdfPage.getTextContent().then((data) => {
+        console.log(data);
+      });
+    });
   };
 
-
   state = {
-    filepath : "",
-    iframeRef : createRef(),
+    filepath: '',
+    iframeRef: createRef(),
     tablValue: 0,
-    filetodisplay: "0",
+    filetodisplay: '0',
     patientid: 0,
     patientrow: {},
-    folderType: "scanhome",
-    folderContext: "/mnt/skscan",
+    folderType: 'scanhome',
+    folderContext: '/mnt/skscan',
     patientGrid_data: [],
     patientGrid_columns: [],
-    showMonitoringPatientsOnly : true,
+    showMonitoringPatientsOnly: true,
 
-    ecw_enc : [],
+    ecw_enc: [],
     invoice_cpt: [],
 
-    pat_linqdocs : [],
-    RenameToFilename: "",
-    newFileNameSelected: "",
+    pat_linqdocs: [],
+    RenameToFilename: '',
+    newFileNameSelected: '',
     docuType: null,
     docuPages: 'All',
     docuContext: 'EMR',
     recentdate: new Date(),
-    filePrefixDate: "",
+    filePrefixDate: '',
     date: new Date(),
     selectedFile: [],
     inputRestKey: 'reset',
@@ -311,22 +300,21 @@ export default class DocuBrowser extends React.Component {
         size: 4.2 * 1024 * 1024,
       },
     ],
-  }
-
+  };
 
   constructor(props) {
     super(props);
     this.patientGridElement = React.createRef();
     this.linqGridElement = React.createRef();
-    this.ecwencGridElement= React.createRef();
+    this.ecwencGridElement = React.createRef();
     this.invoiceGridElement = React.createRef();
-  };
+  }
 
   componentDidMount() {
     console.log('GrandChild did mount.');
 
-    ipcRenderer.on ('selectedFile', (event, path) => {
-      console.log("Client got: Show file " + path);
+    ipcRenderer.on('selectedFile', (event, path) => {
+      console.log('Client got: Show file ' + path);
 
       const element = `<h1>Hello, world</h1> ${path}`;
 
@@ -345,486 +333,682 @@ export default class DocuBrowser extends React.Component {
       // />
       // `;
 
-       const frame_element = `/pdfjs/web/viewer.html?file=${path}`;
+      const frame_element = `/pdfjs/web/viewer.html?file=${path}`;
 
-      this.setState( { filepath : frame_element});
+      this.setState({ filepath: frame_element });
     });
-
 
     this.checkinDjangoApi();
 
     // folderContext
     // /mnt/scanhome
-    fetch(backend_api_endpoint + "getfiles?folderpath=" + this.state.folderContext)
-      .then(response => {
+    fetch(
+      backend_api_endpoint + 'getfiles?folderpath=' + this.state.folderContext
+    )
+      .then((response) => {
         if (response.status !== 200) {
-          return this.setState({ placeholder: "Something went wrong in getting data" });
+          return this.setState({
+            placeholder: 'Something went wrong in getting data',
+          });
         }
         return response.json();
       })
-      .then(data => {
-        this.setState({ 'files': data });
+      .then((data) => {
+        this.setState({ files: data });
         console.log(data);
-      }
-      );
+      });
 
     this.setState({ patientGrid_columns: columns });
-
   }
 
-  onRowSelectEncounter = data => {
-    console.log("rowselectednew encounter:", data[0].row);
+  onRowSelectEncounter = (data) => {
+    console.log('rowselectednew encounter:', data[0].row);
     this.setState({ invoiceid: data[0].row.InvoiceId }, () => {
       //console.log(this.endpoint_series + this.state.examid);
       //console.log(this.endpoint_enc + data[0].row.PatientId);
-      fetch(this.endpoint_invcpt.replace('arg_invoiceid', this.state.invoiceid ), {})
-        .then(response => {
+      fetch(
+        this.endpoint_invcpt.replace('arg_invoiceid', this.state.invoiceid),
+        {}
+      )
+        .then((response) => {
           if (response.status !== 200) {
             return this.setState({
-              placeholder: "Something went wrong in getting data"
+              placeholder: 'Something went wrong in getting data',
             });
           }
           return response.json();
         })
-        .then(data => {
+        .then((data) => {
           //console.log("___________________");
           //console.log(data);
-          let dframe = data["frame0"];
+          let dframe = data['frame0'];
           let myObj = JSON.parse(dframe);
-          let data2 = myObj["rows"];
+          let data2 = myObj['rows'];
           //console.log(data2);
           this.setState(
             {
               invoice_cpt: data2,
               series_locations: [],
               series_ciga_jobs: [],
-              loaded: true
+              loaded: true,
             },
             () => {
               //console.log("Changed state", this.state.series.length);
-              this.invoiceGridElement.current.changeGridData(this.state.invoice_cpt,getColumnsList(data2[0]) );
-
+              this.invoiceGridElement.current.changeGridData(
+                this.state.invoice_cpt,
+                getColumnsList(data2[0])
+              );
             }
           );
         });
-
-
     });
   };
 
-  onRowSelectExam = data => {
-    console.log("Called onRowSelectExam", data);
+  onRowSelectExam = (data) => {
+    console.log('Called onRowSelectExam', data);
   };
 
+  onRowSelected2 = (event) => {
+      console.log('AG Row selected', event);
 
-  onRowSelectPatient = data => {
+    let selectedNodes = event.api
+      .getSelectedNodes()
+      .filter((node) => node.selected);
+    console.log(selectedNodes);
+
+    //console.log('row2', selectedNodes[0].data, event);
+
+
+    this.setState(
+      {
+        patientid: selectedNodes[0].data.PatientId,
+        patientrow: selectedNodes[0].data,
+      },
+      () => {
+        fetch(
+          this.endpoint_curr_linqdocs.replace(
+            'arg_ecwpatid',
+            this.state.patientid
+          ),
+          {}
+        )
+          .then((response) => {
+            if (response.status !== 200) {
+              return this.setState({
+                placeholder: 'Something went wrong in getting data',
+              });
+            }
+            return response.json();
+          })
+          .then((data) => {
+            //console.log("___________________");
+            //console.log(data);
+            let dframe = data['frame0'];
+            let myObj = JSON.parse(dframe);
+            let data2 = myObj['rows'];
+            //console.log(data2);
+            this.setState(
+              {
+                linq_docs: data2,
+                invoice_cpt: [],
+                loaded: true,
+              },
+              () => {
+                //console.log("Changed state", this.state.series.length);
+                //this.linqGridElement.current.changeGridData(this.state.linq_docs,getColumnsList(data2[0]) );
+              }
+            );
+          });
+
+        fetch(
+          this.endpoint_ecwenc.replace('arg_ecwpatid', this.state.patientid),
+          {}
+        )
+          .then((response) => {
+            if (response.status !== 200) {
+              return this.setState({
+                placeholder: 'Something went wrong in getting data',
+              });
+            }
+            return response.json();
+          })
+          .then((data) => {
+            //console.log("___________________");
+            //console.log(data);
+            let dframe = data['frame0'];
+            let myObj = JSON.parse(dframe);
+            let data2 = myObj['rows'];
+            //console.log(data2);
+            this.setState(
+              {
+                ecw_enc: data2,
+                invoice_cpt: [],
+                loaded: true,
+              },
+              () => {
+                //console.log("Changed state", this.state.series.length);
+                if (
+                  this.ecwencGridElement.current &&
+                  data2[0] &&
+                  this.state.ecw_enc
+                ) {
+                  // this.ecwencGridElement.current.changeGridData(this.state.ecw_enc,getColumnsList(data2[0]) );
+                }
+              }
+            );
+          });
+      }
+    );
+  };
+
+  handleAgStatement = (datarow) => {
+    console.log('AG Statement selected', datarow);
+
+    //this.setState({ filters: {}, selectedIndexes: [] });
+    //let row = this.getRows().filter( (elem,indx)=> indx == this.state.selectedIndexes)[0];
+
+    fetch(
+      'https://192.168.21.199:8040/statement?patid=' +
+        datarow.PatientId.toString()
+    )
+      .then(this.handleErrors)
+      .then((r) => r.blob())
+      .then((blob) => {
+        let url = URL.createObjectURL(blob);
+        let viewerUrl = encodeURIComponent(url);
+
+        const frame_element = `../public/pdfjs/web/viewer.html?file=${viewerUrl} `;
+
+        this.setState({ filepath: frame_element });
+      });
+  };
+
+  handleFileClick000 = (file) => {
+    const frame_element = `../public/pdfjs/web/viewer.html?file=${file_name}`;
+
+    this.setState({ filepath: frame_element });
+  };
+
+  handleStatement = (row) => {
+    //this.setState({ filters: {}, selectedIndexes: [] });
+    //let row = this.getRows().filter( (elem,indx)=> indx == this.state.selectedIndexes)[0];
+    console.log(row);
+    fetch(
+      'https://192.168.21.199:8040/statement?patid=' + row.PatientId.toString()
+    )
+      .then(this.handleErrors)
+      .then((r) => r.blob())
+      .then(showFile);
+  };
+
+  onRowSelectPatient = (data) => {
     //console.log("rowselected patient:", data[0].row);
     console.log(data);
-    this.setState({ patientid: data[0].row.PatientId , patientrow: data[0].row }, () => {
-
-      fetch(this.endpoint_curr_linqdocs.replace('arg_ecwpatid', this.state.patientid ), {})
-      .then(response => {
-        if (response.status !== 200) {
-          return this.setState({
-            placeholder: "Something went wrong in getting data"
-          });
-        }
-        return response.json();
-      })
-      .then(data => {
-        //console.log("___________________");
-        //console.log(data);
-        let dframe = data["frame0"];
-        let myObj = JSON.parse(dframe);
-        let data2 = myObj["rows"];
-        //console.log(data2);
-        this.setState(
-          {
-            linq_docs: data2,
-            invoice_cpt: [],
-            loaded: true
-          },
-          () => {
-            //console.log("Changed state", this.state.series.length);
-            this.linqGridElement.current.changeGridData(this.state.linq_docs,getColumnsList(data2[0]) );
-          }
-        );
-      });
-
-
-      fetch(this.endpoint_ecwenc.replace('arg_ecwpatid', this.state.patientid ), {})
-      .then(response => {
-        if (response.status !== 200) {
-          return this.setState({
-            placeholder: "Something went wrong in getting data"
-          });
-        }
-        return response.json();
-      })
-      .then(data => {
-        //console.log("___________________");
-        //console.log(data);
-        let dframe = data["frame0"];
-        let myObj = JSON.parse(dframe);
-        let data2 = myObj["rows"];
-        //console.log(data2);
-        this.setState(
-          {
-            ecw_enc: data2,
-            invoice_cpt: [],
-            loaded: true
-          },
-          () => {
-            //console.log("Changed state", this.state.series.length);
-            if (this.ecwencGridElement.current && data2[0] && this.state.ecw_enc) {
-                this.ecwencGridElement.current.changeGridData(this.state.ecw_enc,getColumnsList(data2[0]) );
+    this.setState(
+      { patientid: data[0].row.PatientId, patientrow: data[0].row },
+      () => {
+        fetch(
+          this.endpoint_curr_linqdocs.replace(
+            'arg_ecwpatid',
+            this.state.patientid
+          ),
+          {}
+        )
+          .then((response) => {
+            if (response.status !== 200) {
+              return this.setState({
+                placeholder: 'Something went wrong in getting data',
+              });
             }
+            return response.json();
+          })
+          .then((data) => {
+            //console.log("___________________");
+            //console.log(data);
+            let dframe = data['frame0'];
+            let myObj = JSON.parse(dframe);
+            let data2 = myObj['rows'];
+            //console.log(data2);
+            this.setState(
+              {
+                linq_docs: data2,
+                invoice_cpt: [],
+                loaded: true,
+              },
+              () => {
+                //console.log("Changed state", this.state.series.length);
+                this.linqGridElement.current.changeGridData(
+                  this.state.linq_docs,
+                  getColumnsList(data2[0])
+                );
+              }
+            );
+          });
 
-          }
-        );
-      });
-
-
-    });
+        fetch(
+          this.endpoint_ecwenc.replace('arg_ecwpatid', this.state.patientid),
+          {}
+        )
+          .then((response) => {
+            if (response.status !== 200) {
+              return this.setState({
+                placeholder: 'Something went wrong in getting data',
+              });
+            }
+            return response.json();
+          })
+          .then((data) => {
+            //console.log("___________________");
+            //console.log(data);
+            let dframe = data['frame0'];
+            let myObj = JSON.parse(dframe);
+            let data2 = myObj['rows'];
+            //console.log(data2);
+            this.setState(
+              {
+                ecw_enc: data2,
+                invoice_cpt: [],
+                loaded: true,
+              },
+              () => {
+                //console.log("Changed state", this.state.series.length);
+                if (
+                  this.ecwencGridElement.current &&
+                  data2[0] &&
+                  this.state.ecw_enc
+                ) {
+                  this.ecwencGridElement.current.changeGridData(
+                    this.state.ecw_enc,
+                    getColumnsList(data2[0])
+                  );
+                }
+              }
+            );
+          });
+      }
+    );
   };
-
 
   handleCreateFolder = (key) => {
     alert('create folder: ' + key);
     return;
-    this.setState(state => {
-      state.files = state.files.concat([{
-        key: key,
-      }])
-      return state
-    })
-  }
+    this.setState((state) => {
+      state.files = state.files.concat([
+        {
+          key: key,
+        },
+      ]);
+      return state;
+    });
+  };
 
   handleCreateFiles = (files, prefix) => {
     alert('create files: ' + files + ' to ' + prefix);
     return;
-    this.setState(state => {
+    this.setState((state) => {
       const newFiles = files.map((file) => {
-        let newKey = prefix
-        if (prefix !== '' && prefix.substring(prefix.length - 1, prefix.length) !== '/') {
-          newKey += '/'
+        let newKey = prefix;
+        if (
+          prefix !== '' &&
+          prefix.substring(prefix.length - 1, prefix.length) !== '/'
+        ) {
+          newKey += '/';
         }
-        newKey += file.name
+        newKey += file.name;
         return {
           key: newKey,
           size: file.size,
           modified: +Moment(),
-        }
-      })
+        };
+      });
 
-      const uniqueNewFiles = []
+      const uniqueNewFiles = [];
       newFiles.map((newFile) => {
-        let exists = false
+        let exists = false;
         state.files.map((existingFile) => {
           if (existingFile.key === newFile.key) {
-            exists = true
+            exists = true;
           }
-        })
+        });
         if (!exists) {
-          uniqueNewFiles.push(newFile)
+          uniqueNewFiles.push(newFile);
         }
-      })
-      state.files = state.files.concat(uniqueNewFiles)
-      return state
-    })
-  }
+      });
+      state.files = state.files.concat(uniqueNewFiles);
+      return state;
+    });
+  };
 
   handleRenameFolder = (oldKey, newKey) => {
     alert('rename folder: ' + oldKey + ' to ' + newkey);
     return;
-    this.setState(state => {
-      const newFiles = []
+    this.setState((state) => {
+      const newFiles = [];
       state.files.map((file) => {
         if (file.key.substr(0, oldKey.length) === oldKey) {
           newFiles.push({
             ...file,
             key: file.key.replace(oldKey, newKey),
             modified: +Moment(),
-          })
+          });
         } else {
-          newFiles.push(file)
+          newFiles.push(file);
         }
-      })
-      state.files = newFiles
-      return state
-    })
-  }
+      });
+      state.files = newFiles;
+      return state;
+    });
+  };
 
   handleRenameFile = (oldKey, newKey) => {
     console.log('rename: ' + oldKey + ' to ' + newKey);
     this.funcProcessDocument(this.state.docuContext, 'rename', oldKey, newKey);
     console.log('Rename File: Called funcProcessDocument');
 
-    this.setState(state => {
-      const newFiles = []
+    this.setState((state) => {
+      const newFiles = [];
       state.files.map((file) => {
         if (file.key === oldKey) {
           newFiles.push({
             ...file,
             key: newKey,
             modified: +Moment(),
-          })
+          });
         } else {
-          newFiles.push(file)
+          newFiles.push(file);
         }
-      })
-      state.files = newFiles
-      return state
-    })
-  }
+      });
+      state.files = newFiles;
+      return state;
+    });
+  };
 
   handleDeleteFolder = (folderKey) => {
     alert('delete folder: ' + folderkey);
     return;
-    this.setState(state => {
-      const newFiles = []
+    this.setState((state) => {
+      const newFiles = [];
       state.files.map((file) => {
         if (file.key.substr(0, folderKey.length) !== folderKey) {
-          newFiles.push(file)
+          newFiles.push(file);
         }
-      })
-      state.files = newFiles
-      return state
-    })
-  }
+      });
+      state.files = newFiles;
+      return state;
+    });
+  };
 
   handleDeleteFile = (fileKey) => {
-    console.log("File delete Clicked:" + fileKey);
-    alert("File delete Clicked:" + fileKey);
+    console.log('File delete Clicked:' + fileKey);
+    alert('File delete Clicked:' + fileKey);
     return;
-    this.setState(state => {
-      const newFiles = []
+    this.setState((state) => {
+      const newFiles = [];
       state.files.map((file) => {
         if (file.key !== fileKey) {
-          newFiles.push(file)
+          newFiles.push(file);
         }
-      })
-      state.files = newFiles
-      return state
-    })
-  }
+      });
+      state.files = newFiles;
+      return state;
+    });
+  };
 
   handleFileClick = (file) => {
-    this.setState(state => ({ ...state, filetodisplay: file.key, filepagenum: 1 }),
+    this.setState(
+      (state) => ({ ...state, filetodisplay: file.key, filepagenum: 1 }),
       function () {
-        console.log("To Display mesg: " + this.state.filetodisplay);
-      });
-    console.log("File Clicked mesg:" + file.key);
+        console.log('To Display mesg: ' + this.state.filetodisplay);
+      }
+    );
+    console.log('File Clicked mesg:' + file.key);
 
     let file_name = file.key;
-    file_name = "\\" + file_name.replace("/mnt/scanhome", "\\192.168.1.17\\scanhome").replace("/", "\\");
-    console.log("Getting windows file: ", file_name);
+    file_name =
+      '\\' +
+      file_name
+        .replace('/mnt/scanhome', '\\192.168.1.17\\scanhome')
+        .replace('/', '\\');
+    console.log('Getting windows file: ', file_name);
 
     const frame_element = `../public/pdfjs/web/viewer.html?file=${file_name}`;
 
-    this.setState( { filepath : frame_element});
-
-  }
+    this.setState({ filepath: frame_element });
+  };
 
   checkinDjangoApi = () => {
     console.log('Started django-api checkin.');
 
-    const data = new FormData()
-    axios
-      .post(endpoint.replace('uploadfiles', 'checkin'), data)
-      .then(res => {
-        if (window.DOMParser) {
-          // code for modern browsers
-          let parser = new DOMParser();
-          let xmlDoc = parser.parseFromString(res.data, "text/xml");
-          let x = xmlDoc.getElementsByTagName("input");
-          let cookieValue = x[0].attributes["value"].value;
-          csrftoken = cookieValue;
-          console.log(cookieValue);
-        }
+    const data = new FormData();
+    axios.post(endpoint.replace('uploadfiles', 'checkin'), data).then((res) => {
+      if (window.DOMParser) {
+        // code for modern browsers
+        let parser = new DOMParser();
+        let xmlDoc = parser.parseFromString(res.data, 'text/xml');
+        let x = xmlDoc.getElementsByTagName('input');
+        let cookieValue = x[0].attributes['value'].value;
+        csrftoken = cookieValue;
+        console.log(cookieValue);
+      }
 
-
-        console.log('csrf: =>' + csrftoken)
-      })
+      console.log('csrf: =>' + csrftoken);
+    });
 
     console.log('Completed django-api checkin.');
-  }
+  };
 
-  onRowSelectLinqReport = data => {
-    console.log("Linq rowselectednew encounter:", data[0].row);
-    console.log("TO DIsplay" + data[0].row.dirpath + "/" +  data[0].row.fileName);
-    this.handleLinqReportPdf (data[0].row.dirpath + "/" +  data[0].row.fileName) ;
+  onRowSelectLinqReport = (data) => {
+    console.log('Linq rowselectednew encounter:', data[0].row);
+    console.log(
+      'TO DIsplay' + data[0].row.dirpath + '/' + data[0].row.fileName
+    );
+    this.handleLinqReportPdf(data[0].row.dirpath + '/' + data[0].row.fileName);
+  };
+
+  onRowSelectLinqReport2 = (data) => {
+    console.log('Linq rowselectednew encounter2:', data);
+    console.log('TO DIsplay' + data.dirpath + '/' + data.fileName);
+    this.handleLinqReportPdf(data.dirpath + '/' + data.fileName);
+  };
+
+  onRowSelectLinqReport0 = (data) => {
+    console.log('Linq rowselectednew encounter0:', data);
   };
 
   handleLinqReportPdf = (filename) => {
-    console.log("Starting to get Linq File", filename);
-    fetch(encodeURI("https://192.168.21.199:8040/getecwfile?filename=" + filename))
-        .then(this.handleErrors)
-        .then(r => r.blob())
-        .then(this.showFilePdf);
+    console.log('Starting to get Linq File', filename);
+    fetch(
+      encodeURI('https://192.168.21.199:8040/getecwfile?filename=' + filename)
+    )
+      .then(this.handleErrors)
+      .then((r) => r.blob())
+      .then((blob) => {
+        let url = URL.createObjectURL(blob);
+        let viewerUrl = encodeURIComponent(url);
+
+        const frame_element = `../public/pdfjs/web/viewer.html?file=${viewerUrl} `;
+
+        this.setState({ filepath: frame_element });
+      });
   };
 
+  // .then(this.showFilePdf);
 
- showFilePdf = (blob) => {
-  // It is necessary to create a new blob object with mime-type explicitly set
-  // otherwise only Chrome works like it should
-  //var newBlob = new Blob([blob], { type: "image/png" })
-  console.log('Show PDF called');
-  var newBlob = new Blob([blob], { type: "application/pdf" })
+  showFilePdf = (blob) => {
+    // It is necessary to create a new blob object with mime-type explicitly set
+    // otherwise only Chrome works like it should
+    //var newBlob = new Blob([blob], { type: "image/png" })
+    console.log('Show PDF called');
+    var newBlob = new Blob([blob], { type: 'application/pdf' });
 
-  // IE doesn't allow using a blob object directly as link href
-  // instead it is necessary to use msSaveOrOpenBlob
-  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+    // IE doesn't allow using a blob object directly as link href
+    // instead it is necessary to use msSaveOrOpenBlob
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveOrOpenBlob(newBlob);
       return;
-  }
+    }
 
-  // For other browsers:
-  // Create a link pointing to the ObjectURL containing the blob.
-  const data = window.URL.createObjectURL(newBlob);
-  var link = document.createElement('a');
-  link.href = data;
-  link.download = "file.pdf";
-  link.click();
-  setTimeout(function () {
+    // For other browsers:
+    // Create a link pointing to the ObjectURL containing the blob.
+    const data = window.URL.createObjectURL(newBlob);
+    var link = document.createElement('a');
+    link.href = data;
+    link.download = 'file.pdf';
+    link.click();
+    setTimeout(function () {
       // For Firefox it is necessary to delay revoking the ObjectURL
       window.URL.revokeObjectURL(data);
-  }, 100);
-}
+    }, 100);
+  };
 
-showFilePng = (blob) => {
-  // It is necessary to create a new blob object with mime-type explicitly set
-  // otherwise only Chrome works like it should
-  var newBlob = new Blob([blob], { type: "image/png" })
-  //var newBlob = new Blob([blob], { type: "application/pdf" })
+  showFilePng = (blob) => {
+    // It is necessary to create a new blob object with mime-type explicitly set
+    // otherwise only Chrome works like it should
+    var newBlob = new Blob([blob], { type: 'image/png' });
+    //var newBlob = new Blob([blob], { type: "application/pdf" })
 
-  // IE doesn't allow using a blob object directly as link href
-  // instead it is necessary to use msSaveOrOpenBlob
-  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+    // IE doesn't allow using a blob object directly as link href
+    // instead it is necessary to use msSaveOrOpenBlob
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveOrOpenBlob(newBlob);
       return;
-  }
+    }
 
-  // For other browsers:
-  // Create a link pointing to the ObjectURL containing the blob.
-  const data = window.URL.createObjectURL(newBlob);
-  var link = document.createElement('a');
-  link.href = data;
-  link.download = "file.png";
-  link.click();
-  setTimeout(function () {
+    // For other browsers:
+    // Create a link pointing to the ObjectURL containing the blob.
+    const data = window.URL.createObjectURL(newBlob);
+    var link = document.createElement('a');
+    link.href = data;
+    link.download = 'file.png';
+    link.click();
+    setTimeout(function () {
       // For Firefox it is necessary to delay revoking the ObjectURL
       window.URL.revokeObjectURL(data);
-  }, 100);
-}
+    }, 100);
+  };
 
-
-
-
-
-
-  onControlsDateChange = date => {
+  onControlsDateChange = (date) => {
     //var date_format_str = d.getFullYear().toString()+"-"+((d.getMonth()+1).toString().length==2?(d.getMonth()+1).toString():"0"+(d.getMonth()+1).toString())+"-"+(d.getDate().toString().length==2?d.getDate().toString():"0"+d.getDate().toString())+" "+(d.getHours().toString().length==2?d.getHours().toString():"0"+d.getHours().toString())+":"+((parseInt(d.getMinutes()/5)*5).toString().length==2?(parseInt(d.getMinutes()/5)*5).toString():"0"+(parseInt(d.getMinutes()/5)*5).toString())+":00";
     let d = date;
     console.log('New Date Value: ', date);
-    var date_format_str = ''
+    var date_format_str = '';
     if (date != null) {
-      var date_format_str = d.getFullYear().toString() + "-" + ((d.getMonth() + 1).toString().length == 2 ? (d.getMonth() + 1).toString() : "0" + (d.getMonth() + 1).toString()) + "-" + (d.getDate().toString().length == 2 ? d.getDate().toString() : "0" + d.getDate().toString());
-      console.log("Date Change triggered: ", date, date_format_str);
+      var date_format_str =
+        d.getFullYear().toString() +
+        '-' +
+        ((d.getMonth() + 1).toString().length == 2
+          ? (d.getMonth() + 1).toString()
+          : '0' + (d.getMonth() + 1).toString()) +
+        '-' +
+        (d.getDate().toString().length == 2
+          ? d.getDate().toString()
+          : '0' + d.getDate().toString());
+      console.log('Date Change triggered: ', date, date_format_str);
     }
-    this.setState({ 'recentdate': date, date, filePrefixDate: date_format_str }, function () {
-      console.log("New Date: " + this.state.recentdate);
-    }
+    this.setState(
+      { recentdate: date, date, filePrefixDate: date_format_str },
+      function () {
+        console.log('New Date: ' + this.state.recentdate);
+      }
     );
-  }
+  };
 
-  handleselectedFile = event => {
-
+  handleselectedFile = (event) => {
     let files_to_add = event.target.files;
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       selectedFile: prevState.selectedFile.concat(files_to_add),
-      filepagenum: 1
+      filepagenum: 1,
     }));
-
-  }
+  };
 
   handleUploadFiles = async () => {
     this.setState({ uploadProgress: {}, uploading: true });
     const promises = [];
     if (this.state.selectedFile.length > 0) {
-    const files_to_add = this.state.selectedFile[0];
-    for (let i = 0; i < files_to_add.length; i++) {
-      promises.push(this.sendRequest(files_to_add[i]));
-    }
+      const files_to_add = this.state.selectedFile[0];
+      for (let i = 0; i < files_to_add.length; i++) {
+        promises.push(this.sendRequest(files_to_add[i]));
+      }
     }
     try {
       await Promise.all(promises);
 
-      this.setState({ successfullUploaded: true, selectedFile: [], inputRestKey: Date.now(), uploading: false }, () => {
-        //this.handleRefreshFiles();
-      });
+      this.setState(
+        {
+          successfullUploaded: true,
+          selectedFile: [],
+          inputRestKey: Date.now(),
+          uploading: false,
+        },
+        () => {
+          //this.handleRefreshFiles();
+        }
+      );
     } catch (e) {
       // Not Production ready! Do some error handling here instead...
       this.setState({ successfullUploaded: true, uploading: false });
     }
-  }
+  };
 
   sendRequest(file) {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
 
-      req.upload.addEventListener("progress", event => {
+      req.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
           const copy = { ...this.state.uploadProgress };
           copy[file.name] = {
-            state: "pending",
-            percentage: (event.loaded / event.total) * 100
+            state: 'pending',
+            percentage: (event.loaded / event.total) * 100,
           };
           this.setState({ uploadProgress: copy });
         }
       });
 
-      req.upload.addEventListener("load", event => {
+      req.upload.addEventListener('load', (event) => {
         const copy = { ...this.state.uploadProgress };
-        copy[file.name] = { state: "done", percentage: 100 };
+        copy[file.name] = { state: 'done', percentage: 100 };
         this.setState({ uploadProgress: copy });
         resolve(req.response);
       });
 
-      req.upload.addEventListener("error", event => {
+      req.upload.addEventListener('error', (event) => {
         const copy = { ...this.state.uploadProgress };
-        copy[file.name] = { state: "error", percentage: 0 };
+        copy[file.name] = { state: 'error', percentage: 0 };
         this.setState({ uploadProgress: copy });
         reject(req.response);
       });
 
       const formData = new FormData();
-      formData.append("file", file, file.name);
+      formData.append('file', file, file.name);
 
-      req.open("POST", endpoint);
+      req.open('POST', endpoint);
       req.send(formData);
     });
   }
 
   handleRefreshFiles = () => {
-    fetch(backend_api_endpoint + "getfiles?folderpath=" + this.state.folderContext)
-      .then(response => {
+    fetch(
+      backend_api_endpoint + 'getfiles?folderpath=' + this.state.folderContext
+    )
+      .then((response) => {
         if (response.status !== 200) {
-          return this.setState({ placeholder: "Something went wrong in getting data" });
+          return this.setState({
+            placeholder: 'Something went wrong in getting data',
+          });
         }
         return response.json();
       })
-      .then(data => {
-        this.setState({ 'files': data });
+      .then((data) => {
+        this.setState({ files: data });
         console.log(data);
-      }
-      );
-  }
+      });
+  };
 
   handleUpload = () => {
-    const data = new FormData()
-    data.append('file', this.state.selectedFile, this.state.selectedFile.name)
-    console.log("Uploading File: " + this.state.selectedFile.name)
+    const data = new FormData();
+    data.append('file', this.state.selectedFile, this.state.selectedFile.name);
+    console.log('Uploading File: ' + this.state.selectedFile.name);
 
     //var file = new FormData();
     //file.append('name',files[0])
@@ -835,27 +1019,24 @@ showFilePng = (blob) => {
     //     console.log("upload done!!!!!");
     // });
 
-
     axios
       .post(endpoint, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'X-CSRFToken': csrftoken
+          'X-CSRFToken': csrftoken,
         },
-        onUploadProgress: ProgressEvent => {
+        onUploadProgress: (ProgressEvent) => {
           this.setState({
-            loaded: (ProgressEvent.loaded / ProgressEvent.total * 100),
-          })
+            loaded: (ProgressEvent.loaded / ProgressEvent.total) * 100,
+          });
         },
       })
-      .then(res => {
-        console.log(res.statusText)
-      })
-  }
-
+      .then((res) => {
+        console.log(res.statusText);
+      });
+  };
 
   funcProcessDocument = (context, fileop, srcfile, destfile) => {
-
     let context_data = {
       fileop: fileop,
       patientid: this.state.patientid,
@@ -869,177 +1050,191 @@ showFilePng = (blob) => {
       docutype: this.state.docuType,
       docupages: this.state.docuPages,
       actiondesc: this.state.actiondesc,
-    }
+    };
 
-    console.log("Starting process Document File: ")
+    console.log('Starting process Document File: ');
 
     axios
       .post(endpoint_processing, context_data, {
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken
+          'X-CSRFToken': csrftoken,
         },
       })
-      .then(res => {
-        console.log(res.status, res.statusText, res.data)
+      .then((res) => {
+        console.log(res.status, res.statusText, res.data);
 
-        this.setState(state => {
-          const newFiles = []
+        this.setState((state) => {
+          const newFiles = [];
           state.files.map((file) => {
             if (file.key === res.data.inputjson.filename) {
               newFiles.push({
                 ...file,
                 key: res.data.inputjson.new_name,
                 modified: +Moment(),
-              })
+              });
             } else {
-              newFiles.push(file)
+              newFiles.push(file);
             }
-          })
-          state.files = newFiles
-          return state
-        })
-
-      })
-  }
-
+          });
+          state.files = newFiles;
+          return state;
+        });
+      });
+  };
 
   handleProcessDocument = () => {
-
-    var target_name = ''
+    var target_name = '';
     target_name = target_name + this.state.filePrefixDate;
-    console.log("Change to target name1: ", target_name);
-    target_name = target_name + (this.state.docuType == null ? '' : ' ' + this.state.docuType);
-    console.log("Change to target name2: ", target_name);
-    target_name = target_name + (this.state.newFileNameSelected == '' ? '' : ' ' + this.state.newFileNameSelected);
-    console.log("Change to target name3: ", target_name);
-    target_name = target_name + (this.state.RenameToFilename == '' ? '' : ' ' + this.state.RenameToFilename);
-    console.log("Change to target name4: ", target_name);
+    console.log('Change to target name1: ', target_name);
+    target_name =
+      target_name +
+      (this.state.docuType == null ? '' : ' ' + this.state.docuType);
+    console.log('Change to target name2: ', target_name);
+    target_name =
+      target_name +
+      (this.state.newFileNameSelected == ''
+        ? ''
+        : ' ' + this.state.newFileNameSelected);
+    console.log('Change to target name3: ', target_name);
+    target_name =
+      target_name +
+      (this.state.RenameToFilename == ''
+        ? ''
+        : ' ' + this.state.RenameToFilename);
+    console.log('Change to target name4: ', target_name);
 
-    let arg_file_operation = "uploademr";
+    let arg_file_operation = 'uploademr';
 
     if (this.state.docuContext == 'EMR') {
-        arg_file_operation = "uploademr";
-    }
-    else{
-        arg_file_operation = "rename";
+      arg_file_operation = 'uploademr';
+    } else {
+      arg_file_operation = 'rename';
     }
 
-    this.funcProcessDocument(this.state.docuContext, arg_file_operation, this.state.filetodisplay, target_name);
+    this.funcProcessDocument(
+      this.state.docuContext,
+      arg_file_operation,
+      this.state.filetodisplay,
+      target_name
+    );
     console.log('Called funcProcessDocument');
-
-  }
+  };
 
   handleDocuTypeChange = (selected) => {
     this.setState({
-      docuType: selected
-    })
-  }
+      docuType: selected,
+    });
+  };
 
   handeRenameTo = (event) => {
     let filename = event.target.value;
     //console.log('Rename to Filename : ', filename);
-    this.setState({
-      RenameToFilename: filename
-    }, () => {
-      //this.state.handleRenameTo(filename)
-    });
-  }
+    this.setState(
+      {
+        RenameToFilename: filename,
+      },
+      () => {
+        //this.state.handleRenameTo(filename)
+      }
+    );
+  };
 
   handleFilenameSelectChange = (selected) => {
-    console.log("CreateSelect: ", selected);
-    this.setState({
-      newFileNameSelected: selected.value
-    }, () => {
-      //this.state.handleRenameTo(filename)
-    });
-  }
+    console.log('CreateSelect: ', selected);
+    this.setState(
+      {
+        newFileNameSelected: selected.value,
+      },
+      () => {
+        //this.state.handleRenameTo(filename)
+      }
+    );
+  };
   handleFilenameInputChange = (event) => {
     //console.log("Create Input Changed: " , event);
-  }
-
+  };
 
   handleActionTextChange = (event) => {
     let actiontext = event.target.value;
     //console.log('Rename to Filename : ', filename);
-    this.setState({
-      actiondesc: actiontext
-    }, () => {
-      //this.state.handleRenameTo(filename)
-    });
-  }
+    this.setState(
+      {
+        actiondesc: actiontext,
+      },
+      () => {
+        //this.state.handleRenameTo(filename)
+      }
+    );
+  };
 
   handleDocuPagesChange = (selected) => {
     this.setState({
-      docuPages: selected
-    })
-  }
+      docuPages: selected,
+    });
+  };
 
   handleDocuContextChange = (selected) => {
     this.setState({
-      docuContext: selected
-    })
-  }
+      docuContext: selected,
+    });
+  };
 
   handlePageChange = (pagenum) => {
     this.setState({
-      filepagenum: this.state.filepagenum + pagenum
-    })
-  }
+      filepagenum: this.state.filepagenum + pagenum,
+    });
+  };
 
   goToPrevPage = () => {
-    this.setState(state => ({ filepagenum: state.filepagenum - 1 }));
-  }
+    this.setState((state) => ({ filepagenum: state.filepagenum - 1 }));
+  };
   goToNextPage = () => {
-    this.setState(state => ({ filepagenum: state.filepagenum + 1 }));
-  }
+    this.setState((state) => ({ filepagenum: state.filepagenum + 1 }));
+  };
 
   updateTotalPages = ({ numPages }) => {
-    console.log("Got called: updateTotalPages");
-    this.setState(state => ({ docuType: null, docuPages: 'All', filetotalpages: numPages }));
-  }
+    console.log('Got called: updateTotalPages');
+    this.setState((state) => ({
+      docuType: null,
+      docuPages: 'All',
+      filetotalpages: numPages,
+    }));
+  };
 
   handleFolderChange = (selected) => {
-    console.log("Selected folder: " + selected.value)
-    let folderpath = "/mnt/upload";
+    console.log('Selected folder: ' + selected.value);
+    let folderpath = '/mnt/upload';
     switch (selected.value) {
       case 'scanhome':
-        folderpath = "/mnt/scanhome";
+        folderpath = '/mnt/scanhome';
         break;
       case 'skdoc':
-        folderpath = "/mnt/skdoc";
+        folderpath = '/mnt/skdoc';
         break;
       case 'skscan':
-        folderpath = "/mnt/skdoc/skscan";
+        folderpath = '/mnt/skdoc/skscan';
         break;
       default:
-        folderpath = "/mnt/upload";
+        folderpath = '/mnt/upload';
         break;
     }
-    console.log("Will get files from folder: " + folderpath)
-    this.setState({
-      folderContext: folderpath, folderType: selected.value
-    }, () => {
-      this.handleRefreshFiles();
-    })
-  }
+    console.log('Will get files from folder: ' + folderpath);
+    this.setState(
+      {
+        folderContext: folderpath,
+        folderType: selected.value,
+      },
+      () => {
+        this.handleRefreshFiles();
+      }
+    );
+  };
 
   updateStatemdb = (changedata) => {
     console.log(changedata);
     console.log(changedata);
-  }
-
-  handleStatement = (row) => {
-    //this.setState({ filters: {}, selectedIndexes: [] });
-    //let row = this.getRows().filter( (elem,indx)=> indx == this.state.selectedIndexes)[0];
-    console.log(row);
-    fetch("https://192.168.21.199:8040/statement?patid=" + row.PatientId.toString())
-        .then(this.handleErrors)
-        .then(r => r.blob())
-        .then(showFile);
   };
-
-
 
   render(props) {
     //console.log("In Render for DocuBrowswer");
@@ -1056,7 +1251,9 @@ showFilePng = (blob) => {
 
     //endpoint_patients = backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
 
-    let endpoint_patients = backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  activity_date = (select max(scandate) from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.patientid = pat.patientid and doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ), * from apex..vPatient pat where patientid in (select distinct patientid from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ) order by 1 desc ";
+    let endpoint_patients =
+      backend_db_endpoint +
+      'exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  Name, activity_date = (select max(scandate) from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.patientid = pat.patientid and doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ), * from apex..vPatient pat where patientid in (select distinct patientid from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ) order by 1 desc ';
 
     //backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
 
@@ -1066,111 +1263,150 @@ showFilePng = (blob) => {
 
     return (
       <React.Fragment>
+        <div
+          className="container-fluid"
+          style={{ height: '100%', width: '100%' }}
+        >
+          <div
+            className="row justify-content-start"
+            style={{ height: '100%', width: '100%', marginTop: '50px' }}
+          >
+            <div
+              className="col-3 py-3 overflow-auto"
+              style={{
+                height: '90vh',
+                width: '100%',
+                backgroundColor: 'powderblue',
+              }}
+            >
+              <div>
+                <div className="App">
+                  <Input
+                    className="mb-2"
+                    type="file"
+                    key={this.state.inputRestKey}
+                    name=""
+                    id=""
+                    multiple
+                    onChange={this.handleselectedFile}
+                  />
+                  <Progress
+                    className="mb-2"
+                    value={Math.round(this.state.loaded, 2)}
+                  />
+                  <Button className="mb-2" onClick={this.handleUploadFiles}>
+                    Upload
+                  </Button>
+                </div>
+                <Button
+                  style={{ width: '100%' }}
+                  className="mb-3"
+                  color="primary"
+                  onClick={this.handleRefreshFiles}
+                >
+                  Refresh
+                </Button>
+                <div className="d-inline">
+                  <Select
+                    value={this.state.folderType}
+                    onChange={this.handleFolderChange}
+                    options={folderPaths}
+                  />
+                </div>
 
-        <div className="container-fluid" style={{ height: "100%", width: "100%" }}>
-
-          <div className="row justify-content-start" style={{ height: "100%", width: "100%" , marginTop: '50px'}} >
-            <div className="col-3 py-3 overflow-auto" style={{ height: '90vh', width: '100%', backgroundColor: 'powderblue' }}>
-            <div>
-              <div className="App">
-                <Input className="mb-2" type="file"  key={this.state.inputRestKey} name="" id="" multiple onChange={this.handleselectedFile}  />
-                <Progress className="mb-2" value={Math.round(this.state.loaded, 2)} />
-                <Button className="mb-2" onClick={this.handleUploadFiles}>Upload</Button>
+                <FileBrowser
+                  style={{
+                    height: 850,
+                    width: '100%',
+                    overflow: 'scroll',
+                    backgroundColor: 'powderblue',
+                  }}
+                  files={this.state.files}
+                  nestChildren={false}
+                  renderStyle={'table'}
+                  icons={Icons.FontAwesome(4)}
+                  onCreateFolder={this.handleCreateFolder}
+                  onCreateFiles={this.handleCreateFiles}
+                  onMoveFolder={this.handleRenameFolder}
+                  onMoveFile={this.handleRenameFile}
+                  onRenameFolder={this.handleRenameFolder}
+                  onRenameFile={(oldKey, newKey) => {
+                    console.log('rename called=>' + newKey);
+                    this.handleRenameFile(oldKey, newKey);
+                  }}
+                  onDeleteFolder={this.handleDeleteFolder}
+                  onDeleteFile={this.handleDeleteFile}
+                  onSelectFile={this.handleFileClick}
+                />
               </div>
-              <Button
-                style={{ width: '100%' }}
-                className="mb-3"
-                color="primary"
-                onClick={this.handleRefreshFiles}>
-                Refresh
-              </Button>
-              <div className="d-inline">
-              <Select
-
-                value={this.state.folderType}
-                onChange={this.handleFolderChange}
-                options={folderPaths}
-
-              />
-              </div>
-
-              <FileBrowser
-                style={{ height: 850, width: '100%', backgroundColor: 'powderblue' }}
-                files={this.state.files}
-                nestChildren={false}
-                renderStyle={'table'}
-                icons={Icons.FontAwesome(4)}
-
-                onCreateFolder={this.handleCreateFolder}
-                onCreateFiles={this.handleCreateFiles}
-                onMoveFolder={this.handleRenameFolder}
-                onMoveFile={this.handleRenameFile}
-                onRenameFolder={this.handleRenameFolder}
-                onRenameFile={(oldKey, newKey) => { console.log('rename called=>' + newKey); this.handleRenameFile(oldKey, newKey) }}
-                onDeleteFolder={this.handleDeleteFolder}
-                onDeleteFile={this.handleDeleteFile}
-                onSelectFile={this.handleFileClick}
-
-              />
-
             </div>
 
-
-      </div>
-
-
-
-            <div className="col-5 py-3 overflow-auto" style={{ height: '90vh', backgroundColor: 'lightgrey' }}>
-
-            <Tabs value={this.state.tablValue} onChange={this.handleTabChange} aria-label="simple tabs example">
-          <Tab label="Files" {...a11yProps(0)} />
-          <Tab label="Claims" {...a11yProps(1)} />
-          <Tab label="Tab3" {...a11yProps(2)} />
-        </Tabs>
-      <TabPanel value={this.state.tablValue} index={0} style={{ height: "90%", width: "100%" }}>
-
-      <div style={{ height: "90%", width: "100%" , margin: 0}}>
-            <button id='myButton1' onClick={this.openPDF} >GetPageNumber</button>
-            <button id='myButton3' onClick={this.nextPDFPage} >Previous Page </button>
-            <button id='myButton4' onClick={this.nextPDFPage} >Next Page </button>
-            <iframe width="100%" height="800px" backgroundcolor='lightgrey' ref={this.state.iframeRef} src = { this.state.filepath} />
-          </div>
-
-              {/* <ShowPDF patid={this.state.filetodisplay} filename={this.state.filetodisplay} style={{ width: '100%', backgroundColor: 'lightgrey' }} onDocumentLoaded={this.updateTotalPages} pageNumber={this.state.filepagenum} /> */}
-
-
-      </TabPanel>
-      <TabPanel value={this.state.tablValue} index={1}>
-                  <label>Encounters</label>
-                  <DataGrid
-                    ref={this.ecwencGridElement}
-                    initialRows={this.state.ecw_enc}
-                    columns={getColumnsList(this.state.ecw_enc[0])}
-                    gridheight={200}
-                    gridname={"encounters"}
-                    onRowSelect={this.onRowSelectEncounter}
+            <div
+              className="col-5 py-3 overflow-auto"
+              style={{ height: '90vh', backgroundColor: 'lightgrey' }}
+            >
+              <Tabs
+                value={this.state.tablValue}
+                onChange={this.handleTabChange}
+                aria-label="simple tabs example"
+              >
+                <Tab label="Files" {...a11yProps(0)} />
+                <Tab label="Claims" {...a11yProps(1)} />
+                <Tab label="Tab3" {...a11yProps(2)} />
+              </Tabs>
+              <TabPanel
+                value={this.state.tablValue}
+                index={0}
+                style={{ height: '90%', width: '100%' }}
+              >
+                <div style={{ height: '90%', width: '100%', margin: 0 }}>
+                  <button id="myButton1" onClick={this.openPDF}>
+                    GetPageNumber
+                  </button>
+                  <button id="myButton3" onClick={this.nextPDFPage}>
+                    Previous Page{' '}
+                  </button>
+                  <button id="myButton4" onClick={this.nextPDFPage}>
+                    Next Page{' '}
+                  </button>
+                  <iframe
+                    width="100%"
+                    height="800px"
+                    backgroundcolor="lightgrey"
+                    ref={this.state.iframeRef}
+                    src={this.state.filepath}
                   />
+                </div>
 
-                  <label>Claim Details</label>
-                  <DataGrid
-                    ref={this.invoiceGridElement}
-                    initialRows={this.state.invoice_cpt}
-                    columns={getColumnsList(this.state.invoice_cpt[0])}
-                    gridheight={200}
-                    gridname={"invoice_cpt"}
-                    onRowSelect={this.onRowSelectExam}
-                  />{" "}
-
-      </TabPanel>
-      <TabPanel value={this.state.tablValue} index={2}>
-        Item Three
-      </TabPanel>
-
-
+                {/* <ShowPDF patid={this.state.filetodisplay} filename={this.state.filetodisplay} style={{ width: '100%', backgroundColor: 'lightgrey' }} onDocumentLoaded={this.updateTotalPages} pageNumber={this.state.filepagenum} /> */}
+              </TabPanel>
+              <TabPanel value={this.state.tablValue} index={1}>
+                <label>Encounters</label>
+                <DataGrid
+                  ref={this.ecwencGridElement}
+                  initialRows={this.state.ecw_enc}
+                  columns={getColumnsList(this.state.ecw_enc[0])}
+                  gridheight={200}
+                  gridname={'encounters'}
+                  onRowSelect={this.onRowSelectEncounter}
+                />
+                <label>Claim Details</label>
+                <DataGrid
+                  ref={this.invoiceGridElement}
+                  initialRows={this.state.invoice_cpt}
+                  columns={getColumnsList(this.state.invoice_cpt[0])}
+                  gridheight={200}
+                  gridname={'invoice_cpt'}
+                  onRowSelect={this.onRowSelectExam}
+                />{' '}
+              </TabPanel>
+              <TabPanel value={this.state.tablValue} index={2}>
+                Item Three
+              </TabPanel>
             </div>
 
             <div className="col-4 py-3" style={{ height: '100vh' }}>
-              <div className="d-inline" >
+              <div className="d-inline">
                 <DatePicker
                   className="mb-1 d-inline"
                   selected={this.state.recentdate}
@@ -1184,17 +1420,42 @@ showFilePng = (blob) => {
                   placeholder="Select date"
                   style={{ width: '100px' }}
                 />
-                <RadioGroup className="d-inline" name="doccontext" selectedValue={this.state.docuContext} onChange={this.handleDocuContextChange}>
-                  <Radio value="EMR" selected />EMR
-                <Radio value="normal" />Normal
-              </RadioGroup>
+                <RadioGroup
+                  className="d-inline"
+                  name="doccontext"
+                  selectedValue={this.state.docuContext}
+                  onChange={this.handleDocuContextChange}
+                >
+                  <Radio value="EMR" selected />
+                  EMR
+                  <Radio value="normal" />
+                  Normal
+                </RadioGroup>
               </div>
-
 
               <form className="form-horizontal">
                 <div className="form-group d-inline">
-                  <span className="d-inline" style={{ height: 'fit-content', width: 'fit-content', backgroundColor: 'powderblue' }}>{this.state.filePrefixDate}{' '}{this.state.docuType}{' '}{this.state.newFileNameSelected}{this.state.RenameToFilename}</span>
-                  <input type="text" className="form-control " placeholder="Enter File Name" id="filename" name="filename" width="100%" onChange={this.handeRenameTo} />
+                  <span
+                    className="d-inline"
+                    style={{
+                      height: 'fit-content',
+                      width: 'fit-content',
+                      backgroundColor: 'powderblue',
+                    }}
+                  >
+                    {this.state.filePrefixDate} {this.state.docuType}{' '}
+                    {this.state.newFileNameSelected}
+                    {this.state.RenameToFilename}
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control "
+                    placeholder="Enter File Name"
+                    id="filename"
+                    name="filename"
+                    width="100%"
+                    onChange={this.handeRenameTo}
+                  />
                   <CreatableSelect
                     isClearable
                     onChange={this.handleFilenameSelectChange}
@@ -1204,12 +1465,24 @@ showFilePng = (blob) => {
                 </div>
               </form>
 
-              <div className="d-inline-block">Pages:
-              <RadioGroup className="d-inline" name="docpages" selectedValue={this.state.docuPages} onChange={this.handleDocuPagesChange}>
-                  <Radio value="All" selected />All
-                <Radio value="current" />Current
-              </RadioGroup>
-                {this.state.docuType}  {this.state.docuPages == 'current' ? '#(' + this.state.filepagenum + ')' : this.state.docuPages}</div>
+              <div className="d-inline-block">
+                Pages:
+                <RadioGroup
+                  className="d-inline"
+                  name="docpages"
+                  selectedValue={this.state.docuPages}
+                  onChange={this.handleDocuPagesChange}
+                >
+                  <Radio value="All" selected />
+                  All
+                  <Radio value="current" />
+                  Current
+                </RadioGroup>
+                {this.state.docuType}{' '}
+                {this.state.docuPages == 'current'
+                  ? '#(' + this.state.filepagenum + ')'
+                  : this.state.docuPages}
+              </div>
 
               {/* <div classname="d-inline" >
               <CustomInput type="select" id="docpages" name="docpages" value={this.state.docuPages} onChange={this.handleDocuPagesChange}>
@@ -1218,91 +1491,71 @@ showFilePng = (blob) => {
               </CustomInput>
               </div> */}
 
-              <div className="d-inline-block">Type:
-              <RadioGroup className="d-inline" name="doctype" selectedValue={this.state.docuType} onChange={this.handleDocuTypeChange}>
-                  <Radio value="ECHO" />Echo
-                <Radio value="CAROTID" />Carotid
-                {/* <Radio value="LED" />LED
+              <div className="d-inline-block">
+                Type:
+                <RadioGroup
+                  className="d-inline"
+                  name="doctype"
+                  selectedValue={this.state.docuType}
+                  onChange={this.handleDocuTypeChange}
+                >
+                  <Radio value="ECHO" />
+                  Echo
+                  <Radio value="CAROTID" />
+                  Carotid
+                  {/* <Radio value="LED" />LED
                 <Radio value="PB" />PB
                 <Radio value="OPMT" />OPMT
                 <Radio value="BL" />BL
                 <Radio value="RETMAIL" />RETMAIL */}
-                <Radio value="MCOT Daily" />MCOT Daily
-                <Radio value="LINQ Report" />LINQ Rep
-                <Radio value="LINQ QL" />LINQ QL
-                <Radio value="PM Remote QL" />PM Remote QL
-                <Radio value="Event Report" />Event Report
-              </RadioGroup>
+                  <Radio value="MCOT Daily" />
+                  MCOT Daily
+                  <Radio value="LINQ Report" />
+                  LINQ Rep
+                  <Radio value="LINQ QL" />
+                  LINQ QL
+                  <Radio value="PM Remote QL" />
+                  PM Remote QL
+                  <Radio value="Event Report" />
+                  Event Report
+                </RadioGroup>
               </div>
 
-              <label>Loop Recorder Reports</label>
-                  <DataGrid
-                    ref={this.linqGridElement}
-                    initialRows={this.state.pat_linqdocs}
-                    columns={getColumnsList(this.state.pat_linqdocs[0])}
-                    gridheight={200}
-                    enableFilter
-                    toolbar={
-                      <Toolbar enableFilter={false} filterRowsButtonText="Filter" style={{ marginRight: 'auto' }} >
-                         <React.Fragment>
-                             <button type="button" className="btn btn-secondary" style={{ marginRight: '5px' , marginLeft: '5px' }} onClick={this.handleLinqReport}>
-                               <i className="glyphicon glyphicon-refresh" /> Statement2
-                             </button>
-                      </React.Fragment>
-                        </Toolbar>
-                    }
-                    gridname={"linq_reports"}
-                    onRowSelect={this.onRowSelectLinqReport}
-                  />{" "}
-{/*
-              <p className="mb-1">Action Needed:</p>
-              <Input id="actiontext" type="textarea" name="actiontext" rows="4" cols="50" onChange={this.handleActionTextChange} /> */}
-              <button type="button" onClick={this.handleProcessDocument} >Process Document</button>
+              <button type="button" onClick={this.handleProcessDocument}>
+                Process Document
+              </button>
 
               <DataProvider
                 endpoint={endpoint_patients}
-                render={data => (
+                render={(data) => (
                   <React.Fragment>
-                  {/* <MDBCard>
-      <MDBCardHeader tag="h3" className="text-center font-weight-bold text-uppercase py-4">
-        Table Editable
-      </MDBCardHeader>
-      <MDBCardBody>
-        <MDBTableEditable data={data0} columns={columns0} striped bordered
-        onChange={this.updateStatemdb}
-
-         />
-      </MDBCardBody>
-    </MDBCard> */}
-
-
-
-                  <DataGrid
-                    ref={this.patientGridElement}
-                    initialRows={data}
-                    enableFilter
-                    toolbarStatement
-                    OnToolbarStatement={this.handleStatement}
-                    columns={this.state.patientGrid_columns}
-                    gridheight={400}
-                    gridname={"patient_list"}
-                    onRowSelect={this.onRowSelectPatient}
-                  />
+                    <ApexDataGrid
+                      key="child"
+                      gridData={data}
+                      onRowSelected={this.onRowSelected2}
+                      button2Label="Statement"
+                      onButton2Callback={this.handleAgStatement}
+                    />
                   </React.Fragment>
                 )}
               />
+              <label>Loop Recorder Reports</label>
+              <ApexDataGrid
+                key="linq"
+                gridname={'linq_reports'}
+                ref={this.linqGridElement}
+                gridData={this.state.linq_docs}
+                onRowSelected={this.onRowSelectLinqReport0}
+                button2Label="View"
+                onButton2Callback={this.onRowSelectLinqReport2}
+              />
             </div>
           </div>
-
         </div>
-
-
-
       </React.Fragment>
-    )
+    );
   }
 }
-
 
 // const AppDocs = () => (
 //   <DocuBrowser />
@@ -1313,14 +1566,14 @@ showFilePng = (blob) => {
 const wrapper = document.getElementById("docubrowser1");
 wrapper ? ReactDOM.render(<AppDocs />, wrapper) : null; */
 
-{/* <p class="mb-1">Document Upload Date:</p>
+{
+  /* <p class="mb-1">Document Upload Date:</p>
 <DateTimePicker
   className="mb-2"
   onChange={this.onControlsDateChange}
   value={this.state.date}
-/> */}
-
-
+/> */
+}
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -1333,11 +1586,7 @@ function TabPanel(props) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && (
-        <Box p={3}>
-          {children}
-        </Box>
-      )}
+      {value === index && <Box p={3}>{children}</Box>}
     </div>
   );
 }
@@ -1347,4 +1596,3 @@ TabPanel.propTypes = {
   index: PropTypes.any.isRequired,
   value: PropTypes.any.isRequired,
 };
-
