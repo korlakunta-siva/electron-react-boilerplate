@@ -2,6 +2,7 @@ import React, { Component, createRef } from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import PropTypes from 'prop-types';
+const { exec } = require('child_process');
 
 import ReactDOM from 'react-dom';
 import Moment from 'moment';
@@ -312,6 +313,7 @@ export default class DocuBrowser extends React.Component {
 
   componentDidMount() {
     console.log('GrandChild did mount.');
+    //this.getPatients();
 
     ipcRenderer.on('selectedFile', (event, path) => {
       console.log('Client got: Show file ' + path);
@@ -406,6 +408,55 @@ export default class DocuBrowser extends React.Component {
 
   onRowSelectExam = (data) => {
     console.log('Called onRowSelectExam', data);
+  };
+
+  getPatients = () => {
+
+    console.log('GET Patients Called');
+    let sqlText = 'set rowcount 0 select  Name, activity_date = (select max(scandate) from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.patientid = pat.patientid and doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ), * from apex..vPatient pat order by 1 desc ';
+    sqlText = 'set rowcount 500 select  Name, PatientId from apex..vPatient pat order by 1 desc ';
+
+    try {
+      exec(
+        '"C:/CodeWorld/electron/project_desk_apexapp/src/api/venv/Scripts/python" C:/CodeWorld/electron/project_desk_apexapp/src/api/dbutil.py -cmd runsql -sql "' +
+        sqlText + '"',
+        { maxBuffer: 1024 * 500000 },
+        (error, stdout, stderr) => {
+          if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+          }
+          //console.log(`stdout: ${stdout}`);
+          //console.log(stdout.replaceAll("None", "''").replaceAll("'", '"'));
+
+          //console.log(data); let dframe = data['frame0']; let myObj = JSON.parse(dframe); data = myObj['rows'];
+
+          let myObject = stdout.replaceAll("None", "''").replaceAll("'", '"');
+          //console.log('RETFUNC DATA OBJECT', myObject);
+          //let jsonVar = JSON.parse( JSON.stringify(myObject)) ;
+          //console.log(jsonVar);
+
+          // let myArray = [];
+          // for (var i in myObject) {
+          //   myArray.push(myObject[i]);
+          // }
+
+          console.log('RETFUNC DATA', myObject.length);
+          console.log('RETFUNC DATA',  JSON.parse(myObject));
+          //setRowData(myArray);
+
+          //return (stdout);
+          //this.setState({patientGrid_data: stdout.replaceAll("'", '"')})
+          //retfunc ((JSON.stringify(stdout)));
+        }
+      );
+    } catch (error) {
+      console.log("Getpatients ERROR: ", error);
+    }
   };
 
   onRowSelected2 = (event) => {
@@ -1255,11 +1306,6 @@ export default class DocuBrowser extends React.Component {
       backend_db_endpoint +
       'exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  Name, activity_date = (select max(scandate) from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.patientid = pat.patientid and doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ), * from apex..vPatient pat where patientid in (select distinct patientid from mobiledoc..document doc, mobiledoc..documentfolders fldr where doc.doc_type = fldr.id and fldr.ParentID = 100 and fldr.delflag = 0 ) order by 1 desc ';
 
-    //backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
-
-    // if (  this.state.showMonitoringPatientsOnly  ) {
-    //    endpoint_patients = backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
-    // }
 
     return (
       <React.Fragment>
@@ -1538,7 +1584,8 @@ export default class DocuBrowser extends React.Component {
                     />
                   </React.Fragment>
                 )}
-              />
+                />
+
               <label>Loop Recorder Reports</label>
               <ApexDataGrid
                 key="linq"

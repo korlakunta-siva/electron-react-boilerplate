@@ -3,6 +3,33 @@ var fs = require('fs');
 
 //
 
+export const rundbsql = (dbserver, sqltext, callbackfn ) => {
+  let mesg = '';
+  console.log('Gett log file for host: ' + hostname);
+  try {
+    exec(
+      '"api/venv/Scripts/python" api/dbutil.py -cmd runsql -sql' +
+      sqltext,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
 export const cli = () => {
   try {
     console.log('Called command');
