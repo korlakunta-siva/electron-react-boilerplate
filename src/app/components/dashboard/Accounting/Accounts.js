@@ -1,14 +1,16 @@
-import React, { Component } from "react";
+import React, { Component, createRef } from "react";
 import PropTypes from "prop-types";
 import { PlaidLink  } from 'react-plaid-link';
 import { connect } from "react-redux";
 import AccountCard from "./AccountCard";
+import RGL, { WidthProvider } from "react-grid-layout";
 
 import { makeStyles } from '@material-ui/core/styles';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import GridListTileBar from '@material-ui/core/GridListTileBar';
 import {cli_showfile} from "../../../../utils/cli";
+import ApexDataGrid from '../../../../components/datagrid/ApexDataGrid';
 
 
 import axios from 'axios';
@@ -27,15 +29,28 @@ import ReactDataGrid from 'react-data-grid';
 import { Toolbar, Data, Filters } from "react-data-grid-addons";
 import DataGrid from "../DataGridNew";
 
+const ReactGridLayout = WidthProvider(RGL);
+
 class Accounts extends Component {
 
   constructor (props) {
     super(props);
     this.tranGridElement = React.createRef();
+
+    this.onLayoutChange = this.onLayoutChange.bind(this);
   }
+
+  onLayoutChange(layout) {
+    //this.props.onLayoutChange(layout);
+  }
+
+
 
   state = {
     updateAccessToken : null,
+    transactionsData : [],
+    filepath: '',
+    iframeRef: createRef(),
  //   filters : {},
  //   transactionsData : []
   }
@@ -43,6 +58,12 @@ class Accounts extends Component {
   componentDidMount() {
     //const { accounts } = this.props;
     //this.props.getTransactions(accounts);
+
+    const path = "file.pdf";
+    const frame_element = `/pdfjs/web/viewer.html?file=${path}`;
+
+    this.setState({ filepath: frame_element });
+
   }
 
     // Add account
@@ -79,6 +100,7 @@ class Accounts extends Component {
   };
 
   onShowTransactionsClick = id => {
+    this.setState({transactionsData : [] });
     this.props.getTransactions(id, "view");
   };
 
@@ -162,16 +184,61 @@ class Accounts extends Component {
 
 
 
-onRowSelectExam = data => {
+// onRowSelectExam = data => {
 
-  let check_num = data[0].row.name.replace("CHECK CLEARED #","");
-  let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check`;
-  cli_showfile(check_path);
+//   let check_num = data[0].row.name.replace("CHECK CLEARED #","");
+//   let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check`;
+//   cli_showfile(check_path);
 
-  // window.open(check_path)
-  // console.log(check_path);
-  // console.log(data);
+//   // window.open(check_path)
+//   // console.log(check_path);
+//   // console.log(data);
+// };
+
+onRowSelectExam = (event) => {
+console.log('AG Row selected', event);
+
+let selectedNodes = event.api
+  .getSelectedNodes()
+  .filter((node) => node.selected);
+console.log(selectedNodes);
+
 };
+
+onRowSelectView = (data) => {
+  console.log('Transaction View:', data);
+  console.log('TO DIsplay' + data.dirpath + '/' + data.fileName);
+
+  let check_num = data.name.replace("CHECK CLEARED #","");
+  let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check.pdf`;
+
+  console.log('Starting to get Check File', check_path);
+
+  const frame_element = `../public/pdfjs/web/viewer.html?file=${check_path} `;
+
+  this.setState({ filepath: frame_element });
+
+
+  //this.handleLinqReportPdf(check_path);
+};
+
+handleLinqReportPdf = (filename) => {
+  console.log('Starting to get Check File', filename);
+  fetch(
+    encodeURI('https://192.168.21.199:8040/getecwfile?filename=' + filename)
+  )
+    .then(this.handleErrors)
+    .then((r) => r.blob())
+    .then((blob) => {
+      let url = URL.createObjectURL(blob);
+      let viewerUrl = encodeURIComponent(url);
+
+      const frame_element = `../public/pdfjs/web/viewer.html?file=${viewerUrl} `;
+
+      this.setState({ filepath: frame_element });
+    });
+};
+
 
 
   render() {
@@ -197,35 +264,6 @@ onRowSelectExam = data => {
       { headerName: "Name", field: "name" , width: 250},
       { headerName: "Category", field: "category" , width: 150}
     ];
-
-
-    const selectors = Data.Selectors;
-    const {
-      NumericFilter,
-      AutoCompleteFilter,
-      MultiSelectFilter,
-      SingleSelectFilter
-    } = Filters;
-
-    const defaultColumnProperties = {
-      filterable: true,
-      width: 160
-    };
-
-
-    const rdg_columns = [
-      { key: 'account', name: 'Account' ,  sortable: true, filterable: true, },
-      { key: 'date', name: 'Date',  sortable: true, filterable: true },
-      { key: 'amount', name: 'Amount',  sortable: true,filterable: true, filterRenderer: NumericFilter },
-      { key: 'name', name: 'Name',  sortable: true, filterable: true,      },
-      { key: 'category', name: 'Category' ,  sortable: true,  filterable: true}  ];
-
-
-
-
-    const options = {
-      filterType: 'checkbox',
-    };
 
 
 
@@ -302,7 +340,10 @@ onRowSelectExam = data => {
 
         //this.setState({ transactionsData : transactionsData})
         console.log("Ready to display transactions:", transactionsData);
-        this.tranGridElement.current.changeGridData(transactionsData,rdg_columns );
+        //this.tranGridElement.current.changeGridData(transactionsData,rdg_columns );
+        if (this.state.transactionsData.length == 0) {
+        this.setState({transactionsData: transactionsData});
+        }
 
       }
     }
@@ -410,7 +451,7 @@ onRowSelectExam = data => {
   accountItems
 }
 
-                  <DataGrid
+                  {/* <DataGrid
                     ref={this.tranGridElement}
                     initialRows={transactionsData}
                     enableFilter
@@ -418,7 +459,47 @@ onRowSelectExam = data => {
                     gridheight={600}
                     gridname={"transactions"}
                     onRowSelect={this.onRowSelectExam}
-                  />{" "}
+                  />{" "} */}
+
+<ReactGridLayout
+        className="layout"
+        onLayoutChange={this.onLayoutChange}
+        rowHeight={30}
+      >
+
+<div key="1" data-grid={{ x: 0, y: 0, w: 8, h: 5, static: true }}>
+
+
+                <ApexDataGrid
+                key="linq"
+                gridname={'transactions'}
+                ref={this.tranGridElement}
+                gridData={this.state.transactionsData}
+                onRowSelected={this.onRowSelectExam}
+                button2Label="View"
+                onButton2Callback={this.onRowSelectView}
+              />
+
+
+        </div>
+
+
+        <div key="2" data-grid={{ x: 9, y: 0, w: 4, h: 2 }} style={{ height: '90%', width: '100%', margin: 0 }}>
+                  <button id="myButton3" onClick={this.nextPDFPage}>
+                    Previous Page{' '}
+                  </button>
+                  <button id="myButton4" onClick={this.nextPDFPage}>
+                    Next Page{' '}
+                  </button>
+                  <iframe
+                    width="100%"
+                    height="600px"
+                    backgroundcolor="lightgrey"
+                    ref={this.state.iframeRef}
+                    src={this.state.filepath}
+                  />
+                </div>
+        </ReactGridLayout>
 
       </div >
 
