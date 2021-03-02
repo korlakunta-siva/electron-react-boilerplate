@@ -30,8 +30,40 @@ def sudo_run_commands_remote(command, server_address, server_username, server_pa
     stdin.flush()
     print(stdout.read().decode("utf-8"))
 
+#'cigadmr01', 'iasq1mr1', 'iasq1mr2', 'iasq1ma1', 'iasq1mf1'
 def run_unix_process(campus = None, unixprocess = None):
     return run_unix_ps (campus, unixprocess)
+
+def run_ciga_unix_cmd(hostname = None , unixcommand = None):
+
+    if hostname == None :
+        return
+
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    cmd = 'sudo -u ciguser ' + unixcommand
+    # cmd = 'sudo -u ciguser /cigaapp/ciguser/bin/scripts/stop_processors.sh'
+    # cmd = 'sudo -u ciguser cd /cigaapp/ciguser/bin/scripts; /cigaapp/ciguser/bin/scripts/batch_start_processor.sh'
+    # cmd = 'sudo -u ciguser  /cigaapp/ciguser/bin/scripts/start_processor.pl 3 2'
+    # cmd = 'sudo -u ciguser  kill -9 29163632'
+
+    unixprocess = cmd
+    ssh.connect(hostname, username="mra9895", password="Sneha21A")
+    # stdin, stdout, stderr = ssh.exec_command(
+    #     "sudo su - ciguser")
+
+    stdin, stdout, stderr = ssh.exec_command(unixprocess)
+    stdin.flush()
+    sql_text=""
+    rowcounter=0
+
+    data = stdout.read().splitlines()
+    #print("output", data)
+    #for i, line in enumerate(stdout):
+    #    line = line.rstrip()
+    ssh.close()
+    return (data)
+
 
 def run_unix_ps(campus = None, systemenv = None, hostname = None , unixprocess = None):
 
@@ -488,6 +520,17 @@ def main():
     except Exception as e:
                 print (e)
                 pass
+
+  if command.strip() == 'cigcmd' :
+    #print("Started cigvms", arguments)
+    cmdtorun = arguments
+    try :
+       cmd_out = run_ciga_unix_cmd(hostname = hostname, unixcommand=cmdtorun)
+       print(cmd_out)
+    except Exception as ex:
+         print(ex)
+         pass
+
 
   if command.strip() == 'cigvm' :
     #print("Started cigvms", arguments)

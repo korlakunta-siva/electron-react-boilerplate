@@ -22,12 +22,43 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import ComputerIcon from '@material-ui/icons/Computer';
+import { DownloadItem } from 'electron';
 
 const { exec } = require('child_process');
 
+const onOpenSSH = (hostname) => {
+  console.log('READY OPEN SSH: ', hostname);
+  try {
+    exec(
+      'start "" "C:\\Programs\\Mobatek\\MobaXterm\\MobaXterm.exe" -newtab "ssh  slk02@' +
+        hostname +
+        '"',
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const useStyles = makeStyles((theme) => ({
   root: {
-    maxWidth: 250,
+    maxWidth: 350,
   },
   media: {
     height: 0,
@@ -47,6 +78,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: red[500],
   },
 }));
+
+//start "" "C:\Programs\Mobatek\MobaXterm\MobaXterm.exe" -newtab "ssh  slk02@iasp2ha1"
 
 const parse_cmdline = (cmdline) => {
   var re_next_arg = /^\s*((?:(?:"(?:\\.|[^"])*")|(?:'[^']*')|\\.|\S)+)\s*(.*)$/;
@@ -104,14 +137,102 @@ const CigaHost = (props) => {
     setAnchorEl(null);
   };
 
+  const handleCloseStopRecivers = (event, hostname) => {
+    //alert(' Stop Recivers : ' + hostname);
+
+    let command_string =
+      ' /cigaapp/ciguser/bin/scripts/CIGDicomReceiver_stop_all.sh ';
+
+    runCIGCommand(hostname, command_string);
+
+    setAnchorEl(null);
+  };
+
+  const handleCloseStartReceivers = (event, hostname) => {
+    //alert(' Start Recivers : ' + hostname);
+
+    let command_string = ' /cigaapp/ciguser/bin/scripts/doit.sh ';
+    //command_string = 'cd /cigaapp/ciguser/bin/scripts; ls -l ';
+
+    runCIGCommand(hostname, command_string);
+
+    setAnchorEl(null);
+  };
+
+  const handleCloseStopProcessors = (event, hostname) => {
+    let command_string =
+      ' /cigaapp/ciguser/bin/scripts/CIGProcessor_stop_all.sh ';
+
+    runCIGCommand(hostname, command_string);
+    setAnchorEl(null);
+  };
+
+  const handleCloseStartProcessors = (event, hostname) => {
+    let command_string =
+      '  /cigaapp/ciguser/bin/scripts/batch_start_processor.sh ';
+
+    runCIGCommand(hostname, command_string);
+
+    setAnchorEl(null);
+  };
+
+  const handleCloseStartQManager = (event, hostname) => {
+    let command_string = ' /cigaapp/ciguser/bin/scripts/CIGQueueManager.sh ';
+
+    runCIGCommand(hostname, command_string);
+    setAnchorEl(null);
+  };
+
+  const handleCloseStopQManager = (event, hostname) => {
+    let command_string =
+      ' /cigaapp/ciguser/bin/scripts/CIGQueueManager_stop.sh ';
+
+    runCIGCommand(hostname, command_string);
+    setAnchorEl(null);
+  };
+
   const handleExpandClick = () => {
     //console.log('before', stateData);
     setstateData({ ...stateData, expanded: !stateData.expanded });
     //console.log('After', stateData);
   };
 
-  React.useEffect(() => {
-    console.log('USEEFFECT CALLED', props.hostname);
+  const runCIGCommand = (hostname, cmdtorun) => {
+    console.log(
+      '"api/venv/Scripts/python" api/cigaops.py -cmd cigcmd -host ' +
+        hostname +
+        ' -a "' +
+        cmdtorun +
+        '"'
+    );
+    try {
+      exec(
+        '"api/venv/Scripts/python" api/cigaops.py -cmd cigcmd -host ' +
+          hostname +
+          ' -a "' +
+          cmdtorun +
+          '"',
+        { maxBuffer: 1024 * 50000 },
+        (error, stdout, stderr) => {
+          if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+          }
+          console.log('CMD Returned', hostname, cmdtorun, stdout);
+          refreshHostData();
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const refreshHostData = () => {
+    console.log('REFRESH CALLED', props.hostname);
     try {
       exec(
         '"api/venv/Scripts/python" api/cigaops.py -cmd cigvm -a  ' +
@@ -351,6 +472,11 @@ const CigaHost = (props) => {
     //       );
     //     });
     // };
+  };
+
+  React.useEffect(() => {
+    console.log('USEEFFECT CALLED', props.hostname);
+    refreshHostData();
   }, [props.hostname]);
 
   const prepSummary = (newData) => {
@@ -390,11 +516,13 @@ const CigaHost = (props) => {
             break;
           case 'iasp1mf1':
           case 'iasp1mf2':
+          case 'iasq1mf1':
             emptyRow.campus = 'MCF';
             emptyRow.campusColor = 'darkturquoise';
             break;
           case 'iasp1ma1':
           case 'iasp1ma2':
+          case 'iasq1ma1':
             emptyRow.campus = 'MCA';
             emptyRow.campusColor = 'darksalmon';
             break;
@@ -443,11 +571,13 @@ const CigaHost = (props) => {
             break;
           case 'iasp1mf1':
           case 'iasp1mf2':
+          case 'iasq1mf1':
             emptyRow.campus = 'MCF';
             emptyRow.campusColor = 'darkturquoise';
             break;
           case 'iasp1ma1':
           case 'iasp1ma2':
+          case 'iasq1ma1':
             emptyRow.campus = 'MCA';
             emptyRow.campusColor = 'darksalmon';
             break;
@@ -496,11 +626,13 @@ const CigaHost = (props) => {
             break;
           case 'iasp1mf1':
           case 'iasp1mf2':
+          case 'iasq1mf1':
             emptyRow.campus = 'MCF';
             emptyRow.campusColor = 'darkturquoise';
             break;
           case 'iasp1ma1':
           case 'iasp1ma2':
+          case 'iasq1ma1':
             emptyRow.campus = 'MCA';
             emptyRow.campusColor = 'darksalmon';
             break;
@@ -548,35 +680,85 @@ const CigaHost = (props) => {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>My account</MenuItem>
-              <MenuItem onClick={handleClose}>Logout</MenuItem>
+              <MenuItem
+                onClick={(event) =>
+                  handleCloseStopRecivers(event, stateData.hostname)
+                }
+              >
+                Stop Receivers
+              </MenuItem>
+              <MenuItem
+                onClick={(event) =>
+                  handleCloseStopProcessors(event, stateData.hostname)
+                }
+              >
+                Stop Processors
+              </MenuItem>
+              <MenuItem
+                onClick={(event) =>
+                  handleCloseStopQManager(event, stateData.hostname)
+                }
+              >
+                Stop Q-Manager
+              </MenuItem>
+              <MenuItem
+                onClick={(event) =>
+                  handleCloseStartReceivers(event, stateData.hostname)
+                }
+              >
+                Start Receivers
+              </MenuItem>
+              <MenuItem
+                onClick={(event) =>
+                  handleCloseStartProcessors(event, stateData.hostname)
+                }
+              >
+                Start Processors
+              </MenuItem>
+              <MenuItem
+                onClick={(event) =>
+                  handleCloseStartQManager(event, stateData.hostname)
+                }
+              >
+                Start Q-Manager
+              </MenuItem>
             </Menu>
           </div>
         }
         title={stateData.hostname}
-        subheader="September 14, 2016"
+        subheader=""
       />
       <CardContent>
         <Typography variant="body2" color="textSecondary" component="p">
           {hostSummary.map((row, index) => (
-            <span>
-              <h4>
-                {row.campus} {row.queuekey.replace('queue=', '')}
-              </h4>
+            <div style={{ display: 'block' }}>
+              <span
+                style={{
+                  display: 'block',
+                  fontWeight: 'bolder',
+                  marginTop: '10px',
+                }}
+              >
+                {' '}
+                {row.campus} {row.queuekey.replace('queue=', '')}{' '}
+              </span>
               Processors {row.processorCount} <br />
               Receivers {row.receiverCount} <br />
               QManagers {row.qmanagerCount}
-            </span>
+              <br />
+            </div>
           ))}
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
-        <IconButton aria-label="add to favorites">
-          <FavoriteIcon />
+        <IconButton aria-label="add to favorites" onClick={refreshHostData}>
+          <RefreshIcon />
         </IconButton>
-        <IconButton aria-label="share">
-          <ShareIcon />
+        <IconButton
+          aria-label="share"
+          onClick={() => onOpenSSH(stateData.hostname)}
+        >
+          <ComputerIcon />
         </IconButton>
         <IconButton
           className={clsx(classes.expand, {
@@ -611,10 +793,13 @@ const CigaHost = (props) => {
               ).localeCompare('' + b.args.queue + ('0' + b.PID).slice(-2));
             })
             .map((row, index) => (
-              <p key={row.PID}>
-                {row.args.queue} PID {row.PID} {row.LOGDIR} {row.args.directory}{' '}
-                {row.AET} {row.port} {row.IP} {row.PORT}
-                Elapsed {row.ELAPSED}
+              <p
+                key={row.PID}
+                data-bs-toggle="tooltip"
+                data-bs-html="true"
+                title={`" ${row.PID}  ${row.LOGDIR}  ${row.AET}  ${row.port}  ${row.IP} "`}
+              >
+                {row.args.queue} {row.PORT}
               </p>
             ))}
           <h4 style={{ background: 'orange' }}>PROCESSORS</h4>
@@ -622,17 +807,20 @@ const CigaHost = (props) => {
             .sort((a, b) => {
               //return a.processorid - b.processorid;
               return (
-                a.SERIAL +
-                a.QUEUE +
-                ('0' + a.processorid).slice(-2)
-              ).localeCompare(
-                b.SERIAL + b.QUEUE + ('0' + b.processorid).slice(-2)
+                1000 * a.PRIORITY +
+                100 * a.SERIAL -
+                (1000 * b.PRIORITY + 100 * b.SERIAL)
               );
             })
             .map((row, index) => (
-              <p key={row.PID}>
-                {row.SERIAL} {row.QUEUE} PID => {row.PID} {row.LOGDIR}{' '}
-                {row.PRIROITY} {row.processorid} Processor {row.queue}{' '}
+              <p
+                key={row.PID}
+                data-bs-toggle="tooltip"
+                data-bs-html="true"
+                title={`" ${row.PID}  ${row.LOGDIR} "`}
+              >
+                {row.args.queue} Priority => {row.PRIORITY} Serial =>{' '}
+                {row.SERIAL}
               </p>
             ))}
         </CardContent>

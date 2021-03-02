@@ -25,7 +25,7 @@ class App extends Component {
 
   state = {
     columns_loaded: false,
-    cigahosts: ['cigadmr01', 'iasq1mr1', 'iasq1mr2'],
+    cigahosts: ['cigadmr01', 'iasq1mr1', 'iasq1mr2', 'iasq1ma1', 'iasq1mf1'],
 
     customsqltext:
       "select * from iimdb_rch00_repl..exam exm , iimdb_rch00_repl..IIMTB_PREDEFINED_PROC pp  where exm.pred_proc_id = pp.pred_proc_id and exam_status = 'CM' and performed_dt between  dateadd(hh, -1, getdate()) and getdate()  ",
