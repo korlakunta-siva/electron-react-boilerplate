@@ -249,7 +249,15 @@
     "webpack-cli": "^4.2.0",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.4.0",
-    "yarn-deduplicate": "^3.1.0"
+    "yarn-deduplicate": "^3.1.0",
+    "react-grid-layout": "^1.2.0",
+    "use-keyboard-shortcut": "^1.0.6",
+    "uuidv4": "^6.0.9",
+    "@date-io/date-fns": "1.3.13",
+    "@material-ui/pickers": "^3.2.10",
+    "@material-ui/lab": "^4.0.0-alpha.53",
+    "react-hot-keys": "^2.6.2",
+    "react-hotkeys-hook": "^3.0.3"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.2",

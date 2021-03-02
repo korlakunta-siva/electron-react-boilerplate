@@ -1,5 +1,15 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from "react";
+
 import CigaHost from './cigahost';
+import RGL, { WidthProvider } from "react-grid-layout";
+import { Tabs, Tab } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
+import PropTypes from 'prop-types';
+const { exec } = require('child_process');
+import ApexDataGrid from '../../components/datagrid/ApexDataGrid';
+
+const ReactGridLayout = WidthProvider(RGL);
 
 class App extends Component {
   endpoint_exams =
@@ -28,6 +38,9 @@ class App extends Component {
   // 'iasq1mr2',
 
   state = {
+    filepath: '',
+    iframeRef: createRef(),
+    tablValue: 0,
     columns_loaded: false,
     cigahosts: [
       'iasp1ei1',
@@ -60,8 +73,72 @@ class App extends Component {
     }, 2000);
   }
 
+  onLayoutChange(layout) {
+    //this.props.onLayoutChange(layout);
+  }
+
+  handleTabChange = (event, newValue) => {
+    this.setState({ tablValue: newValue });
+  };
+
+
+onRowSelectExam = (event) => {
+  console.log('AG Row selected', event);
+
+  let selectedNodes = event.api
+    .getSelectedNodes()
+    .filter((node) => node.selected);
+  console.log(selectedNodes);
+
+  };
+
+  onRowSelectView = (data) => {
+    console.log('Transaction View:', data);
+    console.log('TO DIsplay' + data.dirpath + '/' + data.fileName);
+
+    let var1 = data.name.replace("CHECK CLEARED #","");
+    let var1_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${var1}.pdf`;
+
+    console.log('Starting to get file', var1_path);
+
+    const frame_element = `../public/pdfjs/web/viewer.html?file=${check_path} `;
+
+    this.setState({ filepath: frame_element });
+
+
+    //this.handleLinqReportPdf(check_path);
+  };
+
+   a11yProps = (index) => {
+    return {
+      id: `simple-tab-${index}`,
+      'aria-controls': `simple-tabpanel-${index}`,
+    };
+  }
+
   render() {
     return this.state.columns_loaded ? (
+
+
+      <div
+      className="col-12 py-3 overflow-auto"
+      style={{ height: '90vh', backgroundColor: 'lightgrey' }}
+    >
+      <Tabs
+        value={this.state.tablValue}
+        onChange={this.handleTabChange}
+        aria-label="simple tabs example"
+      >
+        <Tab label="Files" {...this.a11yProps(0)} />
+        <Tab label="Claims" {...this.a11yProps(1)} />
+        <Tab label="Tab3" {...this.a11yProps(2)} />
+      </Tabs>
+      <TabPanel
+        value={this.state.tablValue}
+        index={0}
+        style={{ height: '90%', width: '100%' }}
+      >
+
       <React.Fragment>
         <div className="container-fluid  " style={{ whiteSpace: 'nowrap' }}>
           <div
@@ -84,10 +161,85 @@ class App extends Component {
           </div>
         </div>
       </React.Fragment>
+      </TabPanel>
+      <TabPanel value={this.state.tablValue} index={1}>
+<div>
+<ReactGridLayout
+        className="layout"
+        onLayoutChange={this.onLayoutChange}
+        rowHeight={30}
+      >
+
+<div key="1" data-grid={{ x: 0, y: 0, w: 8, h: 5, minH: 3, maxH: 12, static: true, isResizable: true }}>
+
+
+                <ApexDataGrid
+                key="linq"
+                gridname={'transactions'}
+                ref={this.tranGridElement}
+                gridData={this.state.transactionsData}
+                onRowSelected={this.onRowSelectExam}
+                button2Label="View"
+                onButton2Callback={this.onRowSelectView}
+              />
+
+
+        </div>
+
+
+        <div key="2" data-grid={{ x: 9, y: 0, w: 4, h: 2 , isResizable: true}} style={{ height: '90%', width: '100%', margin: 0 }}>
+                  <button id="myButton3" onClick={this.nextPDFPage}>
+                    Previous Page{' '}
+                  </button>
+                  <button id="myButton4" onClick={this.nextPDFPage}>
+                    Next Page{' '}
+                  </button>
+                  <iframe
+                    width="100%"
+                    height="600px"
+                    backgroundcolor="lightgrey"
+                    ref={this.state.iframeRef}
+                    src={this.state.filepath}
+                  />
+                </div>
+        </ReactGridLayout>
+
+      </div >
+      </TabPanel>
+      <TabPanel value={this.state.tablValue} index={2}>
+        Item Three
+      </TabPanel>
+    </div>
+
+
+
     ) : (
       <span>Loading ...</span>
     );
   }
 }
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box p={3}>{children}</Box>}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired,
+};
+
 
 export default App;

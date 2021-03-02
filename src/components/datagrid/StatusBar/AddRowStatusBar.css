@@ -1,0 +1,9 @@
+.add-btn-container>button {
+  padding: 2px !important;
+  margin: 1px !important;
+}
+
+.add-btn-container>button[variant][color]:disabled {
+  background-color: inherit !important;
+  opacity: 0.7;
+}
