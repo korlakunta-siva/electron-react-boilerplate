@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { render } from 'react-dom';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
-import 'ag-grid-enterprise';
+//import 'ag-grid-enterprise';
 import './App.css';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -44,12 +44,20 @@ const ApexDataGrid = (props) => {
     if (props.gridData.length > 0) {
       let firstrow = props.gridData[0];
       let columnsToDisplay = 5;
+      if (props.NumColumnsToShow) {
+        columnsToDisplay = NumColumnsToShow;
+      }
+      if (props.ShowAllColumns) {
+        columnsToDisplay = Object.keys(firstrow).length;
+      }
       if (props.colNum) {
         columnsToDisplay = props.colNum;
       }
       const cols = Object.keys(firstrow)
         .filter((row, indx) => {
-          return !row.toLowerCase().startsWith('hide_') && indx <= columnsToDisplay ;
+          return (
+            !row.toLowerCase().startsWith('hide_') && indx <= columnsToDisplay
+          );
         })
         .map((row) => {
           let colrow = {
@@ -83,7 +91,7 @@ const ApexDataGrid = (props) => {
           cellRendererParams: {
             btnLabel: props.button2Label,
             clicked: function (rowdata) {
-              props.onButton2Callback(rowdata);
+              props.onButton2Callback(rowdata, props.gridname);
             },
           },
         });
@@ -94,7 +102,6 @@ const ApexDataGrid = (props) => {
       setRowData(props.gridData);
 
       if (gridApi) gridApi.sizeColumnsToFit();
-
     } else {
       setRowData([]);
     }
@@ -122,30 +129,29 @@ const ApexDataGrid = (props) => {
     //document.querySelector('#myGrid').style.height = '400px';
   };
 
+  let divHeight = '550px';
+  if (props.divHeight) {
+    divHeight = props.divHeight;
+  }
+
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={setAutoHeight}
-      >
+      {props.gridTitle ? `${props.gridTitle}` : ''} {'  '}
+      <Button variant="contained" color="primary" onClick={props.onRefresh}>
+        Refresh
+      </Button>
+      <Button variant="contained" color="primary" onClick={setAutoHeight}>
         Auto Height
       </Button>
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={setFixedHeight}
-      >
+      <Button variant="contained" color="primary" onClick={setFixedHeight}>
         Fixed Height
       </Button>
-
-      <div id="myGrid" >
+      <div id="myGrid">
         <div className="test-container">
           <div className="test-header">
             <div
               style={{
-                height: '550px',
+                height: divHeight,
                 width: '100%',
               }}
               className="ag-theme-balham test-grid"
@@ -153,11 +159,13 @@ const ApexDataGrid = (props) => {
               <AgGridReact
                 rowData={rowData}
                 onGridReady={onGridReady}
+                domLayout={props.domHeight ? props.domHeight : 'normal'}
                 defaultColDef={{
                   initialWidth: 100,
                   sortable: true,
                   resizable: true,
                   filter: true,
+                  editable: true,
                 }}
                 rowSelection="single"
                 rowDragManaged={true}
