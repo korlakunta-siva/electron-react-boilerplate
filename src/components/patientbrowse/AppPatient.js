@@ -24,6 +24,7 @@ import {
   DATA_PATIENT_EXAM_EXAMID,
   loadGridData,
   cli_parse_ko_folder,
+  DATA_STUDY_LOCATION,
 } from './patbrowseData';
 import {
   DATA_EXAM_SERIES_KO_REFLECTED,
@@ -32,6 +33,11 @@ import {
   DATA_SERIES_LOCATIONS,
   DATA_EXAM_CMOVES,
   DATA_EXAM_EXCEPTIONS,
+  DATA_CIGA_JOBS,
+  DATA_CIGA_SERIES,
+  DATA_CIGA_EXCEPTIONS,
+  DATA_CIGA_PROCESSOR_LOG,
+  DATA_CIGA_IIMS_NOTIF,
 } from './patbrowseData';
 
 import ApexDataGrid from '../../components/datagrid/ApexDataGrid';
@@ -207,11 +213,12 @@ class App extends Component {
       patientcmrn: '',
       accession: '',
       examid: 0,
-      examsrefreshkey: 'accn',
+      examkeytype: 'accn',
       imgsty_id: '',
       study_uid: '',
       series_uid: '',
       imgser_id: 0,
+      imgsty_id: 0,
     },
     dataPatientExams: [],
     dataExamSeriesKOReflected: [],
@@ -224,6 +231,8 @@ class App extends Component {
     dataCigaSeriesInbound: [],
     dataCigaJobs: [],
     dataCigaExceptions: [],
+    dataCigaProcessorLog: [],
+    dataCigaIimsNotification: [],
     loaded: false,
     columns_loaded: false,
     placeholder: '',
@@ -257,9 +266,52 @@ class App extends Component {
     }, 2000);
   }
 
+  handleGridRefresh = (gridName) => {
+    console.log('Refresh called on: ', gridName);
+    let DbEnv = this.state.DbEnv;
+    let dataArgs = { ...this.state.dataArgs };
+
+    console.log('REFRESH STATE ARGS: ', dataArgs, this.state.dataArgs);
+    let newExamArgs = {
+      ...dataArgs,
+      DbEnv: DbEnv,
+    };
+
+    switch (gridName) {
+      case DATA_PATIENT_EXAMS:
+      case DATA_PATIENT_EXAM_EXAMID:
+      case DATA_PATIENT_EXAM_ACCN:
+        this.setState({
+          dataPatientExams: [],
+          dataExamStudies: [],
+          dataExamSeriesKOReflected: [],
+          dataExamStudyLocations: [],
+          dataExamSeries: [],
+          dataExamSeriesLocations: [],
+        });
+        break;
+
+      case DATA_EXAM_SERIES_KO_REFLECTED:
+        this.setState({ dataExamSeriesKOReflected: [] });
+        break;
+
+      case DATA_EXAM_STUDIES:
+        this.setState({ dataExamStudies: [], dataExamStudyLocations: [] });
+        break;
+      case DATA_EXAM_SERIES:
+        this.setState({ dataExamSeries: [], dataExamSeriesLocations: [] });
+        break;
+
+      default:
+    }
+    console.log('CALLING REFRESH WITH ARGS: ', gridName, newExamArgs);
+    loadGridData(gridName, newExamArgs, this.recvGridData);
+  };
+
   onRowSelectView = (data, gridname) => {
     console.log('Transaction View:', gridname, data);
     let DbEnv = this.state.DbEnv;
+    let dataArgs = { ...this.state.dataArgs };
     switch (gridname) {
       case DATA_PATIENT_EXAMS:
         let newExamArgs = {
@@ -268,14 +320,13 @@ class App extends Component {
           patient_cmrn: data.patient_cmrn,
           DbEnv: DbEnv,
         };
-        // this.setState((prevState, props) =>{
-        //   dataArgs: {
-        //     examrefreshkey: prevState.dataArgs.examsrefreshkey,
-        //     patient_cmrn: prevState.dataArgs.patient_cmrn,
-        //     accession: data.epic_accn,
-        //     examid: data.exam_id,
-        //   }
-        // });
+        dataArgs.accession = data.epic_accn;
+        dataArgs.examid = data.exam_id;
+        dataArgs.patient_cmrn = data.patient_cmrn;
+
+        this.setState({ dataArgs: dataArgs }, () => {
+          console.log('NEW ARGS: ', dataArgs, this.state.dataArgs);
+        });
 
         cli_parse_ko_folder(
           DATA_EXAM_SERIES_KO_REFLECTED,
@@ -286,6 +337,9 @@ class App extends Component {
         loadGridData(DATA_EXAM_SERIES, newExamArgs, this.recvGridData);
         loadGridData(DATA_EXAM_CMOVES, newExamArgs, this.recvGridData);
         loadGridData(DATA_EXAM_EXCEPTIONS, newExamArgs, this.recvGridData);
+        loadGridData(DATA_CIGA_SERIES, newExamArgs, this.recvGridData);
+        loadGridData(DATA_CIGA_JOBS, newExamArgs, this.recvGridData);
+        loadGridData(DATA_CIGA_EXCEPTIONS, newExamArgs, this.recvGridData);
 
         console.log('Retrieve Series and Studies', newExamArgs);
         break;
@@ -298,6 +352,36 @@ class App extends Component {
             imgser_id: data.imgser_id,
             accession: data.epic_accn,
             examid: data.exam_id,
+            DbEnv: DbEnv,
+          },
+          this.recvGridData
+        );
+        break;
+      case DATA_EXAM_STUDIES:
+        loadGridData(
+          DATA_STUDY_LOCATION,
+          {
+            imgsty_id: data.imgsty_id,
+            DbEnv: DbEnv,
+          },
+          this.recvGridData
+        );
+        break;
+      case DATA_CIGA_JOBS:
+        loadGridData(
+          DATA_CIGA_PROCESSOR_LOG,
+          {
+            job_queue_id: data.JOB_QUEUE_ID,
+            DbEnv: DbEnv,
+          },
+          this.recvGridData
+        );
+        break;
+      case DATA_CIGA_PROCESSOR_LOG:
+        loadGridData(
+          DATA_CIGA_IIMS_NOTIF,
+          {
+            iims_queue_id: data.IIMS_QUEUE_ID,
             DbEnv: DbEnv,
           },
           this.recvGridData
@@ -423,52 +507,6 @@ class App extends Component {
     console.log('Retrieving Exams with args: ', args);
 
     loadGridData(DATA_PATIENT_EXAMS, args, this.recvGridData);
-    //
-
-    // console.log(
-    //   this.endpoint_patient_exams +
-    //     ` exam_id in (select exam_id from iimdb_rch${this.DbEnv.iimsReplDBNum}${this.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'ACCESSION_NBR' and eid.examid_value = '` +
-    //     this.state.accn +
-    //     "') " +
-    //     ' order by performed_dt desc'
-    // );
-    // fetch(
-    //   this.endpoint_patient_exams +
-    //     ` exam_id in (select exam_id from iimdb_rch${this.DbEnv.iimsReplDBNum}${this.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'ACCESSION_NBR' and eid.examid_value = '` +
-    //     this.state.accn +
-    //     "') " +
-    //     ' order by performed_dt desc',
-    //   {}
-    // )
-    //   .then((response) => {
-    //     if (response.status !== 200) {
-    //       return this.setState({
-    //         placeholder: 'Something went wrong in getting data',
-    //       });
-    //     }
-    //     return response.json();
-    //   })
-    //   .then((data) => {
-    //     console.log(data);
-    //     let dframe = data['frame0'];
-    //     console.log(dframe);
-    //     let myObj = JSON.parse(dframe);
-    //     console.log(myObj);
-    //     data = myObj['rows'];
-    //     this.setState(
-    //       {
-    //         data: data,
-    //         series: [],
-    //         series_locations: [],
-    //         series_ciga_jobs: [],
-    //         loaded: true,
-    //       },
-    //       () => {
-    //         console.log('Changed state', this.state.data.length);
-    //         this.examsGridElement.current.changeGridData(this.state.data);
-    //       }
-    //     );
-    //   });
   };
 
   onRowSelectExam = (event) => {
@@ -808,6 +846,23 @@ class App extends Component {
         );
         break;
 
+      case DATA_STUDY_LOCATION:
+        let updatedExamStudyLocations = gridData;
+
+        this.setState(
+          {
+            dataExamStudyLocations: updatedExamStudyLocations,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state Exam Study Locations',
+              this.state.dataExamStudyLocations.length
+            );
+          }
+        );
+        break;
+
       case DATA_SERIES_LOCATIONS:
         this.setState(
           {
@@ -851,39 +906,80 @@ class App extends Component {
           }
         );
         break;
+      case DATA_CIGA_SERIES:
+        this.setState(
+          {
+            dataCigaSeriesInbound: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state ciga inbound series',
+              this.state.dataCigaSeriesInbound.length
+            );
+          }
+        );
+        break;
+
+      case DATA_CIGA_JOBS:
+        this.setState(
+          {
+            dataCigaJobs: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state ciga jobs',
+              this.state.dataCigaJobs.length
+            );
+          }
+        );
+        break;
+      case DATA_CIGA_EXCEPTIONS:
+        this.setState(
+          {
+            dataCigaExceptions: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state ciga exceptions',
+              this.state.dataCigaExceptions.length
+            );
+          }
+        );
+        break;
+      case DATA_CIGA_PROCESSOR_LOG:
+        this.setState(
+          {
+            dataCigaProcessorLog: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state ciga processor log',
+              this.state.dataCigaProcessorLog.length
+            );
+          }
+        );
+        break;
+      case DATA_CIGA_IIMS_NOTIF:
+        this.setState(
+          {
+            dataCigaIimsNotification: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state ciga iims notif',
+              this.state.dataCigaIimsNotification.length
+            );
+          }
+        );
+        break;
 
       default:
     }
-  };
-
-  handleGridRefresh = (gridName) => {
-    console.log('Refresh called on: ', gridName);
-    let DbEnv = this.state.DbEnv;
-    let args = {};
-
-    switch (gridName) {
-      case DATA_PATIENT_EXAMS:
-      case DATA_PATIENT_EXAM_EXAMID:
-      case DATA_PATIENT_EXAM_ACCN:
-        args = { ...this.state.dataArgs, DbEnv };
-        break;
-
-      case DATA_EXAM_SERIES_KO_REFLECTED:
-        args = { ...this.state.dataArgs, DbEnv };
-        break;
-
-      case DATA_EXAM_STUDIES:
-        args = { ...this.state.dataArgs, DbEnv };
-        break;
-      case DATA_EXAM_SERIES:
-        args = { ...this.state.dataArgs, DbEnv };
-        break;
-
-      default:
-        args = { DbEnv };
-    }
-
-    loadGridData(gridName, args, this.recvGridData);
   };
 
   onLayoutChange(layout) {
@@ -1110,12 +1206,14 @@ class App extends Component {
                 >
                   <ApexDataGrid
                     key="studylocgrid"
-                    gridname={DATA_EXAM_STUDIES}
+                    gridname={DATA_STUDY_LOCATION}
                     ShowAllColumns={true}
                     divHeight={'110px'}
                     gridTitle={'STUDIES LOCATIONS- PROD'}
-                    onRefresh={() => this.handleGridRefresh(DATA_EXAM_STUDIES)}
-                    gridData={this.state.dataExamStudies}
+                    onRefresh={() =>
+                      this.handleGridRefresh(DATA_STUDY_LOCATION)
+                    }
+                    gridData={this.state.dataExamStudyLocations}
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
                     onButton2Callback={this.onRowSelectView}
@@ -1248,14 +1346,12 @@ class App extends Component {
                 >
                   <ApexDataGrid
                     key="cigseriesgrid"
-                    gridname={DATA_SERIES_LOCATIONS}
+                    gridname={DATA_CIGA_SERIES}
                     ShowAllColumns={true}
                     divHeight={'150px'}
                     gridTitle={'INBOUND SERIES - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_SERIES_LOCATIONS)
-                    }
-                    gridData={this.state.dataSeriesLocations}
+                    onRefresh={() => this.handleGridRefresh(DATA_CIGA_SERIES)}
+                    gridData={this.state.dataCigaSeriesInbound}
                     gridArgsText={''}
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
@@ -1277,14 +1373,12 @@ class App extends Component {
                 >
                   <ApexDataGrid
                     key="cigjobsgrid"
-                    gridname={DATA_SERIES_LOCATIONS}
+                    gridname={DATA_CIGA_JOBS}
                     ShowAllColumns={true}
                     divHeight={'150px'}
                     gridTitle={'JOBS QUEUE - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_SERIES_LOCATIONS)
-                    }
-                    gridData={this.state.dataSeriesLocations}
+                    onRefresh={() => this.handleGridRefresh(DATA_CIGA_JOBS)}
+                    gridData={this.state.dataCigaJobs}
                     gridArgsText={''}
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
@@ -1293,7 +1387,7 @@ class App extends Component {
                 </div>
 
                 <div
-                  key="71"
+                  key="72"
                   data-grid={{
                     x: 0,
                     y: 32,
@@ -1305,16 +1399,43 @@ class App extends Component {
                   style={{ height: '90%', width: '100%', margin: 0 }}
                 >
                   <ApexDataGrid
-                    key="cigexceptionsgrid"
-                    gridname={DATA_SERIES_LOCATIONS}
+                    key="cigprocessorgrid"
+                    gridname={DATA_CIGA_PROCESSOR_LOG}
                     ShowAllColumns={true}
-                    divHeight={'150px'}
-                    domHeight={'autoHeight'}
-                    gridTitle={'CIG EXCEPTIONS - PROD'}
+                    divHeight={'120px'}
+                    gridTitle={'PROCESSOR LOG - PROD'}
                     onRefresh={() =>
-                      this.handleGridRefresh(DATA_SERIES_LOCATIONS)
+                      this.handleGridRefresh(DATA_CIGA_PROCESSOR_LOG)
                     }
-                    gridData={this.state.dataSeriesLocations}
+                    gridData={this.state.dataCigaProcessorLog}
+                    gridArgsText={''}
+                    onRowSelected={this.onRowSelectExam}
+                    button2Label="View"
+                    onButton2Callback={this.onRowSelectView}
+                  />
+                </div>
+                <div
+                  key="725"
+                  data-grid={{
+                    x: 8,
+                    y: 32,
+                    w: 6,
+                    h: 3,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{ height: '90%', width: '100%', margin: 0 }}
+                >
+                  <ApexDataGrid
+                    key="cigprocessorgrid"
+                    gridname={DATA_CIGA_IIMS_NOTIF}
+                    ShowAllColumns={true}
+                    divHeight={'120px'}
+                    gridTitle={'IIMS Notification - PROD'}
+                    onRefresh={() =>
+                      this.handleGridRefresh(DATA_CIGA_IIMS_NOTIF)
+                    }
+                    gridData={this.state.dataCigaIimsNotification}
                     gridArgsText={''}
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
@@ -1323,33 +1444,36 @@ class App extends Component {
                 </div>
 
                 <div
-                  key="72"
+                  key="71"
                   data-grid={{
-                    x: 8,
-                    y: 32,
-                    w: 6,
-                    h: 4,
+                    x: 0,
+                    y: 36,
+                    w: 15,
+                    h: 6,
                     static: true,
                     isResizable: false,
                   }}
                   style={{ height: '90%', width: '100%', margin: 0 }}
                 >
                   <ApexDataGrid
-                    key="cigprocessorgrid"
-                    gridname={DATA_SERIES_LOCATIONS}
+                    key="cigexceptionsgrid"
+                    gridname={DATA_CIGA_EXCEPTIONS}
                     ShowAllColumns={true}
-                    divHeight={'150px'}
+                    divHeight={'250px'}
                     domHeight={'autoHeight'}
-                    gridTitle={'PROCESSOR LOG - PROD'}
+                    gridTitle={'CIG EXCEPTIONS - PROD'}
                     onRefresh={() =>
-                      this.handleGridRefresh(DATA_SERIES_LOCATIONS)
+                      this.handleGridRefresh(DATA_CIGA_EXCEPTIONS)
                     }
-                    gridData={this.state.dataSeriesLocations}
+                    gridData={this.state.dataCigaExceptions}
                     gridArgsText={''}
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
                     onButton2Callback={this.onRowSelectView}
                   />
+                </div>
+                <div>
+                  <h1></h1>
                 </div>
               </ReactGridLayout>
             </React.Fragment>
