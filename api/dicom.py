@@ -11,6 +11,8 @@ import mmap
 import struct
 import glob
 
+DEBUG = False
+
 
 def parseCISstackFile(stackpath, seriesInfo):
     offsetArray = []
@@ -335,6 +337,8 @@ def parseDicom(folderpath):
 
 def listCISparseDicom(listfolderpath, seriesArr):
 
+    global DEBUG
+
     files = []
     examSummary = []
     dicom_meta = {}
@@ -368,15 +372,18 @@ def listCISparseDicom(listfolderpath, seriesArr):
                 seriesInfo = serpath
 
         if (".img" in filename):
-            #print( "PARSE STACK :" + filename, seriesInfo)
+            if DEBUG:
+                print("PARSE STACK :" + filename)
             dcmFiles = parseCISstackFile(filename, seriesInfo)
             #print("STACK", len(dcmFiles), filename)
             for dcmfile in dcmFiles:
                 files.append(dcmfile)
-                #print(dcmfile['SeriesInstanceUID'])
+                if DEBUG:
+                    print("DCM File UID: ", dcmfile['SeriesInstanceUID'])
             continue
         else:
-            #print("PARSE DICOM :" + filename)
+            if DEBUG:
+                print("PARSE DICOM :" + filename)
             pass
 
         try:
@@ -549,13 +556,18 @@ def listCISparseDicom(listfolderpath, seriesArr):
         filename = ''
         files.append(dicom_meta)
         #print(dicom_meta)
+    if DEBUG:
+        print("PARSE DONE" + str(len(files)))
 
-    #print("PARSE DONE" + str(len(files)))
     dictSeries = {}
     rejectedInfo = []
     seriesUIDs = set([x['SeriesInstanceUID'] for x in files])
+
     for ser in seriesUIDs:
+
         for file1 in files:
+            # if DEBUG:
+            #     print("PARSE DONE step 1", ser, file1)
             if 'koseries' in file1.keys():
                 rejectedInfo.append(file1['koseries'])
             if (ser == file1['SeriesInstanceUID']):
@@ -572,14 +584,40 @@ def listCISparseDicom(listfolderpath, seriesArr):
                     serinfo['images'].append(imageUID)
                     dictSeries[ser] = serinfo
 
+    if DEBUG:
+        print("PARSE2 DONE rejected: ", rejectedInfo)
+
     for kos in rejectedInfo:
         kos_seruid = kos[0]['seruid']
         kos_images = kos[0]['images']
-        serdict = dictSeries[kos_seruid]
-        serdict['rejected'] = kos_images
-        #print(len(kos_images), kos_seruid, serdict['rejected'])
+        if DEBUG:
+            print(" INFO: ", len(kos), kos, kos_seruid, kos_images)
 
-    #print("SUMMARY")
+        if kos_seruid in dictSeries:
+            serdict = dictSeries[kos_seruid]
+            serdict['rejected'] = kos_images
+        else:
+            serdict = {}
+            serdict['rejected'] = kos_images
+            serdict['images'] = kos_images
+            serdict['count'] = len(kos_images)
+            dictSeries[kos_seruid] = serdict
+
+            #dictSeries[kos_seruid]
+
+        # if DEBUG:
+        #     try:
+        #         print(" INFO-A: ", dictSeries[kos_seruid])
+        #     except Exception as err:
+        #         print(err)
+        # serdict = dictSeries[kos_seruid]
+        # serdict['rejected'] = kos_images
+
+        # if DEBUG:
+        #     print(" INFO2: ", len(kos_images), kos_seruid, serdict['rejected'])
+
+    if DEBUG:
+        print("SUMMARY")
     for dictkey in dictSeries.keys():
         serinfo = dictSeries[dictkey]
         ser_rejected = 0
@@ -607,11 +645,14 @@ def listCISparseDicom(listfolderpath, seriesArr):
                 origSeriesInfo['rejuids'] = serinfo['rejected']
                 origSeriesInfo['rejuids_remaining'] = yet_to_remove
 
-        # print(serinfo['count'], len(serinfo['images']), ser_rejected,
-        #       ser_rejected_still_remain, yet_to_remove, dictkey)
-        #print(origSeriesInfo)
+        if DEBUG:
+            print(serinfo['count'], len(serinfo['images']), ser_rejected,
+                  ser_rejected_still_remain, yet_to_remove, dictkey)
 
-    #print(seriesArr)
+            print(origSeriesInfo)
+
+    if DEBUG:
+        print(seriesArr)
     return (seriesArr)
     #print(dictSeries[])
     #print(rejectedInfo)
@@ -703,7 +744,8 @@ def listCISparseDicom(listfolderpath, seriesArr):
     #dataset = pydicom.dcmread(filename)
 
 
-def examDicomInfo(examid):
+def examDicomInfo(sqlText):
+    global DEBUG
     #print("Started getexamDICOMInfo: " + examid)
     urllib3.disable_warnings()
     http = urllib3.HTTPSConnectionPool('iasq1mr2',
@@ -711,19 +753,23 @@ def examDicomInfo(examid):
                                        cert_reqs='CERT_NONE',
                                        assert_hostname=False)
 
-    pat_exams_sql = " declare @accn varchar(20) select @accn = '" + examid + "'" + '''
- select serl.imgserl_id, ser.imgser_status, ser.imgser_image_count, serl.imgserl_status, ser.modality, str.store_name, serl.series_file_name, serl.last_action_time,
- exm.patient_cmrn, sty.acq_start_time, ser.sopclass_uid, ser.series_uid, sty.study_uid
-FROM iimdb_rch01_prod..EXAM exm, iimdb_rch01_prod..EXAM_IDENTIFIER eid , iimdb_rch01_prod..IMG_STUDY sty,
-  iimdb_rch01_prod..IMG_SERIES ser, iimdb_rch01_prod..IMG_SERIES_LOCATION serl, iimdb_rch01_prod..IMG_STORE str
- WHERE exm.exam_id = sty.exam_id and sty.imgsty_id = ser.imgser_imgsty_id
- and ser.imgser_id = serl.imgserl_imgser_id and serl.imgserl_imgstr_id = str.imgstr_id and str.imgstr_imgsys_id = 2 and  sty.exam_id = eid.exam_id and eid.examid_type_code = 'ACCESSION_NBR' and eid.examid_value = @accn'''
+    #     pat_exams_sql = " declare @accn varchar(20) select @accn = '" + examid + "'" + '''
+    #  select serl.imgserl_id, ser.imgser_status, ser.imgser_image_count, serl.imgserl_status, ser.modality, str.store_name, serl.series_file_name, serl.last_action_time,
+    #  exm.patient_cmrn, sty.acq_start_time, ser.sopclass_uid, ser.series_uid, sty.study_uid
+    # FROM iimdb_rch01_prod..EXAM exm, iimdb_rch01_prod..EXAM_IDENTIFIER eid , iimdb_rch01_prod..IMG_STUDY sty,
+    #   iimdb_rch01_prod..IMG_SERIES ser, iimdb_rch01_prod..IMG_SERIES_LOCATION serl, iimdb_rch01_prod..IMG_STORE str
+    #  WHERE exm.exam_id = sty.exam_id and sty.imgsty_id = ser.imgser_imgsty_id
+    #  and ser.imgser_id = serl.imgserl_imgser_id and serl.imgserl_imgstr_id = str.imgstr_id and str.imgstr_imgsys_id = 2 and  sty.exam_id = eid.exam_id and eid.examid_type_code = 'ACCESSION_NBR' and eid.examid_value = @accn'''
 
     rows = []
     try:
         #print(pat_exams_sql)
-        urlstring = "https://iasq1mr2:8081/exsql?dbserver=iimsProd&sqltype=patientsToPurge&param1=5"
-        urlstring = "https://iasq1mr2:8081/exsql?dbserver=iimsProd&sqltype=customSQL&sqltext=" + pat_exams_sql
+        #print(sqlText)
+        #urlstring = "https://iasq1mr2:8081/exsql?dbserver=iimsProd&sqltype=patientsToPurge&param1=5"
+        #urlstring = "https://iasq1mr2:8081/exsql?dbserver=iimsProd&sqltype=customSQL&sqltext=" + pat_exams_sql
+        urlstring = "https://iasq1mr2:8081/exsql?dbserver=" + sqlText
+
+        #print(urlstring)
         r = http.request('GET', urlstring)
         r.release_conn()
         data_frame = json.loads(r.data.decode('utf-8'))
@@ -740,12 +786,14 @@ FROM iimdb_rch01_prod..EXAM exm, iimdb_rch01_prod..EXAM_IDENTIFIER eid , iimdb_r
             filePathsArr.append(serpath['store_name'] + "\\" +
                                 serpath['series_file_name'])
 
+        if DEBUG:
+            print("ToParse:", filePathsArr)
         return (listCISparseDicom(filePathsArr, rows))
-        #print("ToParse:" , filePathsArr)
+
         #return rows
 
     except Exception as ex:
-        print('Error Calling URL for patientToPurgetid. Error:  %s ' % (ex))
+        print('Error cisParse. :  %s ' % (ex))
     finally:
         pass
 
@@ -754,6 +802,7 @@ FROM iimdb_rch01_prod..EXAM exm, iimdb_rch01_prod..EXAM_IDENTIFIER eid , iimdb_r
 
 
 def main():
+    global DEBUG
 
     parser = argparse.ArgumentParser(
         description="Python Local OS Commands Runner")
@@ -761,13 +810,18 @@ def main():
     group.add_argument("-v", "--verbose", action="store_true")
     group.add_argument("-q", "--quiet", action="store_true")
     parser.add_argument("-cmd", help="command_to_run")
+    parser.add_argument("-debug", help="command_to_run")
     parser.add_argument("-a", "--arg", help="args", default=None)
+    parser.add_argument("-dbserv", help="args", default=None)
+    parser.add_argument("-sql", help="sql", default=None)
     parser.add_argument("-p", "--pid", type=int, help="pid", default=None)
     args = parser.parse_args()
 
     command = None
     hostname = None
     pid = None
+    dbserver = ''
+    sqlText = ''
 
     if args.cmd:
         command = args.cmd
@@ -775,13 +829,19 @@ def main():
         arguments = args.arg
     if args.pid:
         pid = args.pid
+    if args.debug:
+        DEBUG = True
+    if args.dbserv:
+        dbserver = args.dbserv
+    if args.sql:
+        sqlText = args.sql
 
     try:
 
         if command.strip() == 'cisparse':
             #print("parse -> path: " + str(arguments))
             #parseDicom(arguments)
-            print(examDicomInfo(arguments))
+            print(examDicomInfo(sqlText))
             #print(parseDicom(arguments))
             sys.exit(0)
 

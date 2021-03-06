@@ -8,14 +8,18 @@ import Box from '@material-ui/core/Box';
 import PropTypes from 'prop-types';
 const { exec } = require('child_process');
 import ApexDataGrid from '../../components/datagrid/ApexDataGrid';
+import { loadGridData } from './cigaopsData';
 
 const ReactGridLayout = WidthProvider(RGL);
-const DATA_CIG_RECEIVERS = 'cig_receivers';
-const DATA_CIG_PROCESSORS = 'cig_processors';
-const DATA_RECENT_IOCM_JOBS = 'cig_iocm_kos';
-const DATA_EXAM_SERIES = 'exam_series';
-const DATA_SERIES_LOCATIONS = 'series_locations';
-const DATA_KO_REFLECTED = 'exam_show_ko_effect';
+
+import {
+  DATA_CIG_RECEIVERS,
+  DATA_CIG_PROCESSORS,
+  DATA_RECENT_IOCM_JOBS,
+  DATA_EXAM_SERIES,
+  DATA_SERIES_LOCATIONS,
+  DATA_KO_REFLECTED,
+} from './cigaopsData';
 
 class App extends Component {
   // endpoint_exams =
@@ -84,9 +88,9 @@ class App extends Component {
   componentWillMount() {
     document.title = 'CIGA Ops Tools';
 
-    this.loadGridData(DATA_CIG_RECEIVERS);
-    this.loadGridData(DATA_CIG_PROCESSORS);
-    this.loadGridData(DATA_RECENT_IOCM_JOBS);
+    loadGridData(DATA_CIG_RECEIVERS, {}, this.recvGridData);
+    loadGridData(DATA_CIG_PROCESSORS, {}, this.recvGridData);
+    loadGridData(DATA_RECENT_IOCM_JOBS, {}, this.recvGridData);
 
     setTimeout(() => {
       this.setState({ columns_loaded: true });
@@ -261,7 +265,11 @@ class App extends Component {
     console.log('Transaction View:', gridname, data);
     switch (gridname) {
       case DATA_RECENT_IOCM_JOBS:
-        this.loadGridData(DATA_EXAM_SERIES, { accession: data.EXAM_ID });
+        loadGridData(
+          DATA_EXAM_SERIES,
+          { accession: data.EXAM_ID },
+          this.recvGridData
+        );
         try {
           this.setState(
             {
@@ -277,7 +285,11 @@ class App extends Component {
         }
         break;
       case DATA_EXAM_SERIES:
-        this.loadGridData(DATA_SERIES_LOCATIONS, { imgser_id: data.imgser_id });
+        loadGridData(
+          DATA_SERIES_LOCATIONS,
+          { imgser_id: data.imgser_id },
+          this.recvGridData
+        );
         break;
     }
 
@@ -293,240 +305,93 @@ class App extends Component {
 
   handleGridRefresh = (gridName) => {
     console.log('Refresh called on: ', gridName);
-    this.loadGridData(gridName);
+    loadGridData(gridName, {}, this.recvGridData);
   };
 
-  loadGridData = (gridName, args) => {
-    console.log('Retrieve Data for :', gridName);
-    let urlPrefix = 'https://iasq1mr2:8081/exsql?dbserver=';
-    let dataURL = '';
+  recvGridData = (gridName, args, gridData) => {
+    console.log('ReceivedData for :', gridName, args, gridData);
 
     switch (gridName) {
       case DATA_CIG_RECEIVERS:
-        dataURL =
-          'iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20select * from cigdb_rch00_prod..CIGTB_RECEIVER ';
+        this.setState(
+          {
+            dataCigReceivers: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state CIGReceivers',
+              this.state.dataCigReceivers.length
+            );
+          }
+        );
         break;
       case DATA_CIG_PROCESSORS:
-        dataURL =
-          'iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20select * from cigdb_rch00_prod..CIGTB_PROCESSOR ';
+        this.setState(
+          {
+            dataCigProcessors: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state Processors',
+              this.state.dataCigProcessors.length
+            );
+          }
+        );
+        break;
         break;
       case DATA_RECENT_IOCM_JOBS:
-        dataURL = `iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20
-         SELECT
-    TOP 100
-    JOB_QUEUE_ID,
-    CAMPUS,
-    EXAM_ID,
-    PATIENT_EXTERNAL_ID,
-    SENDER_AET,
-    ser.SERIES_UID,
-    JOB_QUEUE_START_TIME,
-    STUDY_UID,
-    JOB_STATUS,
-    JOB_STATUS_TIME,
-    RECEIVER_PORT,
-    RECEIVER_AET,
-    SENDER_HOST,
-    SENDER_IP,
-    JOB_PRIORITY,
-    CAMPUS_DESC,
-    DEPARTMENT_ID,
-    PATIENT_INTERNAL_ID,
-    PATIENT_LAST_NAME,
-    PATIENT_FIRST_NAME,
-    EXAM_DATE,
-    STUDY_UID,
-    STUDY_DESC SOPCLASS_UID,
-    SERIES_MODALITY,
-    TRANSFER_SYNTAX,
-    PROCESSOR_HOST,
-    PROCESSED_SERIES_COUNT,
-    PROCESSED_JOB_COUNT,
-    ACTIVE_ASSOCIATION_COUNT,
-    JOB_QUEUE_END_TIME,
-    UPDATE_TIME   ,  str.* , serl.*
-      FROM qrddb_rch03_prod..CIGTB_JOB_QUEUE_LOG jql, iimdb_rch01_prod..IMG_SERIES ser, iimdb_rch01_prod..IMG_SERIES_LOCATION serl, iimdb_rch01_prod..IMG_STORE str  WHERE campus = 2 and jql.SOPCLASS_UID = '1.2.840.10008.5.1.4.1.1.88.59' and jql.SERIES_UID = ser.series_uid and ser.series_id = 11000 and ser.imgser_id = serl.imgserl_imgser_id and serl.imgserl_imgstr_id = str.imgstr_id and str.imgstr_imgsys_id = 2  ORDER BY jql.JOB_QUEUE_END_TIME DESC `;
+        this.setState(
+          {
+            dataRecentIOCMjobs: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state IOCM JOBS',
+              this.state.dataRecentIOCMjobs.length
+            );
+          }
+        );
         break;
-      case DATA_EXAM_SERIES:
-        console.log('ARGS: ', args, this.state.dataExamSeriesArgs);
-        if (args == undefined || args.accession == '') {
-          args = this.state.dataExamSeriesArgs;
-          if (args.accession == '') return;
-        }
-        dataURL = `iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20
-          SELECT    exm.exam_id,  imgser_imgsty_id,
-    series_id,
-    imgser_status,
-    iocm_flag,
-    imgser_image_count,
-    modality,
-    series_uid,
-    sopclass_uid,
-    imgser_id,
-    series_desc,
-    ser.acq_start_time,
-    ser.acq_finish_time,
-    ser.acq_station_name,
-    projection FROM     iimdb_rch01_prod..IMG_SERIES ser,
-    iimdb_rch01_prod..IMG_STUDY sty,
-    iimdb_rch01_prod..EXAM exm,
-    iimdb_rch01_prod..EXAM_IDENTIFIER eid WHERE     eid.examid_value = '${args.accession}' AND
-    eid.examid_type_code = 'ACCESSION_NBR' AND
-    eid.exam_id = exm.exam_id AND
-    exm.exam_id = sty.exam_id AND
-    sty.imgsty_id = ser.imgser_imgsty_id  `;
 
+      case DATA_EXAM_SERIES:
+        let updatedExamSeries = gridData;
+
+        this.setState(
+          {
+            dataExamSeries: updatedExamSeries,
+            dataExamSeriesArgs: args,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state Exam Series',
+              this.state.dataExamSeries.length
+            );
+          }
+        );
         break;
 
       case DATA_SERIES_LOCATIONS:
-        console.log('ARGS: ', args, this.state.dataSeriesLocationsArgs);
-        if (args == undefined || args.imgser_id == '') {
-          args = this.state.dataSeriesLocationsArgs;
-          if (args.imgser_id == '') {
-            return;
+        this.setState(
+          {
+            dataSeriesLocations: gridData,
+            dataSeriesLocationsArgs: args,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state Series Locations',
+              this.state.dataSeriesLocations.length
+            );
           }
-        }
-        dataURL = `iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20
-        SELECT
-    imgsys_name,
-    imgserl_status,
-    imgserl_image_count,
-    last_action_time,
-    imgserl_id,
-    imgserl_imgser_id,
-    series_size,
-    series_file_name,
-    imgserl_imgstr_id  FROM     iimdb_rch01_prod..IMG_SERIES_LOCATION serl,
-    iimdb_rch01_prod..IMG_STORE str,
-    iimdb_rch01_prod..IMG_SYSTEM imgsys WHERE     imgserl_imgser_id =  ${args.imgser_id}  AND      serl.imgserl_imgstr_id = str.imgstr_id AND     str.imgstr_imgsys_id = imgsys.imgsys_id
-     `;
-
+        );
         break;
+
       default:
     }
-
-    console.log('Getting data from URL:', urlPrefix + dataURL);
-
-    fetch(urlPrefix + dataURL, {})
-      .then((response) => {
-        if (response.status !== 200) {
-          return this.setState({
-            placeholder: 'Something went wrong in getting data',
-          });
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log(data);
-        let dframe = data['frame0'];
-        //console.log(dframe);
-        let myObj = JSON.parse(dframe);
-        console.log(myObj);
-        data = myObj['rows'];
-
-        switch (gridName) {
-          case DATA_CIG_RECEIVERS:
-            this.setState(
-              {
-                dataCigReceivers: data,
-                loaded: true,
-              },
-              () => {
-                console.log(
-                  'Changed state CIGReceivers',
-                  this.state.dataCigReceivers.length
-                );
-              }
-            );
-            break;
-          case DATA_CIG_PROCESSORS:
-            this.setState(
-              {
-                dataCigProcessors: data,
-                loaded: true,
-              },
-              () => {
-                console.log(
-                  'Changed state Processors',
-                  this.state.dataCigProcessors.length
-                );
-              }
-            );
-            break;
-            break;
-          case DATA_RECENT_IOCM_JOBS:
-            this.setState(
-              {
-                dataRecentIOCMjobs: data,
-                loaded: true,
-              },
-              () => {
-                console.log(
-                  'Changed state IOCM JOBS',
-                  this.state.dataRecentIOCMjobs.length
-                );
-              }
-            );
-            break;
-
-          case DATA_EXAM_SERIES:
-            let updatedExamSeries = data;
-
-            // for (let i = 0; i < this.state.dataKOAffectedSeries.length; i++) {
-            //   if (this.state.dataKOAffectedSeries[i].iocmko == 'yes') {
-            //     //console.log('PROCESS THIS', unique_series[i].AffectedSeries);
-            //     this.state.dataKOAffectedSeries[i].koseries.forEach(
-            //       (element) => {
-            //         console.log('Affected SeriesApply', element);
-            //         for (let j = 0; j < updatedExamSeries.length; j++) {
-            //           if (updatedExamSeries.series_uid == element.seruid) {
-            //             updatedExamSeries.RejectedCount +=
-            //               element.images.length;
-
-            //             break;
-            //           }
-            //         }
-            //       }
-            //     );
-            //   }
-            // }
-
-            //  this.setState({ dataExamSeries: updatedExamSeries });
-
-            this.setState(
-              {
-                dataExamSeries: updatedExamSeries,
-                dataExamSeriesArgs: args,
-                loaded: true,
-              },
-              () => {
-                console.log(
-                  'Changed state Exam Series',
-                  this.state.dataExamSeries.length
-                );
-              }
-            );
-            break;
-
-          case DATA_SERIES_LOCATIONS:
-            this.setState(
-              {
-                dataSeriesLocations: data,
-                dataSeriesLocationsArgs: args,
-                loaded: true,
-              },
-              () => {
-                console.log(
-                  'Changed state Series Locations',
-                  this.state.dataSeriesLocations.length
-                );
-              }
-            );
-            break;
-
-          default:
-        }
-      });
   };
 
   render() {
@@ -584,7 +449,7 @@ class App extends Component {
                 data-grid={{
                   x: 0,
                   y: 0,
-                  w: 4,
+                  w: 6,
                   h: 2,
                   minH: 3,
                   maxH: 8,
@@ -606,9 +471,9 @@ class App extends Component {
               <div
                 key="2"
                 data-grid={{
-                  x: 4,
+                  x: 7,
                   y: 0,
-                  w: 4,
+                  w: 6,
                   h: 4,
                   static: true,
                   isResizable: false,
@@ -617,9 +482,10 @@ class App extends Component {
               >
                 <ApexDataGrid
                   key="linq2"
-                  gridname={DATA_EXAM_SERIES}
-                  gridTitle={'Exam Series - PROD'}
-                  gridData={this.state.dataExamSeries}
+                  gridname={DATA_CIG_PROCESSORS}
+                  gridTitle={'CIG Processors - PROD'}
+                  onRefresh={() => this.handleGridRefresh(DATA_CIG_RECEIVERS)}
+                  gridData={this.state.dataCigProcessors}
                   onRowSelected={this.onRowSelectExam}
                   button2Label="View"
                   onButton2Callback={this.onRowSelectView}
@@ -636,7 +502,7 @@ class App extends Component {
               rowHeight={30}
             >
               <div
-                key="1"
+                key="21"
                 data-grid={{
                   x: 0,
                   y: 0,
@@ -664,7 +530,7 @@ class App extends Component {
                 />
               </div>
               <div
-                key="2"
+                key="22"
                 data-grid={{
                   x: 6,
                   y: 0,
@@ -691,7 +557,7 @@ class App extends Component {
               </div>
               <h1>{this.state.selecteKO_Path}</h1>
               <div
-                key="3"
+                key="23"
                 data-grid={{
                   x: 6,
                   y: 8,
@@ -720,10 +586,10 @@ class App extends Component {
               </div>
 
               <div
-                key="4"
+                key="24"
                 data-grid={{
                   x: 0,
-                  y: 12,
+                  y: 13,
                   w: 14,
                   h: 3,
                   static: true,
@@ -740,6 +606,9 @@ class App extends Component {
                   gridTitle={'DATA_KO_REFLECTED EXAM - PROD'}
                   onRefresh={() => this.handleGridRefresh(DATA_KO_REFLECTED)}
                   gridData={this.state.dataKOAffectedSeries}
+                  gridArgsText={
+                    'accn: ' + this.state.dataExamSeriesArgs.accession
+                  }
                   onRowSelected={this.onRowSelectExam}
                   button2Label="View"
                   onButton2Callback={this.onRowSelectView}

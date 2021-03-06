@@ -15,6 +15,7 @@ const ApexDataGrid = (props) => {
   const [gridColumnApi, setGridColumnApi] = useState(null);
   const [rowData, setRowData] = useState([]);
   const [columns, setColumns] = useState([]);
+  const [columnsInit, setColumnsInt] = useState(true);
 
   const [gridData, setgridData] = React.useState({ ...props.gridData });
 
@@ -39,6 +40,7 @@ const ApexDataGrid = (props) => {
 
   React.useEffect(() => {
     console.log('PROPS CHANGED', props.gridData);
+
     if (props.gridData == undefined) return;
 
     if (props.gridData.length > 0) {
@@ -97,11 +99,18 @@ const ApexDataGrid = (props) => {
         });
       }
 
-      setColumns(cols);
+      if (gridApi && columnsInit == true) {
+        console.log('Calling setColumns');
+        setColumns(cols);
+      }
 
       setRowData(props.gridData);
 
-      if (gridApi) gridApi.sizeColumnsToFit();
+      if (gridApi && columnsInit == true) {
+        console.log('Calling sizeColumnsToFit');
+        gridApi.sizeColumnsToFit();
+        setColumnsInt(false);
+      }
     } else {
       setRowData([]);
     }
@@ -146,6 +155,7 @@ const ApexDataGrid = (props) => {
       <Button variant="contained" color="primary" onClick={setFixedHeight}>
         Fixed Height
       </Button>
+      {props.gridArgsText ? `${props.gridArgsText}` : ''}
       <div id="myGrid">
         <div className="test-container">
           <div className="test-header">
