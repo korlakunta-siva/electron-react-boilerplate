@@ -17,6 +17,7 @@ import Select from '@material-ui/core/Select';
 import { withStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
+import TextField from '@material-ui/core/TextField';
 
 import {
   DATA_PATIENT_EXAMS,
@@ -25,6 +26,7 @@ import {
   loadGridData,
   cli_parse_ko_folder,
   DATA_STUDY_LOCATION,
+  runCIGCommand,
 } from './patbrowseData';
 import {
   DATA_EXAM_SERIES_KO_REFLECTED,
@@ -53,6 +55,14 @@ const styles = (theme) => ({
   },
   selectEmpty: {
     marginTop: theme.spacing(2),
+  },
+  container: {
+    display: 'flex',
+    flexWrap: 'nowrap',
+  },
+  textField: {
+    marginLeft: theme.spacing.unit,
+    marginRight: theme.spacing.unit,
   },
 });
 
@@ -208,6 +218,7 @@ class App extends Component {
 
   state = {
     DBEnvironment: 'Intg',
+    LogTextvalue: '',
     DbEnv: this.DbEnvIntg,
     dataArgs: {
       patientcmrn: '',
@@ -306,6 +317,28 @@ class App extends Component {
     }
     console.log('CALLING REFRESH WITH ARGS: ', gridName, newExamArgs);
     loadGridData(gridName, newExamArgs, this.recvGridData);
+  };
+
+  onRecevingLog = (logtext) => {
+    this.setState({ LogTextvalue: logtext });
+  };
+
+  onRowSelectViewLog = (data, gridname) => {
+    console.log('Transaction View:', gridname, data);
+    let DbEnv = this.state.DbEnv;
+    let dataArgs = { ...this.state.dataArgs };
+
+    switch (gridname) {
+      case DATA_CIGA_JOBS:
+        let command_string =
+          ' /cigaapp/ciguser/slk02/getloginfo.sh ' + data.JOB_QUEUE_ID;
+        console.log('LOG FILE VIEW: ', command_string);
+
+        runCIGCommand(data.PROCESSOR_HOST, command_string, this.onRecevingLog);
+
+        break;
+      default:
+    }
   };
 
   onRowSelectView = (data, gridname) => {
@@ -1189,6 +1222,8 @@ class App extends Component {
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
                     onButton2Callback={this.onRowSelectView}
+                    button3Label="Log"
+                    onButton3Callback={this.onRowSelectViewLog}
                   />
                 </div>
 
@@ -1381,8 +1416,8 @@ class App extends Component {
                     gridData={this.state.dataCigaJobs}
                     gridArgsText={''}
                     onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
+                    button3Label="View"
+                    onButton3Callback={this.onRowSelectViewLog}
                   />
                 </div>
 
@@ -1470,6 +1505,29 @@ class App extends Component {
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
                     onButton2Callback={this.onRowSelectView}
+                  />
+                </div>
+                <div
+                  key="920"
+                  data-grid={{
+                    x: 0,
+                    y: 44,
+                    w: 20,
+                    h: 25,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{
+                    height: '90%',
+                    width: '100%',
+                    margin: 0,
+                    overflow: 'auto',
+                  }}
+                >
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: this.state.LogTextvalue,
+                    }}
                   />
                 </div>
                 <div>

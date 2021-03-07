@@ -99,6 +99,19 @@ const ApexDataGrid = (props) => {
         });
       }
 
+      if (props.button3Label) {
+        cols.splice(1, 0, {
+          field: 'log',
+          cellRenderer: 'btnCellRenderer',
+          cellRendererParams: {
+            btnLabel: props.button3Label,
+            clicked: function (rowdata) {
+              props.onButton3Callback(rowdata, props.gridname);
+            },
+          },
+        });
+      }
+
       if (gridApi && columnsInit == true) {
         console.log('Calling setColumns');
         setColumns(cols);

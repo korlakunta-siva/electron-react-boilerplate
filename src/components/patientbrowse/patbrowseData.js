@@ -336,3 +336,54 @@ export const cli_parse_ko_folder = (gridName, args, retfunc) => {
     console.log(error);
   }
 };
+
+export const runCIGCommand = (hostname, cmdtorun, recvLogFn) => {
+  console.log(
+    '"api/venv/Scripts/python" api/cigaops.py -cmd cigcmd -host ' +
+      hostname +
+      ' -a "' +
+      cmdtorun +
+      '"'
+  );
+  try {
+    exec(
+      '"api/venv/Scripts/python" api/cigaops.py -cmd cigcmd -host ' +
+        hostname +
+        ' -a "' +
+        cmdtorun +
+        '"',
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //let textHtml = '';
+        //console.log('CMD Returned', hostname, cmdtorun, stdout);
+        let textHtml = stdout.replace('[').replace(']').split("b'");
+
+        // .forEach((element) => {
+        //   return element + '<br/>';
+        // });
+
+        let newarr = textHtml.map((row) => {
+          return row + '<br/>';
+        });
+
+        let htmlText = textHtml.reduce((accumulator, currentValue) => {
+          return accumulator.concat(currentValue + '<hr/>');
+        });
+
+        //console.log(htmlText);
+        recvLogFn(htmlText);
+        //refreshHostData();
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
