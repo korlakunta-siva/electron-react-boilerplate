@@ -50,7 +50,6 @@ const styles = (theme) => ({
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
-    marginTop: -20,
     marginLeft: 20,
   },
   selectEmpty: {
@@ -220,6 +219,7 @@ class App extends Component {
     DBEnvironment: 'Intg',
     LogTextvalue: '',
     DbEnv: this.DbEnvIntg,
+    CIGQueueEnvironment: {},
     dataArgs: {
       patientcmrn: '',
       accession: '',
@@ -230,6 +230,7 @@ class App extends Component {
       series_uid: '',
       imgser_id: 0,
       imgsty_id: 0,
+      jobqueueid: 0,
     },
     dataPatientExams: [],
     dataExamSeriesKOReflected: [],
@@ -475,6 +476,17 @@ class App extends Component {
     //       }
     //     );
     //   });
+  };
+
+  jobqueueIdChange = (event) => {
+    let args = {
+      jobqueueid: this.state.dataArgs.jobqueueid,
+      DbEnv: this.state.DbEnv,
+      examkeytype: 'jobqueueid',
+    };
+    console.log('Retrieving Exams with args: ', args);
+
+    loadGridData(DATA_PATIENT_EXAMS, args, this.recvGridData);
   };
 
   examidChange = (event) => {
@@ -779,6 +791,35 @@ class App extends Component {
 
   signalListeners = { hover: this.handleHover };
 
+  handleChangeCIGQueueEnv = (event) => {
+    console.log('SELECTED CIG Queue Env: ', event.target.value);
+    // switch (event.target.value) {
+    //   case 'Intg':
+    //     this.setState({
+    //       DBEnvironment: event.target.value,
+    //       DbEnv: this.DbEnvIntg,
+    //     });
+    //     break;
+    //   case 'Test':
+    //     this.setState({
+    //       DBEnvironment: event.target.value,
+    //       DbEnv: this.DbEnvProd,
+    //     });
+    //     break;
+    //   case 'Prch':
+    //     this.setState({
+    //       DBEnvironment: event.target.value,
+    //       DbEnv: this.DbEnvProd,
+    //     });
+    //     break;
+    //   default:
+    //     this.setState({
+    //       DBEnvironment: 'Intg',
+    //       DbEnv: this.DbEnvIntg,
+    //     });
+    //     break;
+    // }
+  };
   handleChangeDbEnv = (event) => {
     console.log('SELECTED', event.target.value);
     switch (event.target.value) {
@@ -1035,88 +1076,6 @@ class App extends Component {
               style={{ dislplay: 'inline-block' }}
               width="200px"
             >
-              <label>
-                Patient CMRN
-                <input
-                  className="form-control-inline ml-4"
-                  type="text"
-                  id="pat_cmrn"
-                  placeholder="CMRN..."
-                  onChange={(event) => {
-                    console.log(
-                      'CMRN Input Field New Value:',
-                      event.target.value,
-                      event.target.value.replaceAll(/\D/g, '')
-                    );
-                    this.setState({
-                      dataArgs: {
-                        ...this.state.dataArgs,
-                        patient_cmrn: event.target.value.replaceAll(/\D/g, ''),
-                      },
-                    });
-                  }}
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.cmrnChange();
-                    }
-                  }}
-                ></input>
-              </label>
-
-              <label>
-                Accession Number
-                <input
-                  className="form-control-inline ml-4"
-                  type="text"
-                  id="pat_accnum"
-                  placeholder="Accession Number ..."
-                  onChange={(event) => {
-                    console.log(
-                      'Accession Number value:',
-                      event.target.value.trim()
-                    );
-                    this.setState({
-                      dataArgs: {
-                        ...this.state.dataArgs,
-                        accession: event.target.value.trim(),
-                      },
-                    });
-                  }}
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.accnChange();
-                    }
-                  }}
-                ></input>
-              </label>
-
-              <label>
-                Exam ID
-                <input
-                  className="form-control-inline ml-4"
-                  type="text"
-                  id="pat_examid"
-                  placeholder="IIMS Exam Id..."
-                  onChange={(event) => {
-                    console.log(
-                      'EXAMID New value:',
-                      event.target.value,
-                      event.target.value.replaceAll(/\D/g, '')
-                    );
-                    this.setState({
-                      dataArgs: {
-                        ...this.state.dataArgs,
-                        examid: event.target.value.replaceAll(/\D/g, ''),
-                      },
-                    });
-                  }}
-                  onKeyPress={(event) => {
-                    if (event.key === 'Enter') {
-                      this.examidChange();
-                    }
-                  }}
-                ></input>
-              </label>
               <FormControl required className={classes.formControl}>
                 <InputLabel id="demo-simple-select-required-label">
                   Environment
@@ -1136,6 +1095,122 @@ class App extends Component {
                   <MenuItem value={'Prch'}>Prod - Rochester</MenuItem>
                 </Select>
               </FormControl>
+
+              <TextField
+                id="pat_cmrn"
+                label="Patient CMRN"
+                variant="outlined"
+                onChange={(event) => {
+                  console.log(
+                    'CMRN Input Field New Value:',
+                    event.target.value,
+                    event.target.value.replaceAll(/\D/g, '')
+                  );
+                  this.setState({
+                    dataArgs: {
+                      ...this.state.dataArgs,
+                      patient_cmrn: event.target.value.replaceAll(/\D/g, ''),
+                    },
+                  });
+                }}
+                onKeyPress={(event) => {
+                  if (event.key === 'Enter') {
+                    this.cmrnChange();
+                  }
+                }}
+              />
+
+              <TextField
+                id="pat_accnum"
+                label="Epic Accession"
+                variant="outlined"
+                onChange={(event) => {
+                  console.log(
+                    'Accession Number value:',
+                    event.target.value.trim()
+                  );
+                  this.setState({
+                    dataArgs: {
+                      ...this.state.dataArgs,
+                      accession: event.target.value.trim(),
+                    },
+                  });
+                }}
+                onKeyPress={(event) => {
+                  if (event.key === 'Enter') {
+                    this.accnChange();
+                  }
+                }}
+              />
+
+              <TextField
+                id="pat_examid"
+                label="IIMS Exam ID"
+                variant="outlined"
+                onChange={(event) => {
+                  console.log(
+                    'EXAMID New value:',
+                    event.target.value,
+                    event.target.value.replaceAll(/\D/g, '')
+                  );
+                  this.setState({
+                    dataArgs: {
+                      ...this.state.dataArgs,
+                      examid: event.target.value.replaceAll(/\D/g, ''),
+                    },
+                  });
+                }}
+                onKeyPress={(event) => {
+                  if (event.key === 'Enter') {
+                    this.examidChange();
+                  }
+                }}
+              />
+
+              <FormControl className={classes.formControl}>
+                <InputLabel id="demo-simple-select-required-label">
+                  CIG Queue
+                </InputLabel>
+                <Select
+                  labelId="simple-select-required-label"
+                  id="cig-job-queue"
+                  value={this.state.CIGQueueEnvironment}
+                  onChange={this.handleChangeCIGQueueEnv}
+                  className={classes.selectEmpty}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value={'Intg'}>Integration</MenuItem>
+                  <MenuItem value={'Test'}>Test</MenuItem>
+                  <MenuItem value={'Prod'}>Prod - Rochester</MenuItem>
+                  <MenuItem value={'PreProd'}>PreProd - Rochester</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                id="arg_job_queue_id"
+                label="Job Queue ID"
+                variant="outlined"
+                onChange={(event) => {
+                  console.log(
+                    'JOB Queue ID New value:',
+                    event.target.value,
+                    event.target.value.replaceAll(/\D/g, '')
+                  );
+                  this.setState({
+                    dataArgs: {
+                      ...this.state.dataArgs,
+                      jobqueueid: event.target.value.replaceAll(/\D/g, ''),
+                    },
+                  });
+                }}
+                onKeyPress={(event) => {
+                  if (event.key === 'Enter') {
+                    this.jobqueueIdChange();
+                  }
+                }}
+              />
             </div>
             <React.Fragment>
               <ReactGridLayout
@@ -1222,8 +1297,6 @@ class App extends Component {
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
                     onButton2Callback={this.onRowSelectView}
-                    button3Label="Log"
-                    onButton3Callback={this.onRowSelectViewLog}
                   />
                 </div>
 
@@ -1416,6 +1489,8 @@ class App extends Component {
                     gridData={this.state.dataCigaJobs}
                     gridArgsText={''}
                     onRowSelected={this.onRowSelectExam}
+                    button2Label="View"
+                    onButton2Callback={this.onRowSelectView}
                     button3Label="View"
                     onButton3Callback={this.onRowSelectViewLog}
                   />
@@ -1495,7 +1570,7 @@ class App extends Component {
                     gridname={DATA_CIGA_EXCEPTIONS}
                     ShowAllColumns={true}
                     divHeight={'250px'}
-                    domHeight={'autoHeight'}
+                    domHeight={'normal'}
                     gridTitle={'CIG EXCEPTIONS - PROD'}
                     onRefresh={() =>
                       this.handleGridRefresh(DATA_CIGA_EXCEPTIONS)
