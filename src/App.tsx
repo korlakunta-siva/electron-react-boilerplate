@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import icon from '../assets/icon.svg';
-import RendererApp from "./apex/";
-import Header from './components/header/Header';
+//import RendererApp from "./apex/";
+//import Header from './components/header/Header';
+import Docubrowser from './apex/components/docubrowser/Docubrowser';
 
 const Hello = () => {
   return (
@@ -46,10 +47,12 @@ export default function App(props) {
     <Router history={props.history}>
       <Switch>
         <Route path="/"
-        render={(props) => <RendererApp {...props} />}
+        render={(props) => <Docubrowser {...props} />}
         />
       </Switch>
-      <Header history={history} />
+
     </Router>
   );
 }
+
+//<Header history={history} />

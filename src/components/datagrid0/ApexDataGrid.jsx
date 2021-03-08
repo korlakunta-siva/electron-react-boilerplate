@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { render } from 'react-dom';
 import { AgGridColumn, AgGridReact } from 'ag-grid-react';
-//import 'ag-grid-enterprise';
+import 'ag-grid-enterprise';
 import './App.css';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
@@ -15,7 +15,6 @@ const ApexDataGrid = (props) => {
   const [gridColumnApi, setGridColumnApi] = useState(null);
   const [rowData, setRowData] = useState([]);
   const [columns, setColumns] = useState([]);
-  const [columnsInit, setColumnsInt] = useState(true);
 
   const [gridData, setgridData] = React.useState({ ...props.gridData });
 
@@ -40,26 +39,17 @@ const ApexDataGrid = (props) => {
 
   React.useEffect(() => {
     console.log('PROPS CHANGED', props.gridData);
-
     if (props.gridData == undefined) return;
 
     if (props.gridData.length > 0) {
       let firstrow = props.gridData[0];
       let columnsToDisplay = 5;
-      if (props.NumColumnsToShow) {
-        columnsToDisplay = NumColumnsToShow;
-      }
-      if (props.ShowAllColumns) {
-        columnsToDisplay = Object.keys(firstrow).length;
-      }
       if (props.colNum) {
         columnsToDisplay = props.colNum;
       }
       const cols = Object.keys(firstrow)
         .filter((row, indx) => {
-          return (
-            !row.toLowerCase().startsWith('hide_') && indx <= columnsToDisplay
-          );
+          return !row.toLowerCase().startsWith('hide_') && indx <= columnsToDisplay ;
         })
         .map((row) => {
           let colrow = {
@@ -93,37 +83,18 @@ const ApexDataGrid = (props) => {
           cellRendererParams: {
             btnLabel: props.button2Label,
             clicked: function (rowdata) {
-              props.onButton2Callback(rowdata, props.gridname);
+              props.onButton2Callback(rowdata);
             },
           },
         });
       }
 
-      if (props.button3Label) {
-        cols.splice(1, 0, {
-          field: 'log',
-          cellRenderer: 'btnCellRenderer',
-          cellRendererParams: {
-            btnLabel: props.button3Label,
-            clicked: function (rowdata) {
-              props.onButton3Callback(rowdata, props.gridname);
-            },
-          },
-        });
-      }
-
-      if (gridApi && columnsInit == true) {
-        console.log('Calling setColumns');
-        setColumns(cols);
-      }
+      setColumns(cols);
 
       setRowData(props.gridData);
 
-      if (gridApi && columnsInit == true) {
-        console.log('Calling sizeColumnsToFit');
-        gridApi.sizeColumnsToFit();
-        setColumnsInt(false);
-      }
+      if (gridApi) gridApi.sizeColumnsToFit();
+
     } else {
       setRowData([]);
     }
@@ -151,30 +122,30 @@ const ApexDataGrid = (props) => {
     //document.querySelector('#myGrid').style.height = '400px';
   };
 
-  let divHeight = '550px';
-  if (props.divHeight) {
-    divHeight = props.divHeight;
-  }
-
   return (
     <React.Fragment>
-      {props.gridTitle ? `${props.gridTitle}` : ''} {'  '}
-      <Button variant="contained" color="primary" onClick={props.onRefresh}>
-        Refresh
-      </Button>
-      <Button variant="contained" color="primary" onClick={setAutoHeight}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={setAutoHeight}
+      >
         Auto Height
       </Button>
-      <Button variant="contained" color="primary" onClick={setFixedHeight}>
+
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={setFixedHeight}
+      >
         Fixed Height
       </Button>
-      {props.gridArgsText ? `${props.gridArgsText}` : ''}
-      <div id="myGrid">
+
+      <div id="myGrid" >
         <div className="test-container">
           <div className="test-header">
             <div
               style={{
-                height: divHeight,
+                height: '250px',
                 width: '100%',
               }}
               className="ag-theme-balham test-grid"
@@ -182,13 +153,11 @@ const ApexDataGrid = (props) => {
               <AgGridReact
                 rowData={rowData}
                 onGridReady={onGridReady}
-                domLayout={props.domHeight ? props.domHeight : 'normal'}
                 defaultColDef={{
                   initialWidth: 100,
                   sortable: true,
                   resizable: true,
                   filter: true,
-                  editable: true,
                 }}
                 rowSelection="single"
                 rowDragManaged={true}
