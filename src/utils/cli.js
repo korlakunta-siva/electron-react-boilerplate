@@ -400,7 +400,7 @@ export const cli_getdicom_meta = (retfunc, filename) => {
           return;
         }
         //console.log(`stdout: ${stdout}`);
-        //console.log(stdout);
+        console.log(stdout);
         retfunc(stdout);
         //retfunc ((JSON.stringify(stdout)));
       }

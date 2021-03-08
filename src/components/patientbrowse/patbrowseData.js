@@ -315,6 +315,40 @@ export const loadGridData = (gridName, args, recvfn) => {
     });
 };
 
+export const cli_getdicom_meta = (filename, retfunc) => {
+  console.log(
+    'JS: ',
+    filename,
+    '"api/venv/Scripts/python" api/dicom.py -cmd parse -a ' + filename
+  );
+
+  //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+  let mesg = '';
+  try {
+    exec(
+      '"api/venv/Scripts/python" api/dicom.py -cmd parse -a ' + filename,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc('NOGRID', {}, stdout);
+        retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const cli_parse_ko_folder = (gridName, args, retfunc) => {
   let dataURL = '';
   let accession = args.accession;
