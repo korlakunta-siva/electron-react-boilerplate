@@ -81,8 +81,12 @@
       "buildResources": "assets",
       "output": "release"
     },
+    "extraFiles": [
+      "api/*.py",
+      "api/*.txt"
+    ],
     "extraResources": [
-      "./assets/**"
+      "./assets/**",  "./public/**"
     ],
     "publish": {
       "provider": "github",

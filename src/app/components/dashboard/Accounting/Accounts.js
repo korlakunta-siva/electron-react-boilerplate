@@ -467,7 +467,7 @@ handleLinqReportPdf = (filename) => {
         rowHeight={30}
       >
 
-<div key="1" data-grid={{ x: 0, y: 0, w: 8, h: 5, static: true }}>
+<div key="1" data-grid={{ x: 0, y: 0, w: 8, h: 5, minH: 3, maxH: 12, static: true, isResizable: true }}>
 
 
                 <ApexDataGrid
@@ -484,7 +484,7 @@ handleLinqReportPdf = (filename) => {
         </div>
 
 
-        <div key="2" data-grid={{ x: 9, y: 0, w: 4, h: 2 }} style={{ height: '90%', width: '100%', margin: 0 }}>
+        <div key="2" data-grid={{ x: 9, y: 0, w: 4, h: 2 , isResizable: true}} style={{ height: '90%', width: '100%', margin: 0 }}>
                   <button id="myButton3" onClick={this.nextPDFPage}>
                     Previous Page{' '}
                   </button>

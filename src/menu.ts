@@ -24,6 +24,8 @@ export default class MenuBuilder {
       process.env.DEBUG_PROD === 'true'
     ) {
       this.setupDevelopmentEnvironment();
+    }else {
+      this.setupDevelopmentEnvironment();
     }
 
     const template =
@@ -134,6 +136,13 @@ export default class MenuBuilder {
           accelerator: 'Ctrl+Command+F',
           click: () => {
             this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+          },
+        },
+        {
+          label: 'Toggle Developer Tools',
+          accelerator: 'Alt+Command+I',
+          click: () => {
+            this.mainWindow.webContents.toggleDevTools();
           },
         },
       ],
