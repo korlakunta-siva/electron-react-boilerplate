@@ -56,7 +56,8 @@ import { DateEditor, DateFormater } from '../common/DateEditor';
 
 import ApexDataGrid from '../../../components/datagrid/ApexDataGrid';
 
-import { loadGridData,
+import {  cli_processfile_py,
+        loadGridData,
         DATA_PATIENT_LIST, }
 from "./docuData";
 
@@ -64,7 +65,12 @@ console.log('Directory: ' + __dirname);
 
 let csrftoken = getCookie('csrftoken');
 
-const { ipcRenderer } = window.require('electron');
+const {  ipcRenderer } = window.require('electron');
+
+
+// const { remote } = window.require('electron');
+
+
 
 // let   eventDataGrid = {
 //   onClick: (ev, args) => {
@@ -75,6 +81,9 @@ const { ipcRenderer } = window.require('electron');
 // }
 
 const ReactGridLayout = WidthProvider(RGL);
+
+
+
 
 const styles = (theme) => ({
   formControl: {
@@ -295,43 +304,7 @@ export class DocuBrowser extends React.Component {
     uploadProgress: {},
     successfullUploaded: false,
     handleRenameTo: this.handleRenameTo,
-    files: [
-      {
-        key: 'photos/animals/cat in a hat.png',
-        modified: +Moment().subtract(1, 'hours'),
-        size: 1.5 * 1024 * 1024,
-      },
-      {
-        key: 'photos/animals/kitten_ball.png',
-        modified: +Moment().subtract(3, 'days'),
-        size: 545 * 1024,
-      },
-      {
-        key: 'photos/animals/elephants.png',
-        modified: +Moment().subtract(3, 'days'),
-        size: 52 * 1024,
-      },
-      {
-        key: 'photos/funny fall.gif',
-        modified: +Moment().subtract(2, 'months'),
-        size: 13.2 * 1024 * 1024,
-      },
-      {
-        key: 'photos/holiday.jpg',
-        modified: +Moment().subtract(25, 'days'),
-        size: 85 * 1024,
-      },
-      {
-        key: 'documents/letter chunks.doc',
-        modified: +Moment().subtract(15, 'days'),
-        size: 480 * 1024,
-      },
-      {
-        key: 'documents/export.pdf',
-        modified: +Moment().subtract(15, 'days'),
-        size: 4.2 * 1024 * 1024,
-      },
-    ],
+    files: [],
   };
 
   constructor(props) {
@@ -371,6 +344,42 @@ export class DocuBrowser extends React.Component {
       const frame_element = `/pdfjs/web/viewer.html?file=${path}`;
 
       this.setState({ filepath: frame_element });
+    });
+
+    ipcRenderer.on('dir-file-list', (event, arg, fileList) => {
+      //console.log('Client got: dir-file-list ' + arg, fileList);
+      let newFileList = fileList.filter((fileobj) => {
+        if ( fileobj.key.endsWith(".pdf") && !fileobj.key.includes("_DELETE")) {
+        //console.log(fileobj.key, fileobj.key.endsWith('.pdf'));
+        return fileobj;
+        }else {
+        return false;
+        }
+      });
+
+      console.log("SET TO", newFileList);
+      this.setState({ files: newFileList   });
+
+     // const element = `<h1>Hello, world</h1> ${path}`;
+
+      // const iframe = document.createElement('iframe');
+      // iframe.src = `../public/pdfjs/web/viewer.html?file=${path}`;
+
+      // const frame_element = `
+      // <iframe width="100%" height="600px"
+      // src = "${path}"
+      // />
+      // `;
+
+      //       const frame_element = `
+      // <iframe width="100%" height="600px"
+      // src = "../public/pdfjs/web/viewer.html?file=${path}"
+      // />
+      // `;
+
+      //const frame_element = `/pdfjs/web/viewer.html?file=${path}`;
+
+      //this.setState({ filepath: frame_element });
     });
 
     //this.checkinDjangoApi();
@@ -473,9 +482,75 @@ export class DocuBrowser extends React.Component {
     });
   };
 
-  onRowSelectExam = (data) => {
+  onRowSelectExam000 = (data) => {
     console.log('Called onRowSelectExam', data);
+
+    handleChangePatient(datarow);
   };
+
+  onRowSelectExam = (event) => {
+   
+
+  let selectedNodes = event.api
+    .getSelectedNodes()
+    .filter((node) => node.selected);
+  console.log(selectedNodes);
+
+  let datarow = selectedNodes[0].data;
+  console.log('AG Row selected', datarow);
+
+  this.handleChangePatient(datarow);
+  //console.log('row2', selectedNodes[0].data, event);
+};
+
+  
+  onRowSelectView = (datarow, gridname) => {
+    console.log('Transaction View:', gridname, datarow);
+    let dataArgs = { ...this.state.dataArgs };
+    switch (gridname) {
+      case DATA_PATIENT_LIST:
+
+        this.handleChangePatient(datarow);
+
+        let newDataArgs = {
+          patientid: datarow.PatientId,
+          patientrow: datarow
+        };
+        dataArgs.patientid = datarow.PatientId;
+        dataArgs.patientrow = datarow;
+
+        this.setState({  patientid: datarow.PatientId,
+          patientrow: datarow,dataArgs: newDataArgs }, () => {
+          console.log('NEW ARGS: ', this.state.dataArgs);
+        });
+
+
+        // cli_parse_ko_folder(
+        //   DATA_EXAM_SERIES_KO_REFLECTED,
+        //   newExamArgs,
+        //   this.recvGridData
+        // );
+
+        //loadGridData(DATA_EXAM_STUDIES, newExamArgs, this.recvGridData);
+        console.log('Retrieve Series and Studies', newDataArgs);
+        break;
+      // case DATA_EXAM_SERIES:
+      //   loadGridData(
+      //     DATA_SERIES_LOCATIONS,
+      //     {
+      //       imgser_id: data.imgser_id,
+      //       accession: data.epic_accn,
+      //       examid: data.exam_id,
+      //       DbEnv: DbEnv,
+      //     },
+      //     this.recvGridData
+      //   );
+      //   break;
+        default:
+
+    }
+  };
+
 
   getPatients = () => {
 
@@ -526,21 +601,13 @@ export class DocuBrowser extends React.Component {
     }
   };
 
-  onRowSelected2 = (event) => {
-      console.log('AG Row selected', event);
 
-    let selectedNodes = event.api
-      .getSelectedNodes()
-      .filter((node) => node.selected);
-    console.log(selectedNodes);
-
-    //console.log('row2', selectedNodes[0].data, event);
-
+  handleChangePatient = (patientrow) => {
 
     this.setState(
       {
-        patientid: selectedNodes[0].data.PatientId,
-        patientrow: selectedNodes[0].data,
+        patientid: patientrow.PatientId,
+        patientrow: patientrow,
       },
       () => {
         fetch(
@@ -618,6 +685,24 @@ export class DocuBrowser extends React.Component {
       }
     );
   };
+  
+
+
+  onRowSelected2 = (event) => {
+      console.log('AG Row selected', event);
+
+    let selectedNodes = event.api
+      .getSelectedNodes()
+      .filter((node) => node.selected);
+    console.log(selectedNodes);
+
+    let datarow = selectedNodes[0].data;
+
+    handleChangePatient(datarow);
+    //console.log('row2', selectedNodes[0].data, event);
+  };
+
+
 
   handleAgStatement = (datarow) => {
     console.log('AG Statement selected', datarow);
@@ -818,9 +903,22 @@ export class DocuBrowser extends React.Component {
     });
   };
 
+  recvProcessFileOutput = (returndata) => {
+    console.log("Received from processfile: ", returndata);
+  }
+
   handleRenameFile = (oldKey, newKey) => {
     console.log('rename: ' + oldKey + ' to ' + newKey);
-    this.funcProcessDocument(this.state.docuContext, 'rename', oldKey, newKey);
+
+    let processArgs = {
+      'op' :  'rename',
+      'current' : oldKey,
+      'taget' : newKey
+    };
+
+    cli_processfile_py(this.recvProcessFileOutput, JSON.stringify(processArgs));
+
+    //this.funcProcessDocument(this.state.docuContext, 'rename', oldKey, newKey);
     console.log('Rename File: Called funcProcessDocument');
 
     this.setState((state) => {
@@ -882,12 +980,12 @@ export class DocuBrowser extends React.Component {
     console.log('File Clicked mesg:' + file.key);
 
     let file_name = file.key;
-    file_name =
-      '\\' +
-      file_name
-        .replace('/mnt/scanhome', '\\192.168.1.17\\scanhome')
-        .replace('/', '\\');
-    console.log('Getting windows file: ', file_name);
+    // file_name =
+    //   '\\' +
+    //   file_name
+    //     .replace('/mnt/scanhome', '\\192.168.1.17\\scanhome')
+    //     .replace('/', '\\');
+    // console.log('Getting windows file: ', file_name);
 
     const frame_element = `../public/pdfjs/web/viewer.html?file=${file_name}`;
 
@@ -934,20 +1032,33 @@ export class DocuBrowser extends React.Component {
   };
 
   handleLinqReportPdf = (filename) => {
-    console.log('Starting to get Linq File', filename);
-    fetch(
-      encodeURI('https://192.168.21.199:8040/getecwfile?filename=' + filename)
-    )
-      .then(this.handleErrors)
-      .then((r) => r.blob())
-      .then((blob) => {
-        let url = URL.createObjectURL(blob);
-        let viewerUrl = encodeURIComponent(url);
 
-        const frame_element = `../public/pdfjs/web/viewer.html?file=${viewerUrl} `;
+    let full_file_path = `\\\\192.168.1.17\\d$\\eClinicalWorks\\ftp\\${filename}`;
+    full_file_path = full_file_path.replace('/', '\\');
 
-        this.setState({ filepath: frame_element });
-      });
+    console.log('Starting to get Linq File', full_file_path);
+
+    //let url = URL.createObjectURL(full_file_path);
+
+    const frame_element = `../public/pdfjs/web/viewer.html?file=${full_file_path}`;
+
+
+
+    this.setState({ filepath: frame_element });
+
+    // fetch(
+    //   encodeURI('https://192.168.21.199:8040/getecwfile?filename=' + filename)
+    // )
+    //   .then(this.handleErrors)
+    //   .then((r) => r.blob())
+    //   .then((blob) => {
+    //     let url = URL.createObjectURL(blob);
+    //     let viewerUrl = encodeURIComponent(url);
+
+    //     const frame_element = `../public/pdfjs/web/viewer.html?file=${viewerUrl} `;
+
+    //     this.setState({ filepath: frame_element });
+    //   });
   };
 
   // .then(this.showFilePdf);
@@ -1105,7 +1216,10 @@ export class DocuBrowser extends React.Component {
     });
   }
 
-  handleRefreshFiles = () => {
+
+
+  recevieRefreshFiles = () => {
+
     fetch(
       backend_api_endpoint + 'getfiles?folderpath=' + this.state.folderContext
     )
@@ -1121,6 +1235,15 @@ export class DocuBrowser extends React.Component {
         this.setState({ files: data });
         console.log(data);
       });
+
+  }
+
+  handleRefreshFiles = () => {
+    console.log("Getting files from: ", this.state.folderContext);
+    ipcRenderer.send('show-folder-list', this.state.folderContext);
+
+    return;
+
   };
 
   handleUpload = () => {
@@ -1158,7 +1281,7 @@ export class DocuBrowser extends React.Component {
     let context_data = {
       fileop: fileop,
       patientid: this.state.patientid,
-      patientrow: this.state.patientrow,
+      patientname: this.state.patientrow.Name,
       filecategory: this.state.docuType,
       filename: srcfile,
       context: context,
@@ -1172,33 +1295,36 @@ export class DocuBrowser extends React.Component {
 
     console.log('Starting process Document File: ');
 
-    axios
-      .post(endpoint_processing, context_data, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken,
-        },
-      })
-      .then((res) => {
-        console.log(res.status, res.statusText, res.data);
+    cli_processfile_py(this.recvProcessFileOutput, JSON.stringify(context_data));
 
-        this.setState((state) => {
-          const newFiles = [];
-          state.files.map((file) => {
-            if (file.key === res.data.inputjson.filename) {
-              newFiles.push({
-                ...file,
-                key: res.data.inputjson.new_name,
-                modified: +Moment(),
-              });
-            } else {
-              newFiles.push(file);
-            }
-          });
-          state.files = newFiles;
-          return state;
-        });
-      });
+    // axios
+    //   .post(endpoint_processing, context_data, {
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'X-CSRFToken': csrftoken,
+    //     },
+    //   })
+    //   .then((res) => {
+    //     console.log(res.status, res.statusText, res.data);
+
+    //     this.setState((state) => {
+    //       const newFiles = [];
+    //       state.files.map((file) => {
+    //         if (file.key === res.data.inputjson.filename) {
+    //           newFiles.push({
+    //             ...file,
+    //             key: res.data.inputjson.new_name,
+    //             modified: +Moment(),
+    //           });
+    //         } else {
+    //           newFiles.push(file);
+    //         }
+    //       });
+    //       state.files = newFiles;
+    //       return state;
+    //     });
+    //   });
+
   };
 
   handleProcessDocument = () => {
@@ -1230,12 +1356,30 @@ export class DocuBrowser extends React.Component {
       arg_file_operation = 'rename';
     }
 
-    this.funcProcessDocument(
-      this.state.docuContext,
-      arg_file_operation,
-      this.state.filetodisplay,
-      target_name
-    );
+    // this.funcProcessDocument(
+    //   this.state.docuContext,
+    //   arg_file_operation,
+    //   this.state.filetodisplay,
+    //   target_name
+    // );
+
+    let context_data = {
+      fileop: arg_file_operation,
+      patientid: this.state.patientid,
+      patientname: this.state.patientrow.Name,
+      filecategory: this.state.docuType,
+      filename: this.state.filetodisplay,
+      context: this.state.docuContext,
+      renameto: target_name,
+      filedate: this.state.recentdate,
+      pagenum: this.state.filepagenum,
+      docutype: this.state.docuType,
+      docupages: this.state.docuPages,
+      actiondesc: this.state.actiondesc,
+    };
+
+    console.log('Starting process Document File: ');
+    cli_processfile_py(this.recvProcessFileOutput, JSON.stringify(context_data));
     console.log('Called funcProcessDocument');
   };
 
@@ -1322,19 +1466,28 @@ export class DocuBrowser extends React.Component {
 
   handleFolderChange = (selected) => {
     console.log('Selected folder: ' + selected.value);
-    let folderpath = '/mnt/upload';
+    let folderpath = '\\\\192.168.1.17\\SCANHOME';
     switch (selected.value) {
       case 'scanhome':
-        folderpath = '/mnt/scanhome';
+        folderpath = '\\\\192.168.1.17\\SCANHOME';
         break;
-      case 'skdoc':
-        folderpath = '/mnt/skdoc';
-        break;
+      case 'echohome':
+          folderpath = '\\\\192.168.21.54\\d\\ECHOSTORE\\Export';
+          break;        
       case 'skscan':
-        folderpath = '/mnt/skdoc/skscan';
+        folderpath = '\\\\pcode-nas1\\skshare\\skscan';;
         break;
+      case 'uploads':
+        folderpath = '\\\\192.168.1.17\\UPLOAD_HOME';
+          break;     
+      case 'apexdoc':
+        folderpath = '\\\\192.168.1.17\\d$\\ApexDocs\\EMR';
+              break;   
+      case 'local':
+            folderpath = 'c:\\mydocs';
+                      break;                         
       default:
-        folderpath = '/mnt/upload';
+        folderpath = '\\\\192.168.1.17\\UPLOAD_HOME';
         break;
     }
     console.log('Will get files from folder: ' + folderpath);
@@ -1354,7 +1507,7 @@ export class DocuBrowser extends React.Component {
     console.log(changedata);
   };
 
-  handleTabChange = (_, activeIndex) => this.setState({ activeIndex });
+  handleVerticalTabChange = (_, activeIndex) => this.setState({ activeIndex });
 
   render(props) {
     //console.log("In Render for DocuBrowswer");
@@ -1366,10 +1519,11 @@ export class DocuBrowser extends React.Component {
 
     const folderPaths = [
       { value: 'scanhome', label: 'Scan Home' },
+      { value: 'echohome', label: 'Echo Home' },      
       { value: 'uploads', label: 'Upload Folder' },
       { value: 'apexdoc', label: 'Apex Documents' },
-      { value: 'skdocs', label: 'SK Documents' },
       { value: 'skscan', label: 'SK Scan Folder' },
+      { value: 'local', label: 'Local Folder' },      
     ];
 
     //endpoint_patients = backend_db_endpoint + "exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select * from apex..vPatient";
@@ -1387,7 +1541,7 @@ export class DocuBrowser extends React.Component {
         width: '100%',
       }}
     >
-      <VerticalTabs value={activeIndex} onChange={this.handleTabChange}>
+      <VerticalTabs value={activeIndex} onChange={this.handleVerticalTabChange}>
         <MyTab label="Documents" style={{ transform: [{ rotate: '180deg' }] }} />
         <MyTab label="Deposits" />
         <MyTab label="Tab three" />
@@ -1578,7 +1732,7 @@ export class DocuBrowser extends React.Component {
                   >
                     {this.state.filePrefixDate} {this.state.docuType}{' '}
                     {this.state.newFileNameSelected}
-                    {this.state.RenameToFilename}
+                    {this.state.RenameToFilename} 
                   </span>
                   <input
                     type="text"
@@ -1596,6 +1750,9 @@ export class DocuBrowser extends React.Component {
                     options={colourOptions}
                   />
                 </div>
+                <span className="d-block">
+                  {`${this.state.patientid} => ${this.state.patientrow.Name} `}
+                  </span>
               </form>
 
               <div className="d-inline-block">

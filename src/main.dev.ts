@@ -15,7 +15,8 @@ import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-const {ipcMain} = require('electron')
+const {ipcMain} = require('electron');
+const electronFs = require('fs');
 
 //const { dialog } = require('electron').remote;
 // const path = require('path');
@@ -176,3 +177,52 @@ const show_selected_file = (filePath) => {
     // Add the iframe to our UI.
     viewerEle.appendChild(iframe);
 };
+
+
+ipcMain.on('show-folder-list', (event, arg) => {
+  //console.log("SHOW FOLDER LIST for PATH: ", arg);
+
+  let fileArray = [];
+  fileArray = getAllFiles(arg, fileArray);
+
+  //console.log("FOLDER LIST: ", fileArray);
+
+  event.sender.send('dir-file-list', arg, fileArray);
+
+  // const files = dialog.showOpenDialog(mainWindow, {
+  //   properties: ['openFile']
+  //     }).then((data) => {
+
+  //       if (!files) { return; }
+
+  //       event.sender.send('selectedFile', data.filePaths);
+
+  //       //show_selected_file(arg);
+
+  //     });
+
+
+})
+
+
+const getAllFiles = (dirPath, arrayOfFiles) => {
+  let files = electronFs.readdirSync(dirPath);
+
+  arrayOfFiles = arrayOfFiles || [];
+
+  files.forEach(function(file) {
+    if (electronFs.statSync(dirPath + "/" + file).isDirectory()) {
+      arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
+    } else {
+
+      const stats = electronFs.statSync(path.join(dirPath, "/", file))
+      // stats.mtime
+
+      arrayOfFiles.push({ 'key': path.join(dirPath, "/", file), 'modified': stats.mtime , 'size': stats.size });
+      //arrayOfFiles.push(path.join(__dirname, dirPath, "/", file))
+    }
+  })
+
+  return arrayOfFiles;
+};
+

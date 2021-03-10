@@ -1,11 +1,14 @@
 import React from 'react';
+const { exec } = require('child_process');
 
 export const DATA_CIG_RECEIVERS = 'cig_receivers';
-export const DATA_CIG_PROCESSORS = 'cig_processors';
+export const DATA_DEPOSIT_DOCS = 'data_deposit_documents';
 export const DATA_RECENT_IOCM_JOBS = 'cig_iocm_kos';
 export const DATA_EXAM_SERIES = 'exam_series';
 export const DATA_SERIES_LOCATIONS = 'series_locations';
 export const DATA_PATIENT_LIST = 'data_pat_list';
+export const DATA_DEPOSIT_DETAIL = 'data_deposit_detail';
+
 
 export const loadGridData = (gridName, args, recvfn) => {
   console.log('Retrieve Data for :', gridName);
@@ -15,15 +18,44 @@ export const loadGridData = (gridName, args, recvfn) => {
   switch (gridName) {
     case DATA_PATIENT_LIST:
       console.log('Retrieve Data for2 :', gridName);
-      dataURL = 'ecwSQL&sqltype=customSQL&sqltext=set rowcount 500 select  Name, PatientId from apex..vPatient pat order by 1 desc ';
+      dataURL = 'ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  Name, PatientId, pat.DOB, pat.Phone1 from apex..vPatient pat order by Name ';
       break;
-    case DATA_CIG_RECEIVERS:
+    case DATA_DEPOSIT_DOCS:
       dataURL =
-        'iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20select * from cigdb_rch00_prod..CIGTB_RECEIVER ';
+      dataURL = 'ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select docid, filename, customname, dirpath, foldername, depositbatchid from apex..apex_document adoc order by adoc.docID desc ';
       break;
-    case DATA_CIG_PROCESSORS:
+    case DATA_DEPOSIT_DETAIL:
       dataURL =
-        'iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20select * from cigdb_rch00_prod..CIGTB_PROCESSOR ';
+      `ecwSQL&sqltype=customSQL&sqltext=select
+      docID ,
+      docdetailID,
+      pageno ,
+     endpageno,
+      detailType,
+      checkamount,
+      cardamount,
+      otheramount ,
+      checkdate ,
+      checknumber ,
+      PatientId,
+        PatientName,
+      DOS_start ,
+      DOS_end ,
+      cptcode ,
+      cptunits ,
+      encId ,
+      invoiceid ,
+      invcptid ,
+      delFlag,
+      insuranceid ,
+      notes,
+     pmtrow,
+     pmtprocessed,
+     pmtprocesseddt,
+     pmtreceipt
+     from apex..apex_documentdetail where docid = ${args.document_id}`;
+     
+
       break;
     case DATA_RECENT_IOCM_JOBS:
       dataURL = `iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20
@@ -146,4 +178,34 @@ export const loadGridData = (gridName, args, recvfn) => {
       );
       recvfn(gridName, args, gridData);
     });
+};
+
+
+export const cli_processfile_py = (retfunc, argjson) => {
+  console.log ("RECEIVED:", argjson);
+  console.log ("SUBMIT:", '"' + argjson.replace(/"/g, '\\"') + '"');
+  console.log("Executing: " + '"api/venv/Scripts/python" api/docuApi.py -cmd rename -aj "' + argjson.replace(/"/g, '\\"') + '"');
+
+  try {
+    exec(
+      '"api/venv/Scripts/python" api/docuApi.py -cmd rename -aj "' + argjson.replace(/"/g, '\\"') + '"', 
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
 };

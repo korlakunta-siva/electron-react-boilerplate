@@ -11819,6 +11819,11 @@ react-transition-group@^4, react-transition-group@^4.0.0, react-transition-group
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
+react-usestateref@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/react-usestateref/-/react-usestateref-1.0.4.tgz#7b76bed65d327bb697ba980d97c0466625598453"
+  integrity sha512-KdO6EnbmsznZQXxbeEE+gGcBD+/k/mIITKP8DBRkmmZTVzlo2O0KDrcZBRyPf46Niiqt4J/M9Z1B9uldd25P3A==
+
 react-vega@^7.4.2:
   version "7.4.2"
   resolved "https://registry.yarnpkg.com/react-vega/-/react-vega-7.4.2.tgz#790e6f4fe9a26c36f3e8db5ceff9a70ee242fd68"

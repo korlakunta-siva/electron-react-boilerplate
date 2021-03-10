@@ -16,16 +16,6 @@ export const documentDetail = [{
   docname: ""
 }];
 
-PatientId: 29623
-PatientName: "Apex, Billing"
-cardamount: 0
-checkamount: 239.07
-checkdate: "2020-12-16T00:00:00.000+00:00"
-checknumber: "6358"
-pageno: 1
-endpageno: 1
-
-
 export const getColumnDefs_DocumentDetail = (row, validaterowfunction, saverowfunction) => {
   const columnList = [];
   console.log("IN getColumnDefs_DocumentDetail ", row);
