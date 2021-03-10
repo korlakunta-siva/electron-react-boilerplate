@@ -20,6 +20,7 @@ import { useLocation } from 'react-router-dom'
 import JwtLogin from "./views/sessions/login/JwtLogin";
 import { Redirect, withRouter } from "react-router-dom";
 import Dashboard from "./components/dashboard/Accounting/Dashboard";
+import MainPage from "./components/MainPage";
 import Header from "../components/common/header/Header";
 import history from "../components/common/history.js";
 
@@ -38,7 +39,6 @@ const RendererApp = () => {
           <MatxTheme>
             {/* <GlobalCss /> */}
             <Router history={history}>
-              <Header />
               <AuthProvider>
                 <MatxSuspense>
                   <Switch>
@@ -53,7 +53,7 @@ const RendererApp = () => {
                     {/* AUTH PROTECTED DASHBOARD PAGES */}
 
                     <AuthGuard>
-                      <Dashboard />
+                      <MainPage />
                       {/* <MatxLayout /> */}
                     </AuthGuard>
                     {/* <Route  component={JwtLogin} />

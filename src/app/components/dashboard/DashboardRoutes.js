@@ -4,7 +4,7 @@ import { authRoles } from "../../auth/authRoles";
 const dashboardRoutes = [
   {
     path: "/dashboard/dashboard",
-    component: React.lazy(() => import("./Accounting/Dashboard")),
+    component: React.lazy(() => import("../MainPage")),
     auth: authRoles.sa,
   },
   // {
@@ -19,7 +19,7 @@ const dashboardRoutes = [
   // },
   {
     path: "/dashboard/default",
-    component: React.lazy(() => import("./Accounting/Dashboard")),
+    component: React.lazy(() => import("../MainPage")),
     auth: authRoles.admin,
   },
   // {
