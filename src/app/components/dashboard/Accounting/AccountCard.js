@@ -9,6 +9,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
+import { apiURL } from '../../../../api/apiConfig'
 
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Grow from '@material-ui/core/Grow';
@@ -53,7 +54,7 @@ const  onUpdateAccountsClick = id => {
 
 const  onUpdateTokenClick = id => {
     axios
-    .post("get_update_link_token", {'id': id})
+    .post(apiURL +"/get_update_link_token", {'id': id})
     .then(res => {
       let linkToken_forupdate = res.data.link_token;
       this.setState({updateAccessToken : linkToken_forupdate});

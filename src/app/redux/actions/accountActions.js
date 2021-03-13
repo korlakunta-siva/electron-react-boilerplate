@@ -4,6 +4,7 @@ import {
   GET_ERRORS,
   SET_LINK_TOKEN,
   ADD_ACCOUNT,
+  UPDATE_ACCOUNT,
   DELETE_ACCOUNT,
   GET_ACCOUNTS,
   ACCOUNTS_LOADING,
@@ -12,12 +13,15 @@ import {
 } from "./types";
 
 
+import { apiURL } from '../../../api/apiConfig';
+
+
 export const getLinkToken = () => dispatch => {
 
   const accessToken = localStorage.getItem("accessToken");
   axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   axios
-    .get("https://192.168.21.199:8041/get_link_token")
+    .get(apiURL + "/get_link_token")
     .then(res => {
       dispatch(setLinkToken(res.data));
     })
@@ -38,7 +42,7 @@ export const getAccounts = () => dispatch => {
   axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   console.log(axios.defaults.headers.common["Authorization"]);
   axios
-    .get("https://192.168.21.199:8041/api/plaid/accounts")
+    .get(apiURL + "/api/plaid/accounts")
     .then(res =>
       dispatch({
         type: GET_ACCOUNTS,
@@ -60,7 +64,7 @@ export const addAccount = plaidData => dispatch => {
   const accessToken = localStorage.getItem("accessToken");
   axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   axios
-    .post("https://192.168.21.199:8041/api/plaid/accounts/add/", plaidData)
+    .post(apiURL + "/api/plaid/accounts/add/", plaidData)
     .then(res =>
       dispatch({
         type: ADD_ACCOUNT,
@@ -79,10 +83,10 @@ export const refreshAccount = plaidData => dispatch => {
   axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   const accounts = plaidData.accounts;
   axios
-    .post("/api/plaid/accounts/refresh/", plaidData)
+    .post(apiURL + "/api/plaid/accounts/refresh/", plaidData)
     .then(res =>
       dispatch({
-        type: ADD_ACCOUNT,
+        type: UPDATE_ACCOUNT,
         payload: res.data
       })
     )
@@ -96,7 +100,7 @@ export const refreshAccount = plaidData => dispatch => {
 export const deleteAccount = id => dispatch => {
   if (window.confirm("Are you sure you want to remove this account?")) {
     axios
-      .delete(`https://192.168.21.199:8041/api/plaid/account/${id}`)
+      .delete(`${apiURL}/api/plaid/account/${id}`)
       .then(res =>
         dispatch({
           type: DELETE_ACCOUNT,
@@ -130,12 +134,19 @@ export const getTransactions = (id, txnscope) => dispatch => {
   axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
   axios
-    .post("https://192.168.21.199:8041/api/plaid/accounts/allhxtransactions/", { 'id': id,  'op' : txnscope})
-    .then(res =>
-      dispatch({
-        type: GET_TRANSACTIONS,
-        payload: res.data
-      })
+    .post(apiURL + "/api/plaid/accounts/allhxtransactions/", { 'id': id,  'op' : txnscope})
+    .then(res =>{
+      //console.log("Received from Get Transactions", res.data);
+      if (res.data.status == 'refresh') {
+        alert("Refrsh Token:" + res.data.statusmessage);
+      }else {
+        console.log("Received Transactions:" + res.data.status + "(" + res.data.transactions.length + ")");
+        dispatch({
+          type: GET_TRANSACTIONS,
+          payload: res.data
+        })
+      }
+    }
     )
     .catch(err =>
       dispatch({

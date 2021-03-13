@@ -21,6 +21,7 @@ import {TabPanel} from './Components/TabPanel/TabPanel';
 import { uuid } from "uuidv4";
 import "./App.css";
 import { GridApi } from "ag-grid-community";
+import { apiURL } from '../../../../api/apiConfig';
 
 function App() {
   const [gridApi, setGridApi] = useState(null);
@@ -289,7 +290,7 @@ if (detailid == undefined || detailid == -1) {
 
 
 const endpoint_document_detail =
-`https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20200%20 ${rowchange_SQL}  `
+`${apiURL}/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20200%20 ${rowchange_SQL}  `
 
 fetch(endpoint_document_detail, {})
 .then(response => {
@@ -390,7 +391,7 @@ from apex..apex_documentdetail where docid = ${documentInfo.id}
 
 
 const endpoint_document_detail =
-`https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20200%20 ${load_detail_sql}  `
+`${apiURL}/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20200%20 ${load_detail_sql}  `
 
 fetch(endpoint_document_detail, {})
 .then(response => {
@@ -621,7 +622,7 @@ fetch(endpoint_document_detail, {})
 
 
 const endpoint_document_detail =
-`https://192.168.21.199:8044/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20200%20 ${load_detail_sql}  `
+`${apiURL}/exsql?dbserver=ecwSQL&sqltype=customSQL&sqltext=set%20rowcount%20200%20 ${load_detail_sql}  `
 
 fetch(endpoint_document_detail, {})
 .then(response => {

@@ -1,6 +1,7 @@
 import {
   SET_LINK_TOKEN,
   ADD_ACCOUNT,
+  UPDATE_ACCOUNT,
   DELETE_ACCOUNT,
   GET_ACCOUNTS,
   ACCOUNTS_LOADING,
@@ -18,9 +19,7 @@ const initialState = {
 
 export default function(state = initialState, action) {
 
-  console.log("account reducer");
-  console.log(action.type);
-  console.log(action.payload);
+  console.log("account reducer: ", action.type);
 
   switch (action.type) {
     case SET_LINK_TOKEN:
@@ -39,6 +38,10 @@ export default function(state = initialState, action) {
         ...state,
         accounts: [action.payload, ...state.accounts]
       };
+    case UPDATE_ACCOUNT:
+        return {
+          ...state
+      };      
     case DELETE_ACCOUNT:
       return {
         ...state,

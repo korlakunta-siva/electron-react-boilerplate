@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useReducer } from "react";
 import jwtDecode from "jwt-decode";
 import axios from "axios";
 // import { MatxLoading } from "matx";
+import { apiURL } from '../../api/apiConfig';
 
 const initialState = {
   isAuthenticated: false,
@@ -88,7 +89,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
 
     console.log("SENDING POST to token-auth", username, password);
-    const response = await axios.post("https://192.168.21.199:8041/api/token-auth/", { username, password });
+    const response = await axios.post(apiURL + "/api/token-auth/", { username, password });
     const { token, user } = response.data;
     const accessToken = token;
     setSession(accessToken);

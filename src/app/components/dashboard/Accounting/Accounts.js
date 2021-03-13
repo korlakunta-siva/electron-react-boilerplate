@@ -1,276 +1,276 @@
-import React, { Component, createRef } from "react";
-import PropTypes from "prop-types";
-import { PlaidLink  } from 'react-plaid-link';
-import { connect } from "react-redux";
-import AccountCard from "./AccountCard";
-import RGL, { WidthProvider } from "react-grid-layout";
+import React, { Component, createRef } from 'react'
+import PropTypes from 'prop-types'
+import { PlaidLink } from 'react-plaid-link'
+import { connect } from 'react-redux'
+import AccountCard from './AccountCard'
+import RGL, { WidthProvider } from 'react-grid-layout'
 
-import { makeStyles } from '@material-ui/core/styles';
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
-import GridListTileBar from '@material-ui/core/GridListTileBar';
-import {cli_showfile} from "../../../../utils/cli";
-import ApexDataGrid from '../../../../components/datagrid/ApexDataGrid';
+import { makeStyles } from '@material-ui/core/styles'
+import GridList from '@material-ui/core/GridList'
+import GridListTile from '@material-ui/core/GridListTile'
+import GridListTileBar from '@material-ui/core/GridListTileBar'
+import { cli_showfile } from '../../../../utils/cli'
+import ApexDataGrid from '../../../../components/datagrid/ApexDataGrid'
+import { apiURL } from '../../../../api/apiConfig'
+import { DATA_CURRENT_STATUS, loadGridData } from './accountsData'
 
-
-import axios from 'axios';
+import axios from 'axios'
 import {
   getTransactions,
   addAccount,
   refreshAccount,
   deleteAccount
-} from "../../../redux/actions/accountActions";
+} from '../../../redux/actions/accountActions'
 
 //import MaterialTable from "material-table"; // https://mbrn.github.io/material-table/#/
 //import { DataGrid } from '@material-ui/data-grid';
 
 //import MUIDataTable from "mui-datatables";
-import ReactDataGrid from 'react-data-grid';
-import { Toolbar, Data, Filters } from "react-data-grid-addons";
-import DataGrid from "../DataGridNew";
+import ReactDataGrid from 'react-data-grid'
+import { Toolbar, Data, Filters } from 'react-data-grid-addons'
+import DataGrid from '../DataGridNew'
 
-const ReactGridLayout = WidthProvider(RGL);
+const ReactGridLayout = WidthProvider(RGL)
 
 class Accounts extends Component {
-
   constructor (props) {
-    super(props);
-    this.tranGridElement = React.createRef();
+    super(props)
+    this.tranGridElement = React.createRef()
 
-    this.onLayoutChange = this.onLayoutChange.bind(this);
+    this.onLayoutChange = this.onLayoutChange.bind(this)
   }
 
-  onLayoutChange(layout) {
+  onLayoutChange (layout) {
     //this.props.onLayoutChange(layout);
   }
 
-
-
   state = {
-    updateAccessToken : null,
-    transactionsData : [],
+    dataCurrentStatus: {},
+    updateAccessToken: null,
+    transactionsData: [],
     filepath: '',
-    iframeRef: createRef(),
- //   filters : {},
- //   transactionsData : []
+    iframeRef: createRef()
+    //   filters : {},
+    //   transactionsData : []
   }
 
-  componentDidMount() {
+  componentDidMount () {
     //const { accounts } = this.props;
     //this.props.getTransactions(accounts);
 
-    const path = "file.pdf";
-    const frame_element = `/pdfjs/web/viewer.html?file=${path}`;
+    const path = 'file.pdf'
+    const frame_element = `/pdfjs/web/viewer.html?file=${path}`
+    loadGridData(DATA_CURRENT_STATUS, {}, this.recvGridData);
 
-    this.setState({ filepath: frame_element });
-
+    this.setState({ filepath: frame_element })
   }
 
-    // Add account
-    onGetTransactionsClick = () => {
-      const { accounts } = this.props;
-      this.props.getTransactions(accounts);
-    };
+  
+  recvGridData = (gridName, args, gridData) => {
+    console.log('ReceivedData for :', gridName, args, gridData);
+
+    switch (gridName) {
+      case DATA_CURRENT_STATUS:
+        this.setState(
+          {
+            dataCurrentStatus: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state Current Status',
+              this.state.dataCurrentStatus.length
+            );
+          }
+        );
+        break;
+     
+
+      default:
+    }
+  };
+
+  // Add account
+  onGetTransactionsClick = () => {
+    const { accounts } = this.props
+    this.props.getTransactions(accounts)
+  }
 
   // Add account
   handleOnSuccess = (token, metadata) => {
-    const { accounts } = this.props;
+    const { accounts } = this.props
     const plaidData = {
       public_token: token,
       metadata: metadata,
       accounts: accounts
-    };
-    console.log("Received Public Token: " + token , metadata);
+    }
+    console.log('Received Public Token: ' + token, metadata)
 
-    this.props.addAccount(plaidData);
-
-
-  };
+    this.props.addAccount(plaidData)
+  }
 
   handleOnUpdateTokenSuccess = (token, metadata) => {
-    const { accounts } = this.props;
+    const { accounts } = this.props
     const plaidData = {
       public_token: token,
-      updateAccessToken : this.state.updateAccessToken,
+      updateAccessToken: this.state.updateAccessToken,
       metadata: metadata,
       accounts: accounts
-    };
-    console.log("Received Public Token: " + token , metadata);
-    this.props.refreshAccount(plaidData);
-  };
+    }
+    console.log('Received Public Token: ' + token, metadata)
+    this.props.refreshAccount(plaidData)
+  }
 
   onShowTransactionsClick = id => {
-    this.setState({transactionsData : [] });
-    this.props.getTransactions(id, "view");
-  };
-
+    this.setState({ transactionsData: [] })
+    this.props.getTransactions(id, 'view')
+  }
 
   onGetPlaidTransactionsClick = id => {
-    console.log("Called Retrieve-100: " + id);
-    this.props.getTransactions(id, "refresh");
-  };
+    console.log('Called Retrieve-100: ' + id)
+    this.props.getTransactions(id, 'refresh')
+  }
 
   onGetAllPlaidTransactionsClick = id => {
-    this.props.getTransactions(id, "gethx");
-  };
+    this.props.getTransactions(id, 'gethx')
+  }
 
   onUpdateAccountsClick = id => {
-    this.props.getTransactions(id, "ua");
-  };
+    this.props.getTransactions(id, 'ua')
+  }
 
   onUpdateTokenClick = id => {
     axios
-    .post("/get_update_link_token", {'id': id})
-    .then(res => {
-      let linkToken_forupdate = res.data.link_token;
-      this.setState({updateAccessToken : linkToken_forupdate});
-    })
-    .catch(err =>
-      console.log(err)
-    );
-};
-
-
-
+      .post(apiURL + '/get_update_link_token', { id: id })
+      .then(res => {
+        let linkToken_forupdate = res.data.link_token
+        this.setState({ updateAccessToken: linkToken_forupdate })
+      })
+      .catch(err => console.log(err))
+  }
 
   // Delete account
   onDeleteClick = id => {
-    const { accounts } = this.props;
+    const { accounts } = this.props
     const accountData = {
       id: id,
       accounts: accounts
-    };
-    this.props.deleteAccount(accountData);
-  };
+    }
+    this.props.deleteAccount(accountData)
+  }
 
+  //    handleFilterChange = filter => filters => {
+  //     const newFilters = { ...filters };
+  //     if (filter.filterTerm) {
+  //       newFilters[filter.column.key] = filter;
+  //     } else {
+  //       delete newFilters[filter.column.key];
+  //     }
+  //     this.setState({filters: newFilters})
+  //     return newFilters;
+  //   };
 
-//    handleFilterChange = filter => filters => {
-//     const newFilters = { ...filters };
-//     if (filter.filterTerm) {
-//       newFilters[filter.column.key] = filter;
-//     } else {
-//       delete newFilters[filter.column.key];
-//     }
-//     this.setState({filters: newFilters})
-//     return newFilters;
-//   };
+  //    getValidFilterValues = (rows, columnId)  => {
+  //     return rows
+  //       .map(r => r[columnId])
+  //       .filter((item, i, a) => {
+  //         return i === a.indexOf(item);
+  //       });
+  //   }
 
+  //    getRows = (rows, filters) => {
+  //     //console.log(filters);
+  //     return Data.Selectors.getRows({ rows, filters });
+  //   }
 
-//    getValidFilterValues = (rows, columnId)  => {
-//     return rows
-//       .map(r => r[columnId])
-//       .filter((item, i, a) => {
-//         return i === a.indexOf(item);
-//       });
-//   }
+  //  // const filteredRows = getRows(this.state.transactionsData, this.state.filters);
 
-//    getRows = (rows, filters) => {
-//     //console.log(filters);
-//     return Data.Selectors.getRows({ rows, filters });
-//   }
+  //  sortRows = (initialRows, sortColumn, sortDirection) => rows => {
+  // const comparer = (a, b) => {
+  //   if (sortDirection === "ASC") {
+  //     return a[sortColumn] > b[sortColumn] ? 1 : -1;
+  //   } else if (sortDirection === "DESC") {
+  //     return a[sortColumn] < b[sortColumn] ? 1 : -1;
+  //   }
+  // };
+  // this.setState ({ transactionsData : sortDirection === "NONE" ? initialRows : [...rows].sort(comparer) });
+  // };
 
-//  // const filteredRows = getRows(this.state.transactionsData, this.state.filters);
+  // onRowSelectExam = data => {
 
-//  sortRows = (initialRows, sortColumn, sortDirection) => rows => {
-// const comparer = (a, b) => {
-//   if (sortDirection === "ASC") {
-//     return a[sortColumn] > b[sortColumn] ? 1 : -1;
-//   } else if (sortDirection === "DESC") {
-//     return a[sortColumn] < b[sortColumn] ? 1 : -1;
-//   }
-// };
-// this.setState ({ transactionsData : sortDirection === "NONE" ? initialRows : [...rows].sort(comparer) });
-// };
+  //   let check_num = data[0].row.name.replace("CHECK CLEARED #","");
+  //   let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check`;
+  //   cli_showfile(check_path);
 
+  //   // window.open(check_path)
+  //   // console.log(check_path);
+  //   // console.log(data);
+  // };
 
+  onRowSelectExam = event => {
+    console.log('AG Row selected', event)
 
-// onRowSelectExam = data => {
+    let selectedNodes = event.api
+      .getSelectedNodes()
+      .filter(node => node.selected)
+    console.log(selectedNodes)
+  }
 
-//   let check_num = data[0].row.name.replace("CHECK CLEARED #","");
-//   let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check`;
-//   cli_showfile(check_path);
+  onRowSelectView = data => {
+    console.log('Transaction View:', data)
+    console.log('TO DIsplay' + data.dirpath + '/' + data.fileName)
 
-//   // window.open(check_path)
-//   // console.log(check_path);
-//   // console.log(data);
-// };
+    let check_num = data.name.replace('CHECK CLEARED #', '')
+    let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check.pdf`
 
-onRowSelectExam = (event) => {
-console.log('AG Row selected', event);
+    console.log('Starting to get Check File', check_path)
 
-let selectedNodes = event.api
-  .getSelectedNodes()
-  .filter((node) => node.selected);
-console.log(selectedNodes);
+    const frame_element = `../public/pdfjs/web/viewer.html?file=${check_path} `
 
-};
+    this.setState({ filepath: frame_element })
 
-onRowSelectView = (data) => {
-  console.log('Transaction View:', data);
-  console.log('TO DIsplay' + data.dirpath + '/' + data.fileName);
+    //this.handleLinqReportPdf(check_path);
+  }
 
-  let check_num = data.name.replace("CHECK CLEARED #","");
-  let check_path = `\\\\pcode-nas1\\skshare\\AcctDocs\\Banks\\Apex\\BBVA\\Checking5555\\CheckImages\\${check_num}check.pdf`;
+  handleLinqReportPdf = filename => {
+    console.log('Starting to get Check File', filename)
+    fetch(encodeURI(apiURL + '/getecwfile?filename=' + filename))
+      .then(this.handleErrors)
+      .then(r => r.blob())
+      .then(blob => {
+        let url = URL.createObjectURL(blob)
+        let viewerUrl = encodeURIComponent(url)
 
-  console.log('Starting to get Check File', check_path);
+        const frame_element = `../public/pdfjs/web/viewer.html?file=${viewerUrl} `
 
-  const frame_element = `../public/pdfjs/web/viewer.html?file=${check_path} `;
+        this.setState({ filepath: frame_element })
+      })
+  }
 
-  this.setState({ filepath: frame_element });
+  render () {
+    const { user, accounts, linkToken } = this.props
+    const { transactions, transactionsLoading } = this.props.plaid
 
-
-  //this.handleLinqReportPdf(check_path);
-};
-
-handleLinqReportPdf = (filename) => {
-  console.log('Starting to get Check File', filename);
-  fetch(
-    encodeURI('https://192.168.21.199:8040/getecwfile?filename=' + filename)
-  )
-    .then(this.handleErrors)
-    .then((r) => r.blob())
-    .then((blob) => {
-      let url = URL.createObjectURL(blob);
-      let viewerUrl = encodeURIComponent(url);
-
-      const frame_element = `../public/pdfjs/web/viewer.html?file=${viewerUrl} `;
-
-      this.setState({ filepath: frame_element });
-    });
-};
-
-
-
-  render() {
-    const { user, accounts, linkToken } = this.props;
-    const { transactions, transactionsLoading } = this.props.plaid;
-
-
-
-// {accountItems.map((tile) => (
-//           <GridListTile key={tile.account_id}>
-//             <img src={tile.img} alt={tile.institutionName} />
-// {tile}
-//           </GridListTile>
-//         ))
-// }
-
+    // {accountItems.map((tile) => (
+    //           <GridListTile key={tile.account_id}>
+    //             <img src={tile.img} alt={tile.institutionName} />
+    // {tile}
+    //           </GridListTile>
+    //         ))
+    // }
 
     // Setting up data table
     const transactionsColumns = [
-      { headerName: "Account", field: "account" , width: 200 , type: 'string'},
-      { headerName: "Date", field: "date", width: 110 , type: 'date'},
-      { headerName: "Amount", field: "amount",  type: 'number', width: 120 },
-      { headerName: "Name", field: "name" , width: 250},
-      { headerName: "Category", field: "category" , width: 150}
-    ];
+      { headerName: 'Account', field: 'account', width: 200, type: 'string' },
+      { headerName: 'Date', field: 'date', width: 110, type: 'date' },
+      { headerName: 'Amount', field: 'amount', type: 'number', width: 120 },
+      { headerName: 'Name', field: 'name', width: 250 },
+      { headerName: 'Category', field: 'category', width: 150 }
+    ]
 
-
-
-     //const filteredRows = this.getRows(this.state.transactionsData, this.state.filters);
+    //const filteredRows = this.getRows(this.state.transactionsData, this.state.filters);
 
     // { field: 'firstName', headerName: 'First name', width: 130 },
-
 
     // let transactionsData = [];
     // transactions.forEach(function(account) {
@@ -285,8 +285,6 @@ handleLinqReportPdf = (filename) => {
     //   });
     // });
 
-
-
     //   let rowdata = {
     //     account: row.account.accountName,
     //     date: row.transaction.date,
@@ -296,7 +294,6 @@ handleLinqReportPdf = (filename) => {
     //   }
     //   return rowdata;
     // });
-
 
     // transactions.map( row => {
     //   let rowdata = {
@@ -321,13 +318,12 @@ handleLinqReportPdf = (filename) => {
     //   });
     // });
 
-
-    let transactionsData = [];
+    let transactionsData = []
     if (transactions) {
-    let trans = transactions.transactions
+      let trans = transactions.transactions
 
-    if (trans && trans.length > 0 ) {
-      transactionsData = trans.map( tran => {
+      if (trans && trans.length > 0) {
+        transactionsData = trans.map(tran => {
           return {
             id: tran.id,
             account: tran.account,
@@ -336,40 +332,41 @@ handleLinqReportPdf = (filename) => {
             name: tran.transaction_name,
             amount: tran.amount
           }
-        });
+        })
 
         //this.setState({ transactionsData : transactionsData})
-        console.log("Ready to display transactions:", transactionsData);
+        console.log('Ready to display transactions:', transactionsData)
         //this.tranGridElement.current.changeGridData(transactionsData,rdg_columns );
         if (this.state.transactionsData.length == 0) {
-        this.setState({transactionsData: transactionsData});
+          this.setState({ transactionsData: transactionsData })
         }
-
       }
     }
 
-
-    let accountItems =   (
-      <SingleLineGridList >
+    let accountItems = (
+      <SingleLineGridList>
         {accounts.map(account => (
-
-<GridListTile key={account.itemId} style={{width: 'auto', height: 'auto' }}>
-    <AccountCard key={account.itemId} account = {account}
-     onView = {this.onShowTransactionsClick}
-     onUpdateAccounts = {this.onUpdateAccountsClick}
-     onRetrieve100 = {this.onGetPlaidTransactionsClick}
-     onRetrieveAll = {this.onGetAllPlaidTransactionsClick}
-     onUpdateToken = {this.onUpdateTokenClick}
- />
- </GridListTile>
-   ))}
-   </SingleLineGridList>
-   );
-
+          <GridListTile
+            key={account.itemId}
+            style={{ width: 'auto', height: 'auto' }}
+          >
+            <AccountCard
+              key={account.itemId}
+              account={account}
+              onView={this.onShowTransactionsClick}
+              onUpdateAccounts={this.onUpdateAccountsClick}
+              onRetrieve100={this.onGetPlaidTransactionsClick}
+              onRetrieveAll={this.onGetAllPlaidTransactionsClick}
+              onUpdateToken={this.onUpdateTokenClick}
+            />
+          </GridListTile>
+        ))}
+      </SingleLineGridList>
+    )
 
     return (
       <div>
-
+        {this.state.dataCurrentStatus.environment}
         {linkToken ? (
           <PlaidLink
             token={linkToken}
@@ -379,11 +376,11 @@ handleLinqReportPdf = (filename) => {
               // The user exited the Link flow.
               if (err != null) {
                 // The user encountered a Plaid API error prior to exiting.
-                console.log(err);
-                console.log("plaid link error");
-              };
+                console.log(err)
+                console.log('plaid link error')
+              }
 
-              console.log("plaid link exited");
+              console.log('plaid link exited')
               // metadata contains information about the institution
               // that the user selected and the most recent API request IDs.
               // Storing this information can be helpful for support.
@@ -399,59 +396,56 @@ handleLinqReportPdf = (filename) => {
               //   timestamp:       "2017-09-14T14:42:19.350Z",
               //   view_name:       "MFA",
               // }
-              console.log("plaid link event: " + eventName);
-            }
-            }
+              console.log('plaid link event: ' + eventName)
+            }}
           >
             Link Account
-          </PlaidLink>) : ""
-        }
+          </PlaidLink>
+        ) : (
+          ''
+        )}
 
-        {
-          this.state.updateAccessToken ?
+        {this.state.updateAccessToken ? (
+          <PlaidLink
+            token={this.state.updateAccessToken}
+            onLoad={this.handleOnLoad}
+            onSuccess={this.handleOnUpdateTokenSuccess}
+            onExit={function (err, metadata) {
+              // The user exited the Link flow.
+              if (err != null) {
+                // The user encountered a Plaid API error prior to exiting.
+                console.log(err)
+                console.log('plaid link error')
+              }
 
-            <PlaidLink
-              token={this.state.updateAccessToken}
-              onLoad={this.handleOnLoad}
-              onSuccess={this.handleOnUpdateTokenSuccess}
-              onExit={function (err, metadata) {
-                // The user exited the Link flow.
-                if (err != null) {
-                  // The user encountered a Plaid API error prior to exiting.
-                  console.log(err);
-                  console.log("plaid link error");
-                }
+              console.log('plaid link exited')
+              // metadata contains information about the institution
+              // that the user selected and the most recent API request IDs.
+              // Storing this information can be helpful for support.
+            }}
+            onEvent={function (eventName, metadata) {
+              // Optionally capture Link flow events, streamed through
+              // this callback as your users connect an Item to Plaid.
+              // For example:
+              // eventName = "TRANSITION_VIEW"
+              // metadata  = {
+              //   link_session_id: "123-abc",
+              //   mfa_type:        "questions",
+              //   timestamp:       "2017-09-14T14:42:19.350Z",
+              //   view_name:       "MFA",
+              // }
+              console.log('plaid link event: ' + eventName)
+            }}
+          >
+            Update Account Token
+          </PlaidLink>
+        ) : (
+          ''
+        )}
 
-                console.log("plaid link exited");
-                // metadata contains information about the institution
-                // that the user selected and the most recent API request IDs.
-                // Storing this information can be helpful for support.
-              }}
-              onEvent={function (eventName, metadata) {
-                // Optionally capture Link flow events, streamed through
-                // this callback as your users connect an Item to Plaid.
-                // For example:
-                // eventName = "TRANSITION_VIEW"
-                // metadata  = {
-                //   link_session_id: "123-abc",
-                //   mfa_type:        "questions",
-                //   timestamp:       "2017-09-14T14:42:19.350Z",
-                //   view_name:       "MFA",
-                // }
-                console.log("plaid link event: " + eventName);
-              }}
-            >
-              Update Account Token
-</PlaidLink>
-            : ""
-        }
+        {accountItems}
 
-
-{
-  accountItems
-}
-
-                  {/* <DataGrid
+        {/* <DataGrid
                     ref={this.tranGridElement}
                     initialRows={transactionsData}
                     enableFilter
@@ -461,49 +455,57 @@ handleLinqReportPdf = (filename) => {
                     onRowSelect={this.onRowSelectExam}
                   />{" "} */}
 
-<ReactGridLayout
-        className="layout"
-        onLayoutChange={this.onLayoutChange}
-        rowHeight={30}
-      >
+        <ReactGridLayout
+          className='layout'
+          onLayoutChange={this.onLayoutChange}
+          rowHeight={30}
+        >
+          <div
+            key='1'
+            data-grid={{
+              x: 0,
+              y: 0,
+              w: 8,
+              h: 5,
+              minH: 3,
+              maxH: 12,
+              static: true,
+              isResizable: true
+            }}
+          >
+            <ApexDataGrid
+              key='linq'
+              gridname={'transactions'}
+              ref={this.tranGridElement}
+              gridData={this.state.transactionsData}
+              onRowSelected={this.onRowSelectExam}
+              button2Label='View'
+              onButton2Callback={this.onRowSelectView}
+            />
+          </div>
 
-<div key="1" data-grid={{ x: 0, y: 0, w: 8, h: 5, minH: 3, maxH: 12, static: true, isResizable: true }}>
-
-
-                <ApexDataGrid
-                key="linq"
-                gridname={'transactions'}
-                ref={this.tranGridElement}
-                gridData={this.state.transactionsData}
-                onRowSelected={this.onRowSelectExam}
-                button2Label="View"
-                onButton2Callback={this.onRowSelectView}
-              />
-
-
-        </div>
-
-
-        <div key="2" data-grid={{ x: 9, y: 0, w: 4, h: 2 , isResizable: true}} style={{ height: '90%', width: '100%', margin: 0 }}>
-                  <button id="myButton3" onClick={this.nextPDFPage}>
-                    Previous Page{' '}
-                  </button>
-                  <button id="myButton4" onClick={this.nextPDFPage}>
-                    Next Page{' '}
-                  </button>
-                  <iframe
-                    width="100%"
-                    height="600px"
-                    backgroundcolor="lightgrey"
-                    ref={this.state.iframeRef}
-                    src={this.state.filepath}
-                  />
-                </div>
+          <div
+            key='2'
+            data-grid={{ x: 9, y: 0, w: 4, h: 2, isResizable: true }}
+            style={{ height: '90%', width: '100%', margin: 0 }}
+          >
+            <button id='myButton3' onClick={this.nextPDFPage}>
+              Previous Page{' '}
+            </button>
+            <button id='myButton4' onClick={this.nextPDFPage}>
+              Next Page{' '}
+            </button>
+            <iframe
+              width='100%'
+              height='600px'
+              backgroundcolor='lightgrey'
+              ref={this.state.iframeRef}
+              src={this.state.filepath}
+            />
+          </div>
         </ReactGridLayout>
-
-      </div >
-
-    );
+      </div>
+    )
   }
 }
 
@@ -515,17 +517,18 @@ Accounts.propTypes = {
   accounts: PropTypes.array.isRequired,
   plaid: PropTypes.object.isRequired,
   user: PropTypes.object.isRequired
-};
+}
 
 const mapStateToProps = state => ({
   plaid: state.plaid
-});
+})
 
-export default connect(
-  mapStateToProps,
-  { getTransactions, addAccount,refreshAccount,  deleteAccount }
-)(Accounts);
-
+export default connect(mapStateToProps, {
+  getTransactions,
+  addAccount,
+  refreshAccount,
+  deleteAccount
+})(Accounts)
 
 const tileData = [
   {
@@ -552,24 +555,23 @@ const tileData = [
     img: 'images/image3.jpg',
     title: 'title'
   }
-  ];
+]
 
-const useSingleLineGridListStyles = makeStyles((theme) => ({
+const useSingleLineGridListStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   gridList: {
     flexWrap: 'nowrap',
-    transform: 'translateZ(0)',
+    transform: 'translateZ(0)'
   }
+}))
 
-}));
-
-const SingleLineGridList = (props) => {
-  const classes = useSingleLineGridListStyles();
+const SingleLineGridList = props => {
+  const classes = useSingleLineGridListStyles()
 
   return (
     <div className={classes.root}>
@@ -577,6 +579,5 @@ const SingleLineGridList = (props) => {
         {props.children}
       </GridList>
     </div>
-  );
-};
-
+  )
+}
