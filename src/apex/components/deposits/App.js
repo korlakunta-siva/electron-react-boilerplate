@@ -5,7 +5,6 @@ import Hotkeys from 'react-hot-keys'
 import { format } from 'date-fns'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { saveAs } from 'file-saver'
 
 const useStateRef=require('react-usestateref')
 
@@ -348,7 +347,6 @@ function App () {
     let binaryString = readerEvt.target.result
     console.log('File B64:', btoa(binaryString))
     setb64DepositHeader(btoa(binaryString))
-    //saveAs(btoa(binaryString), "/newimg_b64.txt");
   }
 
   const onFileSubmit = event => {
@@ -357,15 +355,16 @@ function App () {
   }
   const genDefTable = () => {
     let headarr = [['ID', 'Page #', 'Check Date', 'Check# last four', 'Amount']]
-
+    let rownum = 1;
     let rowdata1 = rowData.map(row => {
       let rowarr = [
-        row.docdetailID,
+        rownum++,
         row.pageno,
-        row.checkdate,
+        row.date,
         row.checknumber,
         Number(row.checkamount).toFixed(2)
       ]
+
       return rowarr
     })
 
@@ -1079,21 +1078,24 @@ from apex..apex_documentdetail where docid = ${documentInfo.id}
                 <input type='submit' />
               </form>
 
-              <ApexDataGrid
+            </div>
+          </TabPanel>
+          <TabPanel value={tablValue} index={1}>
+            
+          <ApexDataGrid
                 key='depositdocs'
                 gridname={DATA_DEPOSIT_DOCS}
                 ShowAllColumns={true}
                 gridTitle={''}
-                divHeight={'120px'}
+                divHeight={'620px'}
                 onRefresh={() => handleGridRefresh(DATA_DEPOSIT_DOCS)}
                 gridData={depositDocsData}
                 onRowSelected={onRowSelectExam}
                 button2Label='Stmt'
                 onButton2Callback={onRowSelectView}
               />
-            </div>
+
           </TabPanel>
-          <TabPanel value={tablValue} index={1}></TabPanel>
           <TabPanel value={tablValue} index={2}>
             Item Three
           </TabPanel>

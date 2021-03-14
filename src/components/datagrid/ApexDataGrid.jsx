@@ -76,6 +76,7 @@ const ApexDataGrid = (props) => {
       if (props.buttonLabel) {
         cols.splice(2, 0, {
           field: 'file',
+          width : 50,          
           cellRenderer: 'btnCellRenderer',
           cellRendererParams: {
             btnLabel: props.buttonLabel,
@@ -89,6 +90,7 @@ const ApexDataGrid = (props) => {
       if (props.button2Label) {
         cols.splice(1, 0, {
           field: 'file',
+          width : 50,             
           cellRenderer: 'btnCellRenderer',
           cellRendererParams: {
             btnLabel: props.button2Label,
@@ -102,6 +104,7 @@ const ApexDataGrid = (props) => {
       if (props.button3Label) {
         cols.splice(1, 0, {
           field: 'log',
+          width : 50,     
           cellRenderer: 'btnCellRenderer',
           cellRendererParams: {
             btnLabel: props.button3Label,

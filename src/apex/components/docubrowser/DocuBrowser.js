@@ -15,6 +15,8 @@ import DataGrid from '../common/DataGridNew';
 import { Toolbar, Data } from 'react-data-grid-addons';
 import MyGrid from '../unused/MyGrid';
 
+import ApexClaimsView from './ApexClaimsView';
+
 import RGL, { WidthProvider } from 'react-grid-layout';
 
 import axios from 'axios';
@@ -32,6 +34,7 @@ import DepositApp from '../deposits/App';
 import { showFile } from '../common/Utils';
 
 import { withRouter } from 'react-router-dom';
+import HostWatcher from '../hostwatch/HostWatcher';
 
 axios.defaults.xsrfCookieName = 'csrftoken';
 axios.defaults.xsrfHeaderName = 'X-CSRFToken';
@@ -58,7 +61,9 @@ import ApexDataGrid from '../../../components/datagrid/ApexDataGrid';
 
 import {  cli_processfile_py,
         loadGridData,
-        DATA_PATIENT_LIST, }
+        DATA_PATIENT_LIST,
+        DATA_APEX_CLAIMS,
+        cli_quser_cmd }
 from "./docuData";
 
 console.log('Directory: ' + __dirname);
@@ -287,6 +292,8 @@ export class DocuBrowser extends React.Component {
     invoice_cpt: [],
 
     pat_linqdocs: [],
+
+    dataApexClaims: [],
     RenameToFilename: '',
     newFileNameSelected: '',
     docuType: null,
@@ -320,6 +327,7 @@ export class DocuBrowser extends React.Component {
     //this.getPatients();
 
     loadGridData(DATA_PATIENT_LIST, {}, this.recvGridData);
+    loadGridData(DATA_APEX_CLAIMS, {}, this.recvGridData);
 
     ipcRenderer.on('selectedFile', (event, path) => {
       console.log('Client got: Show file ' + path);
@@ -407,6 +415,9 @@ export class DocuBrowser extends React.Component {
 
 
   handleGridRefresh = (gridName) => {
+
+    switch (gridName) {
+    case DATA_PATIENT_LIST:
     console.log('Refresh called on: ', gridName);
     this.setState(
       {
@@ -414,6 +425,20 @@ export class DocuBrowser extends React.Component {
         loaded: true,
       });
     loadGridData(gridName, {}, this.recvGridData);
+    break;
+
+    case DATA_APEX_CLAIMS:
+      console.log('Refresh called on: ', gridName);
+      this.setState(
+        {
+          dataApexClaims: [],
+          loaded: true,
+        });
+      loadGridData(gridName, {}, this.recvGridData);
+      break;
+
+    default:
+    }
   };
 
   recvGridData = (gridName, args, gridData) => {
@@ -434,7 +459,20 @@ export class DocuBrowser extends React.Component {
           }
         );
         break;
-
+        case DATA_APEX_CLAIMS:
+          this.setState(
+            {
+              dataApexClaims: gridData,
+              loaded: true,
+            },
+            () => {
+              console.log(
+                'Changed state dataApexClaims',
+                this.state.dataApexClaims.length
+              );
+            }
+          );
+          break;        
       default:
     }
   };
@@ -1543,8 +1581,8 @@ export class DocuBrowser extends React.Component {
     >
       <VerticalTabs value={activeIndex} onChange={this.handleVerticalTabChange}>
         <MyTab label="Documents" style={{ transform: [{ rotate: '180deg' }] }} />
+        <MyTab label="Claims" />
         <MyTab label="Deposits" />
-        <MyTab label="Tab three" />
       </VerticalTabs>
 
       {activeIndex === 0 && (
@@ -1864,9 +1902,17 @@ export class DocuBrowser extends React.Component {
       </TabContainer>)}
         {activeIndex === 1 && (
           <TabContainer>
-             <DepositApp />
+                      <div className="container-fluid">
+                      <ApexClaimsView />
+
+      </div>
+
              </TabContainer>)}
-        {activeIndex === 2 && <TabContainer>Item Three</TabContainer>}
+        {activeIndex === 2 && <TabContainer>
+
+          <DepositApp />
+          {/* <HostWatcher /> */}
+          </TabContainer>}
       </div>
     );
   }

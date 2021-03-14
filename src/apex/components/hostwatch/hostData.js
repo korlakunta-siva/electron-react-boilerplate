@@ -2,64 +2,25 @@ import React from 'react';
 const { exec } = require('child_process');
 
 export const DATA_CIG_RECEIVERS = 'cig_receivers';
-export const DATA_DEPOSIT_DOCS = 'data_deposit_documents';
+export const DATA_CIG_PROCESSORS = 'cig_processors';
 export const DATA_RECENT_IOCM_JOBS = 'cig_iocm_kos';
 export const DATA_EXAM_SERIES = 'exam_series';
 export const DATA_SERIES_LOCATIONS = 'series_locations';
-export const DATA_PATIENT_LIST = 'data_pat_list';
-export const DATA_DEPOSIT_DETAIL = 'data_deposit_detail';
-export const DATA_APEX_CLAIMS = 'apex_claims_data';
-
+export const DATA_KO_REFLECTED = 'exam_show_ko_effect';
 
 export const loadGridData = (gridName, args, recvfn) => {
   console.log('Retrieve Data for :', gridName);
-  let urlPrefix = 'https://192.168.21.199:8044/exsql?dbserver=';
+  let urlPrefix = 'https://iasq1mr2:8081/exsql?dbserver=';
   let dataURL = '';
 
   switch (gridName) {
-    case DATA_APEX_CLAIMS:
-      dataURL = "ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  PatientId, patientname, sdos, docname, cptcode, cptdesc, cptcat, cptsubcat, facility, pinsname,  edos ,claimdate from apex.rc.fn_ApexBillingData_2002( null, null,  '2/01/2021', '3/12/2021', null) ";
-      break;
-    case DATA_PATIENT_LIST:
-      console.log('Retrieve Data for2 :', gridName);
-      dataURL = 'ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  Name, PatientId, pat.DOB, pat.Phone1 from apex..vPatient pat order by Name ';
-      break;
-    case DATA_DEPOSIT_DOCS:
+    case DATA_CIG_RECEIVERS:
       dataURL =
-      dataURL = 'ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select docid, filename, customname, dirpath, foldername, depositbatchid from apex..apex_document adoc order by adoc.docID desc ';
+        'iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20select * from cigdb_rch00_prod..CIGTB_RECEIVER ';
       break;
-    case DATA_DEPOSIT_DETAIL:
+    case DATA_CIG_PROCESSORS:
       dataURL =
-      `ecwSQL&sqltype=customSQL&sqltext=select
-      docID ,
-      docdetailID,
-      pageno ,
-     endpageno,
-      detailType,
-      checkamount,
-      cardamount,
-      otheramount ,
-      checkdate ,
-      checknumber ,
-      PatientId,
-        PatientName,
-      DOS_start ,
-      DOS_end ,
-      cptcode ,
-      cptunits ,
-      encId ,
-      invoiceid ,
-      invcptid ,
-      delFlag,
-      insuranceid ,
-      notes,
-     pmtrow,
-     pmtprocessed,
-     pmtprocesseddt,
-     pmtreceipt
-     from apex..apex_documentdetail where docid = ${args.document_id}`;
-     
-
+        'iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20select * from cigdb_rch00_prod..CIGTB_PROCESSOR ';
       break;
     case DATA_RECENT_IOCM_JOBS:
       dataURL = `iimsProd&sqltype=customSQL&sqltext=set%20rowcount%201000%20
@@ -185,34 +146,9 @@ export const loadGridData = (gridName, args, recvfn) => {
 };
 
 
-export const cli_processfile_py = (retfunc, argjson) => {
-  console.log ("RECEIVED:", argjson);
-  console.log ("SUBMIT:", '"' + argjson.replace(/"/g, '\\"') + '"');
-  console.log("Executing: " + '"api/venv/Scripts/python" api/docuApi.py -cmd rename -aj "' + argjson.replace(/"/g, '\\"') + '"');
-
-  try {
-    exec(
-      '"api/venv/Scripts/python" api/docuApi.py -cmd rename -aj "' + argjson.replace(/"/g, '\\"') + '"', 
-      { maxBuffer: 1024 * 50000 },
-      (error, stdout, stderr) => {
-        if (error) {
-          console.log(`error: ${error.message}`);
-          return;
-        }
-        if (stderr) {
-          console.log(`stderr: ${stderr}`);
-          return;
-        }
-        //console.log(`stdout: ${stdout}`);
-        console.log(stdout);
-        //retfunc(stdout);
-        //retfunc ((JSON.stringify(stdout)));
-      }
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
+// exec('command here', {'shell':'powershell.exe'}, (error, stdout, stderr)=> {
+//   // do whatever with stdout
+// })
 
 
 export const cli_quser_cmd = (hostname) => {
@@ -220,8 +156,9 @@ export const cli_quser_cmd = (hostname) => {
  
   try {
     exec(
-      '"c:\\windows\\system32\\quser.exe" /SERVER:' + hostname, 
-      { maxBuffer: 1024 * 50000 },
+      'quser.exe /SERVER:' + hostname + " | ForEach-Object -Process { $_ -replace '\\s{2,}',',' } " ,
+      { shell:'powershell.exe',
+      maxBuffer: 1024 * 50000 },
       (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
@@ -232,7 +169,50 @@ export const cli_quser_cmd = (hostname) => {
           return;
         }
         //console.log(`stdout: ${stdout}`);
-        console.log(stdout);
+        //console.log(stdout);
+        let strArr = [];
+        stdout.split("\n").reduce((acc, line)=>{
+          let csvLineArr = line.split(",");
+          console.log(csvLineArr[1]);
+
+          if (csvLineArr.length > 1 ) {
+
+            if (csvLineArr[2] === "ID" ) return acc;
+
+            if (csvLineArr.length == 5) {
+              csvLineArr.splice(1, 0, '')
+            }
+
+            let rowJson = {
+              hostname: hostname,
+              username : csvLineArr[0],
+              sessionname : csvLineArr[1],
+              sessionid: csvLineArr[2],
+              state: csvLineArr[3],
+              idletime: csvLineArr[4],
+              logontime: csvLineArr[5]
+            }
+            acc.push(rowJson);;
+          }
+
+          return acc;
+              
+          
+        }, strArr);
+
+        console.log(strArr);
+        
+       
+
+          // strArr.forEach((line) => {
+          //   console.log("LINE=>" + line + "\n\n");
+
+          // let cols = line.split("\t");
+          // cols.forEach((colval)=> {
+          //   console.log("Field=>" + colval);
+          // })
+          
+
         //retfunc(stdout);
         //retfunc ((JSON.stringify(stdout)));
       }
@@ -241,3 +221,4 @@ export const cli_quser_cmd = (hostname) => {
     console.log(error);
   }
 };
+
