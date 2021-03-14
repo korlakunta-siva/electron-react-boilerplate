@@ -22,6 +22,11 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 
+import { Receivers } from '../cigaops/cigConfigData';
+
+const path = require('path');
+const { exec } = require('child_process');
+
 import {
   DATA_PATIENT_EXAMS,
   DATA_PATIENT_EXAM_ACCN,
@@ -45,11 +50,13 @@ import {
   DATA_CIGA_EXCEPTIONS,
   DATA_CIGA_PROCESSOR_LOG,
   DATA_CIGA_IIMS_NOTIF,
+  DATA_DICOM_FOLDER_SERIES,
 } from './patbrowseData';
 
 import ApexDataGrid from '../../components/datagrid/ApexDataGrid';
 
 const ReactGridLayout = WidthProvider(RGL);
+let shell = require('electron').shell;
 
 const styles = (theme) => ({
   formControl: {
@@ -69,6 +76,13 @@ const styles = (theme) => ({
     marginRight: theme.spacing.unit,
   },
 });
+
+// document.addEventListener('click', function (event) {
+//   if (event.target.tagName === 'A' && event.target.href.startsWith('http')) {
+//     event.preventDefault()
+//     shell.openExternal(event.target.href)
+//   }
+// })
 
 export const ExportJson = ({ jsonData, fileName }) => {
   //const fileType = "application/json";
@@ -227,7 +241,10 @@ class App extends Component {
 
     dicomData: [],
     dicomKOData: [],
+    CIGReceiverQueue: '',
+    CIGReceiverQueueCampus: '',
 
+    CIGReceiverEnvironment: '',
     DBEnvironment: 'Intg',
     LogTextvalue: '',
     DbEnv: this.DbEnvIntg,
@@ -287,6 +304,22 @@ class App extends Component {
       cli_getdicom_meta(path, this.recv_dicom_meta);
     });
   }
+
+  handleChangeQueueSelection = (event) => {
+    console.log('SELECTED CIG Receiver Queue: ', event.target.value);
+
+    this.setState({
+      CIGReceiverQueue: event.target.value,
+    });
+  };
+
+  handleChangeQueueCampusSelection = (event) => {
+    console.log('SELECTED CIG Receiver Queue Campus: ', event.target.value);
+
+    this.setState({
+      CIGReceiverQueueCampus: event.target.value,
+    });
+  };
 
   recv_dicom_meta = (data) => {
     let modified_data = '';
@@ -549,8 +582,77 @@ class App extends Component {
           },
           this.recvGridData
         );
+
+      case DATA_DICOM_FOLDER_SERIES:
+        console.log('Need to Send to CIGA', data);
         break;
+      default:
     }
+  };
+
+  cli_send2_ciga = (folderpath, receiver) => {
+    //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+
+    const recv_aet = receiver.split(',')[0];
+    const sender_aet = receiver.split(',')[2];
+    console.log('SEND TO CIGA', receiver, folderpath);
+
+    //CIGA_MCR_ORDSTG@10.128.232.152:6109
+
+    let mesg = '';
+    console.log(
+      'C:\\Programs\\dcm4che\\bin\\storescu -b ' +
+        sender_aet +
+        ' -c  ' +
+        recv_aet +
+        ' ' +
+        folderpath
+    );
+
+    try {
+      exec(
+        'C:\\Programs\\dcm4che\\bin\\storescu -b ' +
+          sender_aet +
+          ' -c  ' +
+          recv_aet +
+          ' ' +
+          folderpath,
+        { maxBuffer: 1024 * 50000 },
+        (error, stdout, stderr) => {
+          if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+          }
+          //console.log(`stdout: ${stdout}`);
+          console.log(stdout);
+          //retfunc(stdout);
+          //retfunc ((JSON.stringify(stdout)));
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  onSendStudyToCIGA = (data, gridname) => {
+    let seriesFolderPath = data.SeriesPath;
+    let studyFolderPath = path.dirname(seriesFolderPath);
+
+    console.log('SEND STUDY TO CIGA', studyFolderPath);
+
+    this.cli_send2_ciga(studyFolderPath, this.state.CIGReceiverEnvironment);
+  };
+
+  onSendSeriesToCIGA = (data, gridname) => {
+    let seriesFolderPath = data.SeriesPath;
+
+    console.log('SEND SERIES TO CIGA', seriesFolderPath);
+
+    this.cli_send2_ciga(seriesFolderPath, this.state.CIGReceiverEnvironment);
   };
 
   cmrnChange = (event) => {
@@ -920,6 +1022,14 @@ class App extends Component {
 
   signalListeners = { hover: this.handleHover };
 
+  handleChangeCIGReceiverEnv = (event) => {
+    console.log('SELECTED CIG Receiver Env: ', event.target.value);
+
+    this.setState({
+      CIGReceiverEnvironment: event.target.value,
+    });
+  };
+
   handleChangeCIGQueueEnv = (event) => {
     console.log('SELECTED CIG Queue Env: ', event.target.value);
     // switch (event.target.value) {
@@ -1229,7 +1339,7 @@ class App extends Component {
         <VerticalTabs value={activeIndex} onChange={this.handleTabChange}>
           <MyTab label="Browse" style={{ transform: [{ rotate: '180deg' }] }} />
           <MyTab label="CIGA SEND" />
-          <MyTab label="Tab three" />
+          <MyTab label="CIG Queue" />
         </VerticalTabs>
 
         {activeIndex === 0 && (
@@ -1817,12 +1927,111 @@ class App extends Component {
                 <button onClick={this.getDicmFiles}>
                   Select DICOM Files / Folder
                 </button>
+                <button
+                  onClick={() => {
+                    shell.openExternal(
+                      'https://mevi01.mayo.edu:10443/ui/login.jsp'
+                    );
+                  }}
+                >
+                  MIDIA-INT
+                </button>
+                <button
+                  onClick={() => {
+                    shell.openExternal(
+                      'https://mcamidprod.mayo.edu/ui/login.jsp'
+                    );
+                  }}
+                >
+                  MIDIA-MCA
+                </button>
+                <button
+                  onClick={() => {
+                    shell.openExternal('https://dicom1.mayo.edu/');
+                  }}
+                >
+                  MIDIA-MCR
+                </button>
+                <button
+                  onClick={() => {
+                    shell.openExternal('https://midmcfprod.mayo.edu/');
+                  }}
+                >
+                  MIDIA-MCF
+                </button>
                 <button onClick={this.onSendExam2CIGA}>
-                  Selectto CIGA-INT
+                  Select To CIGA-INT
                 </button>
-                <button onClick={this.getELQFile}>
+                {/* <button onClick={this.getELQFile}>
                   Generate ExamList.qreads File For DCM Folder
-                </button>
+                </button> */}
+
+                <FormControl className={classes.formControl}>
+                  <Select
+                    labelId="simple-select-required-label"
+                    id="cig-reciver-queue"
+                    value={this.state.CIGReceiverQueue}
+                    onChange={this.handleChangeQueueSelection}
+                    className={classes.selectEmpty}
+                  >
+                    {Receivers.map((rcvr) => rcvr.queue)
+                      .filter((item, i, ar) => ar.indexOf(item) === i)
+                      .map((queue) => (
+                        <MenuItem value={`${queue}`}>{queue}</MenuItem>
+                      ))}
+                  </Select>
+                  <InputLabel id="select-sendto-receiver-label">
+                    Queue
+                  </InputLabel>
+                </FormControl>
+
+                <FormControl className={classes.formControl}>
+                  <Select
+                    labelId="simple-select-required-label"
+                    id="cig-reciver-queue"
+                    value={this.state.CIGReceiverQueueCampus}
+                    onChange={this.handleChangeQueueCampusSelection}
+                    className={classes.selectEmpty}
+                  >
+                    {Receivers.filter(
+                      (rcvr) => rcvr.queue == this.state.CIGReceiverQueue
+                    )
+                      .map((rcvr) => rcvr.campus)
+                      .filter((item, i, ar) => ar.indexOf(item) === i)
+                      .map((campus) => (
+                        <MenuItem value={`${campus}`}>{campus}</MenuItem>
+                      ))}
+                  </Select>
+                  <InputLabel id="select-sendto-receiver-label">
+                    Campus
+                  </InputLabel>
+                </FormControl>
+
+                <FormControl className={classes.formControl}>
+                  <Select
+                    labelId="simple-select-required-label"
+                    id="cig-reciver-queue"
+                    value={this.state.CIGReceiverEnvironment}
+                    onChange={this.handleChangeCIGReceiverEnv}
+                    className={classes.selectEmpty}
+                  >
+                    {Receivers.filter(
+                      (rcvr) =>
+                        rcvr.queue == this.state.CIGReceiverQueue &&
+                        rcvr.campus == this.state.CIGReceiverQueueCampus
+                    ).map((rcvr) => (
+                      <MenuItem
+                        value={`${rcvr.recvaet}@${rcvr.ipaddr}:${rcvr.port},${rcvr.sendaet1},${rcvr.sendaet2}`}
+                      >
+                        {rcvr.sendaet2}=>{rcvr.hostname}[
+                        {rcvr.ipaddr.split('.')[3]}]->{rcvr.recvaet}:{rcvr.port}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <InputLabel id="select-sendto-receiver-label">
+                    CIG Receiver
+                  </InputLabel>
+                </FormControl>
               </div>
               <div
                 key="24821"
@@ -1866,23 +2075,31 @@ class App extends Component {
               >
                 <ApexDataGrid
                   key="folderImagesko"
-                  gridname={DATA_CIGA_EXCEPTIONS}
+                  gridname={DATA_DICOM_FOLDER_SERIES}
                   ShowAllColumns={true}
                   divHeight={'250px'}
                   domHeight={'normal'}
                   gridTitle={'Folder KO - PROD'}
-                  onRefresh={() => this.handleGridRefresh(DATA_CIGA_EXCEPTIONS)}
+                  onRefresh={() =>
+                    this.handleGridRefresh(DATA_DICOM_FOLDER_SERIES)
+                  }
                   gridData={this.state.dicomKOData}
                   gridArgsText={''}
                   onRowSelected={this.onRowSelectExam}
-                  button2Label="View"
-                  onButton2Callback={this.onRowSelectView}
+                  button2Label="Send Study"
+                  onButton2Callback={this.onSendStudyToCIGA}
+                  button3Label="Send Series"
+                  onButton3Callback={this.onSendSeriesToCIGA}
                 />
               </div>
             </ReactGridLayout>
           </TabContainer>
         )}
-        {activeIndex === 2 && <TabContainer>Item Three</TabContainer>}
+        {activeIndex === 2 && (
+          <TabContainer>
+            View Inbound Q and JOB Q for given Queue Environment
+          </TabContainer>
+        )}
       </div>
     ) : (
       <span>Loading ...</span>

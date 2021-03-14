@@ -24,6 +24,7 @@ export const DATA_CIGA_JOBS = 'ciga_jobs';
 export const DATA_CIGA_EXCEPTIONS = 'ciga_exceptions';
 export const DATA_CIGA_PROCESSOR_LOG = 'ciga_processor_log';
 export const DATA_CIGA_IIMS_NOTIF = 'ciga_iims_notifications';
+export const DATA_DICOM_FOLDER_SERIES = 'dicom_folder_series_summary';
 
 export const loadGridData = (gridName, args, recvfn) => {
   console.log('Retrieve Data for :', gridName, args);
@@ -216,16 +217,55 @@ export const loadGridData = (gridName, args, recvfn) => {
       dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20select *  from qrddb_rch03${args.DbEnv.iimsOltpExt}..CIGTB_PROCESSOR_LOG where JOB_QUEUE_ID =  ${args.job_queue_id} `;
       break;
 
+    //     case DATA_CIGA_IIMS_NOTIF:
+    //       dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20
+    //       select is_iocm = (select attribute_value from iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION_DTL imgd where imgd.image_queue_id =  imgn.image_queue_id and imgd.attribute_key = 'iocm_flag'), imgn.*
+    // from iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION imgn where image_queue_id = ${args.iims_queue_id} `;
+
     case DATA_CIGA_IIMS_NOTIF:
-      dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20select *  from iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION where image_queue_id =  ${args.iims_queue_id} `;
+      dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20set nocount on declare @max_imgq_id int  select @max_imgq_id = max(image_queue_id) from  iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION  select @max_imgq_id = @max_imgq_id - 50000
+      select is_iocm = (select attribute_value from iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION_DTL imgd where imgd.image_queue_id =  imgn.image_queue_id and imgd.attribute_key = 'iocm_flag'),  imgn.image_queue_creation_dt,  imgn.*
+      from iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION imgn where image_queue_id =  ${args.iims_queue_id}
+      union
+      select is_iocm = (select attribute_value from iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION_DTL imgd where imgd.image_queue_id =  imgn.image_queue_id and imgd.attribute_key = 'iocm_flag'), imgn.image_queue_creation_dt,  imgn.*
+      from iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION imgn where imgn.series_uid =
+      (select series_uid from  iimdb_rch02${args.DbEnv.iimsOltpExt}..Q_IMAGE_NOTIFICATION  where image_queue_id =   ${args.iims_queue_id} ) and  imgn.image_queue_id > @max_imgq_id
+      order by imgn.image_queue_creation_dt desc `;
+
       break;
+
+    //      case DATA_CIGA_IIMS_NOTIF:
+    //       dataURL = ` set nocount on declare @max_imgq_id int  select @max_imgq_id = max(image_queue_id) from  iimdb_rch02_intg..Q_IMAGE_NOTIFICATION  select @max_imgq_id = @max_imgq_id - 50000
+    // select is_iocm = (select attribute_value from iimdb_rch02_intg..Q_IMAGE_NOTIFICATION_DTL imgd where imgd.image_queue_id =  imgn.image_queue_id and imgd.attribute_key = 'iocm_flag'), imgn.image_queue_creation_dt,  imgn.*
+    // from iimdb_rch02_intg..Q_IMAGE_NOTIFICATION imgn where imgn.series_uid = '1.2.276.0.45.1.7.3.190090202997341.20062414155000006.90740' and  imgn.image_queue_id > @max_imgq_id
+    // order by imgn.image_queue_creation_dt desc `;
 
     case DATA_CIGA_JOBS:
       dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20select TBL = 'DONE_QUEUE', JOB_QUEUE_ID,	JOB_QUEUE_START_TIME,    	JOB_STATUS,	JOB_STATUS_TIME,         	RECEIVER_PORT,	RECEIVER_AET,   	SENDER_HOST ,    	SENDER_IP,    	SENDER_AET,    	JOB_PRIORITY,	CAMPUS,	CAMPUS_DESC,	DEPARTMENT_ID,	DEPARTMENT_CODE,	PATIENT_EXTERNAL_ID,	PATIENT_INTERNAL_ID,	PATIENT_LAST_NAME,	PATIENT_FIRST_NAME,	EXAM_ID ,	EXAM_DATE  ,             	STUDY_UID     ,                                 	STUDY_DESC  ,                                      	SERIES_UID ,                                            	SOPCLASS_UID,             	SERIES_MODALITY,	TRANSFER_SYNTAX,    	PROCESSOR_HOST,	PROCESSED_SERIES_COUNT,	PROCESSED_JOB_COUNT,	ACTIVE_ASSOCIATION_COUNT,	JOB_QUEUE_END_TIME ,     	UPDATE_TIME
-      from qrddb_rch03${args.DbEnv.iimsOltpExt}..CIGTB_JOB_QUEUE_LOG where EXAM_ID =  '${args.accession}'
-      union
+       from qrddb_rch03${args.DbEnv.iimsOltpExt}..CIGTB_JOB_QUEUE_LOG where EXAM_ID =  '${args.accession}'
+       union
       select TBL = 'IN_QUEUE',  JOB_QUEUE_ID,	JOB_QUEUE_START_TIME,    	JOB_STATUS,	JOB_STATUS_TIME,         	RECEIVER_PORT,	RECEIVER_AET,   	SENDER_HOST ,    	SENDER_IP,    	SENDER_AET,    	JOB_PRIORITY,	CAMPUS,	CAMPUS_DESC,	DEPARTMENT_ID,	DEPARTMENT_CODE,	PATIENT_EXTERNAL_ID,	PATIENT_INTERNAL_ID,	PATIENT_LAST_NAME,	PATIENT_FIRST_NAME,	EXAM_ID ,	EXAM_DATE  ,             	STUDY_UID     ,                                 	STUDY_DESC  ,                                      	SERIES_UID ,                                            	SOPCLASS_UID,             	SERIES_MODALITY,	TRANSFER_SYNTAX,    	PROCESSOR_HOST,	PROCESSED_SERIES_COUNT,	PROCESSED_JOB_COUNT,	ACTIVE_ASSOCIATION_COUNT,	JOB_QUEUE_END_TIME = convert(datetime,null),     	UPDATE_TIME = convert(datetime,null)
-      from qrddb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsOltpExt}..CIGTB_JOB_QUEUE where EXAM_ID =  '${args.accession}' order by job_queue_id desc`;
+       from qrddb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsOltpExt}..CIGTB_JOB_QUEUE where EXAM_ID =  '${args.accession}' `;
+
+      console.log(
+        'DATA_CIGA_JOBS SQL PREP:',
+        args.DbEnv.iimsOltp,
+        args.DbEnv.iimsOltp == 'iimsProd'
+      );
+      if (args.DbEnv.iimsOltp == 'iimsProd') {
+        dataURL =
+          dataURL +
+          `
+        union
+        select TBL = 'PREPROD_DONEQ', JOB_QUEUE_ID,	JOB_QUEUE_START_TIME,    	JOB_STATUS,	JOB_STATUS_TIME,         	RECEIVER_PORT,	RECEIVER_AET,   	SENDER_HOST ,    	SENDER_IP,    	SENDER_AET,    	JOB_PRIORITY,	CAMPUS,	CAMPUS_DESC,	DEPARTMENT_ID,	DEPARTMENT_CODE,	PATIENT_EXTERNAL_ID,	PATIENT_INTERNAL_ID,	PATIENT_LAST_NAME,	PATIENT_FIRST_NAME,	EXAM_ID ,	EXAM_DATE  ,             	STUDY_UID     ,                                 	STUDY_DESC  ,                                      	SERIES_UID ,                                            	SOPCLASS_UID,             	SERIES_MODALITY,	TRANSFER_SYNTAX,    	PROCESSOR_HOST,	PROCESSED_SERIES_COUNT,	PROCESSED_JOB_COUNT,	ACTIVE_ASSOCIATION_COUNT,	JOB_QUEUE_END_TIME ,     	UPDATE_TIME
+        from qrddb_rch01${args.DbEnv.iimsOltpExt}..CIGTB_JOB_QUEUE_LOG where EXAM_ID =  '${args.accession}'
+
+        union
+        select TBL = 'PREPROD_INQ',  JOB_QUEUE_ID,	JOB_QUEUE_START_TIME,    	JOB_STATUS,	JOB_STATUS_TIME,         	RECEIVER_PORT,	RECEIVER_AET,   	SENDER_HOST ,    	SENDER_IP,    	SENDER_AET,    	JOB_PRIORITY,	CAMPUS,	CAMPUS_DESC,	DEPARTMENT_ID,	DEPARTMENT_CODE,	PATIENT_EXTERNAL_ID,	PATIENT_INTERNAL_ID,	PATIENT_LAST_NAME,	PATIENT_FIRST_NAME,	EXAM_ID ,	EXAM_DATE  ,             	STUDY_UID     ,                                 	STUDY_DESC  ,                                      	SERIES_UID ,                                            	SOPCLASS_UID,             	SERIES_MODALITY,	TRANSFER_SYNTAX,    	PROCESSOR_HOST,	PROCESSED_SERIES_COUNT,	PROCESSED_JOB_COUNT,	ACTIVE_ASSOCIATION_COUNT,	JOB_QUEUE_END_TIME = convert(datetime,null),     	UPDATE_TIME = convert(datetime,null)
+        from qrddb_rch01${args.DbEnv.iimsOltpExt}..CIGTB_JOB_QUEUE where EXAM_ID =  '${args.accession}' `;
+      }
+
+      dataURL = dataURL + ` order by job_queue_id desc`;
       break;
 
     case DATA_EXAM_SERIES_KO_REFLECTED:
