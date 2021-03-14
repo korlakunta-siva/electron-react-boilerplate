@@ -247,6 +247,80 @@ class Accounts extends Component {
       })
   }
 
+   loadblobPDF = blob => {
+    console.log('Ready to Loadin PDF from base64')
+
+    try {
+      let iframePdf = pdfControl.iframeRef.current.contentWindow
+      //console.log(iframePdf);
+      //console.log(iframePdf.PDFViewerApplication);
+      if (iframePdf !== undefined) {
+        let iframePdf2 = iframePdf.contentWindow
+        //iframePdf.PDFViewerApplication.open();
+        
+        iframePdf.PDFViewerApplication.open(blob)
+        //iframePdf.PDFViewerApplication.toolbar.openFile.click(); // iframePdf.PDFViewerApplication
+        //iframePdf.print();
+      }
+    } catch (error) {}
+
+    // ipcRenderer.send('show-file', 'ping')
+  }
+
+  
+  loadblobPDFURL = pdfURL => {
+    console.log('Ready to Loadin PDF from base64', pdfURL)
+
+    const frame_element = `../public/pdfjs/web/viewer.html?file=${pdfURL} `
+
+    this.setState({ filepath: frame_element })
+
+
+    try {
+      // let iframePdf = pdfControl.iframeRef.current.contentWindow
+      // //console.log(iframePdf);
+      // //console.log(iframePdf.PDFViewerApplication);
+      // if (iframePdf !== undefined) {
+      //   let iframePdf2 = iframePdf.contentWindow
+      //   //iframePdf.PDFViewerApplication.open();
+      //   iframePdf.PDFViewerApplication.open(pdfURL)
+      //   //iframePdf.PDFViewerApplication.toolbar.openFile.click(); // iframePdf.PDFViewerApplication
+      //   //iframePdf.print();
+
+      
+      url = {
+        url : pdfURL,
+        originalUrl: "Temp File Name"
+      };
+
+
+      let iframePdf = pdfControl.iframeRef.current.contentWindow
+      // //console.log(iframePdf);
+      // //console.log(iframePdf.PDFViewerApplication);
+      if (iframePdf !== undefined) {
+        let iframePdf2 = iframePdf.contentWindow
+      //   //iframePdf.PDFViewerApplication.open();
+        
+      
+      //iframePdf2.PDFViewerApplication.open(pdfURL)
+
+
+
+      //   //iframePdf.PDFViewerApplication.toolbar.openFile.click(); // iframePdf.PDFViewerApplication
+      //   //iframePdf.print();      
+
+
+      //PDFViewerApplication.open(url);
+
+      }
+
+    } catch (error) {}
+
+    // ipcRenderer.send('show-file', 'ping')
+  }
+
+
+
   render () {
     const { user, accounts, linkToken } = this.props
     const { transactions, transactionsLoading } = this.props.plaid
@@ -364,6 +438,8 @@ class Accounts extends Component {
       </SingleLineGridList>
     )
 
+
+
     return (
       <div>
         {this.state.dataCurrentStatus.environment}
@@ -465,7 +541,7 @@ class Accounts extends Component {
             data-grid={{
               x: 0,
               y: 0,
-              w: 8,
+              w: 7,
               h: 5,
               minH: 3,
               maxH: 12,
@@ -481,12 +557,13 @@ class Accounts extends Component {
               onRowSelected={this.onRowSelectExam}
               button2Label='View'
               onButton2Callback={this.onRowSelectView}
+              onPrintPDF={this.loadblobPDFURL}
             />
           </div>
 
           <div
             key='2'
-            data-grid={{ x: 9, y: 0, w: 4, h: 2, isResizable: true }}
+            data-grid={{ x: 9, y: 0, w: 5, h: 2, isResizable: true }}
             style={{ height: '90%', width: '100%', margin: 0 }}
           >
             <button id='myButton3' onClick={this.nextPDFPage}>

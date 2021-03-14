@@ -50,6 +50,7 @@ export default function(state = initialState, action) {
         )
       };
     case GET_ACCOUNTS:
+      console.log("GOT Accounts" , action.payload);
       return {
         ...state,
         accounts: action.payload,

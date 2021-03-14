@@ -171,7 +171,7 @@ class Dashboard extends Component {
       );
     }
 
-    return <div className="container">{dashboardContent}</div>;
+    return <div className="container-fluid">{dashboardContent}</div>;
   }
 }
 

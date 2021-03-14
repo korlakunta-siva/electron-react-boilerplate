@@ -7,6 +7,8 @@ export const DATA_EXAM_SERIES = 'exam_series';
 export const DATA_SERIES_LOCATIONS = 'series_locations';
 export const DATA_KO_REFLECTED = 'exam_show_ko_effect';
 import { apiURL } from  '../../../../api/apiConfig'; 
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export const loadGridData = (gridName, args, recvfn) => {
   console.log('Retrieve Data for :', gridName);

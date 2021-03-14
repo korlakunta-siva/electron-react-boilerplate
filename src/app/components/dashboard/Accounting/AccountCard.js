@@ -28,7 +28,7 @@ import SendIcon from '@material-ui/icons/Send';
 
 const useStyles = makeStyles({
   root: {
-    maxWidth: 150,
+    maxWidth: 350,
     border: '1px',
     'border-color' : 'red'
   },
@@ -69,12 +69,20 @@ export default function ImgMediaCard(props) {
   const institutionName = props.account.institutionName;
   const account = props.account
   const account_id = props.account.itemId;
+  let recent_date = ''
+  if (props.account.recent_date){
+    recent_date  = new Date( props.account.recent_date).getMonth() + 1 + "-" + new Date( props.account.recent_date).getDate();
+  }else {
+    recent_date = ''
+  }
 
+  console.log(institutionName, recent_date);
   return (
     <Card className={classes.root} style={{  borderColor: 'red', border: '5px', backgroundColor: 'lightgreen', marginTop: '5px'}}>
 
           <Typography  >
-          {institutionName}
+          {institutionName} {' '}
+          {recent_date}
           </Typography>
   
       <CardActions>

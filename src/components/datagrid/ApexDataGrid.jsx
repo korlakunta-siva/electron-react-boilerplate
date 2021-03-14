@@ -9,6 +9,8 @@ import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
 import GridComponents from './GridComponents';
 import BtnCellRenderer from './BtnCellRenderer';
 import Button from '@material-ui/core/Button';
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const ApexDataGrid = (props) => {
   const [gridApi, setGridApi] = useState(null);
@@ -76,6 +78,7 @@ const ApexDataGrid = (props) => {
       if (props.buttonLabel) {
         cols.splice(2, 0, {
           field: 'file',
+          width : 50,  
           cellRenderer: 'btnCellRenderer',
           cellRendererParams: {
             btnLabel: props.buttonLabel,
@@ -89,6 +92,7 @@ const ApexDataGrid = (props) => {
       if (props.button2Label) {
         cols.splice(1, 0, {
           field: 'file',
+          width : 50,  
           cellRenderer: 'btnCellRenderer',
           cellRendererParams: {
             btnLabel: props.button2Label,
@@ -102,6 +106,7 @@ const ApexDataGrid = (props) => {
       if (props.button3Label) {
         cols.splice(1, 0, {
           field: 'log',
+          width : 50,  
           cellRenderer: 'btnCellRenderer',
           cellRendererParams: {
             btnLabel: props.button3Label,
@@ -156,6 +161,153 @@ const ApexDataGrid = (props) => {
     divHeight = props.divHeight;
   }
 
+  
+
+  const genDefTable = () => {
+    let headarr = [['ID', 'Category', 'Date', 'Description', 'Amount']]
+  
+    let total_checks = 0
+    let total_amount = 0.0
+
+    let rowdata1 = [];
+    gridApi.forEachNodeAfterFilterAndSort((rowNode, index) => {
+
+      //console.log(rowNode.data);
+      let row = rowNode.data;
+      let rowarr = [
+        row.id,
+        row.category,
+        row.date,
+        row.name,
+        Number(row.amount).toFixed(2)
+      ]
+
+      rowdata1.push(rowarr);
+
+      total_checks += 1
+      total_amount += Number(row.amount)
+
+      //console.log('node ' + rowNode.data.athlete + ' passes the filter and is in this order');
+   });
+
+   //console.log(rowdata1);
+   
+    // let rowdata1 = rowData.
+    // map(row => {
+    //   let rowarr = [
+    //     row.id,
+    //     row.category,
+    //     row.date,
+    //     row.name,
+    //     Number(row.amount).toFixed(2)
+    //   ]
+
+    //   return rowarr
+    // })
+
+
+    rowdata1.push([
+      'Count: ' + total_checks,
+      'Total Amount: ',
+      Number(total_amount).toFixed(2),
+      ''
+    ])
+  
+    //total_amount.toFixed(2)
+  
+    let dtable = {
+      head: headarr,
+      body: rowdata1,
+      startY: 10,
+      columnStyles: { 1: { halign: 'center' }, 4: { halign: 'right' } },
+      options: { margin: { top: 180 } }
+    }
+    console.log('DocDetail Table to Print', dtable)
+    return dtable
+  }
+  
+  
+ const printPDF = tbl => {
+   console.log("called PrintPDF for selected transactions");
+  const doc = new jsPDF()
+  //const string = renderToString(<Prints />);
+  // doc.text("Hello world!", 10, 10);
+  // doc.autoTable({
+  //   head: [['Name', 'Email', 'Country']],
+  //   body: [
+  //     ['David', 'david@example.com', 'Sweden'],
+  //     ['Castille', 'castille@example.com', 'Spain'],
+  //     // ...
+  //   ],
+  // });
+
+  // imageToBase64("/deposit_header_5555.jpg") // Path to the image
+  // .then(
+  //     (response) => {
+  //         console.log("JPEG AS b64", response); // "cGF0aC90by9maWxlLmpwZw=="
+  //     }
+  // )
+  // .catch(
+  //     (error) => {
+  //         console.log("JPEG AS b64 Error", error); // Logs an error if there was one
+  //     }
+  // )
+
+  // doc.moveTo(0, 10)
+  // //doc.addImage(b64DepositHeader, 'PNG', 10, 10, 190, 75)
+  // doc.text(
+  //   '--------------------------------------------------------------------------',
+  //   30,
+  //   88
+  // )
+  //doc.moveTo (200,200);
+
+  let total_amount = 0.0
+
+  for (let i = 0; i < rowData.length; i++) {
+    total_amount += rowData[i].checkamount
+  }
+  doc.setFontSize(32)
+  doc.text(total_amount.toFixed(2), 154, 70)
+  doc.setFontSize(18)
+  //doc.text(documentInfo.name.replace('.pdf', ''), 65, 11)
+
+  //rowdata1.push([total_checks, "", total_amount.toFixed(2), ""]);
+
+  doc.autoTable(genDefTable())
+  //let file = doc.output('blob');
+
+  //doc.addImage(b64DepositHeader, 'PNG', 15, 40, 175, 75);
+
+  // let base = doc.output('dataurlnewwindow')
+
+  // let binaryData = [];
+  // binaryData.push(base);
+
+  // let file = new Blob([binaryData], { type: 'application/pdf' });
+  // let fileURL = URL.createObjectURL(file);
+
+  // //var win = window.open();
+  // //const objectURL = URL.createObjectURL(new Blob(binaryData, {type: "application/zip"}))
+
+  // console.log("URL for the PDF:", fileURL);
+  // //const objectURL = URL.createObjectURL(base)
+
+  props.onPrintPDF(doc.output('bloburl'));
+
+  // props.onPrintPDF(base)
+  //  PDFViewerApplication.open(pdfData);
+
+  //doc.save("a4.pdf");
+}
+
+// onFilterChanged = ev => {
+//   if (ev?.api?.rowModel?.rowsToDisplay) {
+//     this.setState({ selectedRows: ev?.api?.rowModel?.rowsToDisplay.filter(node => node.isSelected()) });
+//   }
+// };
+
+
   return (
     <React.Fragment>
       {props.gridTitle ? `${props.gridTitle}` : ''} {'  '}
@@ -167,6 +319,9 @@ const ApexDataGrid = (props) => {
       </Button>
       <Button variant="contained" color="primary" onClick={setFixedHeight}>
         Fixed Height
+      </Button>
+      <Button variant="contained" color="primary" onClick={printPDF}>
+        PDF
       </Button>
       {props.gridArgsText ? `${props.gridArgsText}` : ''}
       <div id="myGrid">

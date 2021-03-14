@@ -1,6 +1,6 @@
 {
   "name": "electron-react-boilerplate",
-  "productName": "ElectronReact",
+  "productName": "PersonalFinance",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Fast Refresh for rapid application development",
   "scripts": {
     "build": "concurrently \"yarn build:main\" \"yarn build:renderer\"",
@@ -30,8 +30,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "PersonalFinance",
+    "appId": "org.erb.PersonalFinance",
     "files": [
       "dist/",
       "node_modules/",
@@ -100,7 +100,7 @@
   },
   "author": {
     "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
+    "email": "skorlakunta@gmail.com",
     "url": "https://electron-react-boilerplate.js.org"
   },
   "contributors": [
@@ -286,7 +286,9 @@
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "regenerator-runtime": "^0.13.5",
-    "source-map-support": "^0.5.19"
+    "source-map-support": "^0.5.19",
+    "jspdf": "2.1.0",
+    "jspdf-autotable": "3.5.13"
   },
   "devEngines": {
     "node": ">=10.x",
