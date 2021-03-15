@@ -467,6 +467,7 @@ const App = (props) => {
   };
 
   // INT Server  SERVER=http://qreadsq3ha1.mayo.edu:9082/MCRQREADS/
+//"C:\WKSAdmin\Replicated Files\Local Launchers\Qreads.vbs" environment=test singleinstancelaunch=testing examid=%1 clinicnumber=%2
 
   const onOpenQREADS = (rowdata) => {
     console.log('READY OPEN IN QREADS: ', rowdata);

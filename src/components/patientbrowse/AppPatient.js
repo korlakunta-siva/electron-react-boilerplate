@@ -22,6 +22,13 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+
 import { Receivers } from '../cigaops/cigConfigData';
 
 const path = require('path');
@@ -36,6 +43,8 @@ import {
   DATA_STUDY_LOCATION,
   runCIGCommand,
   cli_getdicom_meta,
+  onOpenQREADS,
+  cli_viewdicom_file,
 } from './patbrowseData';
 
 import {
@@ -51,6 +60,13 @@ import {
   DATA_CIGA_PROCESSOR_LOG,
   DATA_CIGA_IIMS_NOTIF,
   DATA_DICOM_FOLDER_SERIES,
+  DATA_DICOM_IIM_SERIES_COMPARE,
+  DATA_CIG_QUEUE_SERIES,
+  DATA_CIG_QUEUE_JOBS,
+  DATA_CIG_QUEUE_JOBS_LOG,
+  DATA_CIG_QUEUE_JOBS_PROCESS_LOG,
+  DATA_CIG_QUEUE_JOBS_EXCEPTIONS,
+  DATA_EXAM_LIST_FROM_ACCNLIST,
 } from './patbrowseData';
 
 import ApexDataGrid from '../../components/datagrid/ApexDataGrid';
@@ -208,6 +224,62 @@ export const reverseMountPoints = (uncPathName) => {
   return MappedPath;
 };
 
+const FormDialog = (props) => {
+  const [open, setOpen] = React.useState(false);
+  const [accnList, setaccnList] = React.useState('');
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleCloseCancel = () => {
+    setOpen(false);
+  };
+
+  const handleCloseOk = () => {
+    setOpen(false);
+    props.onClose(accnList);
+  };
+
+  return (
+    <span className="inline">
+      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
+        Accn List
+      </Button>
+      <Dialog
+        open={open}
+        onClose={handleCloseCancel}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogContent>
+          <DialogContentText>
+            Enter Accession numbers to be opened in the exam list grid.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            multiline
+            margin="dense"
+            id="name"
+            label="Accession numbers, csv"
+            value={accnList}
+            onChange={(e) => setaccnList(e.target.value)}
+            type="text"
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleCloseOk} color="primary">
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </span>
+  );
+};
+
 class App extends Component {
   DbEnv = {
     iimsRepl: 'iimsTest',
@@ -261,6 +333,7 @@ class App extends Component {
       imgsty_id: 0,
       jobqueueid: 0,
     },
+    dicomIimsSeriesComparedata: [],
     dataPatientExams: [],
     dataExamSeriesKOReflected: [],
     dataExamStudies: [],
@@ -305,6 +378,34 @@ class App extends Component {
     });
   }
 
+  onCIGQ_Refresh = () => {
+    loadGridData(
+      DATA_CIG_QUEUE_SERIES,
+      { DbEnv: this.DbEnvProd },
+      this.recvGridData
+    );
+    loadGridData(
+      DATA_CIG_QUEUE_JOBS,
+      { DbEnv: this.DbEnvProd },
+      this.recvGridData
+    );
+    loadGridData(
+      DATA_CIG_QUEUE_JOBS_LOG,
+      { DbEnv: this.DbEnvProd },
+      this.recvGridData
+    );
+    loadGridData(
+      DATA_CIG_QUEUE_JOBS_PROCESS_LOG,
+      { DbEnv: this.DbEnvProd },
+      this.recvGridData
+    );
+    loadGridData(
+      DATA_CIG_QUEUE_JOBS_EXCEPTIONS,
+      { DbEnv: this.DbEnvProd },
+      this.recvGridData
+    );
+  };
+
   handleChangeQueueSelection = (event) => {
     console.log('SELECTED CIG Receiver Queue: ', event.target.value);
 
@@ -344,6 +445,8 @@ class App extends Component {
 
     this.setState({ dicomData: myObject });
 
+    let AccnNum = '';
+
     let dicomMeta = [];
     let unique_series = myObject.reduce((accumulator, currentValue) => {
       //console.log('image Instance Row:', accumulator, currentValue);
@@ -368,6 +471,10 @@ class App extends Component {
           //console.log('KO INFO', IsKO, currentValue['koseries'], currentValue);
         }
         console.log();
+
+        if (AccnNum == '') {
+          AccnNum = currentValue.Accession;
+        }
         accumulator.push({
           IsKO: IsKO,
           ImageCount: 1,
@@ -391,6 +498,15 @@ class App extends Component {
 
       //accumulator.concat(currentValue)
     }, []);
+
+    loadGridData(
+      DATA_DICOM_IIM_SERIES_COMPARE,
+      {
+        accession: AccnNum,
+        DbEnv: this.DbEnvProd,
+      },
+      this.recvGridData
+    );
 
     for (let i = 0; i < unique_series.length; i++) {
       if (unique_series[i].IsKO) {
@@ -526,6 +642,12 @@ class App extends Component {
 
         cli_parse_ko_folder(
           DATA_EXAM_SERIES_KO_REFLECTED,
+          newExamArgs,
+          this.recvGridData
+        );
+
+        loadGridData(
+          DATA_DICOM_IIM_SERIES_COMPARE,
           newExamArgs,
           this.recvGridData
         );
@@ -1093,6 +1215,38 @@ class App extends Component {
     console.log('ReceivedData for :', gridName, args, gridData);
 
     switch (gridName) {
+      case DATA_CIG_QUEUE_SERIES:
+        this.setState({
+          dataCigQSeries: gridData,
+          loaded: true,
+        });
+        break;
+      case DATA_CIG_QUEUE_JOBS:
+        this.setState({
+          dataCigQJobs: gridData,
+          loaded: true,
+        });
+        break;
+      case DATA_CIG_QUEUE_JOBS_LOG:
+        this.setState({
+          dataCigQJobsLog: gridData,
+          loaded: true,
+        });
+        break;
+      case DATA_CIG_QUEUE_JOBS_PROCESS_LOG:
+        this.setState({
+          dataCigQProcessLog: gridData,
+          loaded: true,
+        });
+        break;
+      case DATA_CIG_QUEUE_JOBS_EXCEPTIONS:
+        this.setState({
+          dataCigQExceptions: gridData,
+          loaded: true,
+        });
+        break;
+
+      case DATA_EXAM_LIST_FROM_ACCNLIST:
       case DATA_PATIENT_EXAMS:
       case DATA_PATIENT_EXAM_EXAMID:
       case DATA_PATIENT_EXAM_ACCN:
@@ -1286,6 +1440,20 @@ class App extends Component {
             console.log(
               'Changed state ciga iims notif',
               this.state.dataCigaIimsNotification.length
+            );
+          }
+        );
+        break;
+      case DATA_DICOM_IIM_SERIES_COMPARE:
+        this.setState(
+          {
+            dicomIimsSeriesComparedata: gridData,
+            loaded: true,
+          },
+          () => {
+            console.log(
+              'Changed state dicomIimsSeriesComparedata',
+              this.state.dicomIimsSeriesComparedata.length
             );
           }
         );
@@ -1492,6 +1660,31 @@ class App extends Component {
                       }
                     }}
                   />
+                  <span>
+                    <FormDialog
+                      className="inline"
+                      style={{ display: 'inline' }}
+                      onClose={(textvalue) => {
+                        console.log('Received from DIalog:', textvalue);
+                        let accnNumArr = textvalue.split(/[\s,]+/);
+                        let accnText = '';
+                        accnNumArr.forEach((accn) => {
+                          if (accn != '') {
+                            if (accnText == '') accnText = `'${accn}'`;
+                            else accnText = `${accnText},'${accn}'`;
+                          }
+                        });
+                        console.log('AccnList', accnText);
+                        loadGridData(
+                          DATA_EXAM_LIST_FROM_ACCNLIST,
+                          { accnlist: accnText, DbEnv: this.DbEnvProd },
+                          this.recvGridData
+                        );
+                      }}
+                    >
+                      AccnInputs
+                    </FormDialog>
+                  </span>
                 </div>
                 <React.Fragment>
                   <ReactGridLayout
@@ -1525,6 +1718,8 @@ class App extends Component {
                         onRowSelected={this.onRowSelectExam}
                         button2Label="View"
                         onButton2Callback={this.onRowSelectView}
+                        button3Label="QREADS"
+                        onButton3Callback={onOpenQREADS}
                       />
                     </div>
 
@@ -1533,7 +1728,7 @@ class App extends Component {
                       data-grid={{
                         x: 0,
                         y: 5,
-                        w: 14,
+                        w: 6,
                         h: 3,
                         static: true,
                         isResizable: false,
@@ -1545,7 +1740,7 @@ class App extends Component {
                         gridname={DATA_EXAM_SERIES_KO_REFLECTED}
                         ShowAllColumns={true}
                         divHeight={'150px'}
-                        gridTitle={'DATA_SERIES_KO_REFLECTED - PROD'}
+                        gridTitle={'KO_REFLECTED - PROD'}
                         onRefresh={() =>
                           this.handleGridRefresh(DATA_EXAM_SERIES_KO_REFLECTED)
                         }
@@ -1554,6 +1749,34 @@ class App extends Component {
                         onRowSelected={this.onRowSelectExam}
                         button2Label="View"
                         onButton2Callback={this.onRowSelectView}
+                      />
+                    </div>
+
+                    <div
+                      key="249103"
+                      data-grid={{
+                        x: 7,
+                        y: 5,
+                        w: 6,
+                        h: 3,
+                        static: true,
+                        isResizable: false,
+                      }}
+                      style={{ height: '90%', width: '100%', margin: 0 }}
+                    >
+                      <ApexDataGrid
+                        key="folderImagesiims1"
+                        gridname={DATA_DICOM_IIM_SERIES_COMPARE}
+                        ShowAllColumns={true}
+                        divHeight={'150px'}
+                        domHeight={'normal'}
+                        gridTitle={'Compare MIDIA and QREADS'}
+                        onRefresh={() =>
+                          this.handleGridRefresh(DATA_DICOM_IIM_SERIES_COMPARE)
+                        }
+                        gridData={this.state.dicomIimsSeriesComparedata}
+                        gridArgsText={''}
+                        onRowSelected={this.onRowSelectExam}
                       />
                     </div>
 
@@ -2058,6 +2281,11 @@ class App extends Component {
                   onRowSelected={this.onRowSelectExam}
                   button2Label="View"
                   onButton2Callback={this.onRowSelectView}
+                  button2Label="mcroDICOM"
+                  onButton2Callback={(datarow) => {
+                    console.log(datarow);
+                    cli_viewdicom_file(datarow.filepath);
+                  }}
                 />
               </div>
 
@@ -2092,12 +2320,200 @@ class App extends Component {
                   onButton3Callback={this.onSendSeriesToCIGA}
                 />
               </div>
+
+              <div
+                key="249103"
+                data-grid={{
+                  x: 0,
+                  y: 17,
+                  w: 14,
+                  h: 4,
+                  static: true,
+                  isResizable: false,
+                }}
+                style={{ height: '90%', width: '100%', margin: 0 }}
+              >
+                <ApexDataGrid
+                  key="folderImagesiims"
+                  gridname={DATA_DICOM_IIM_SERIES_COMPARE}
+                  ShowAllColumns={true}
+                  divHeight={'250px'}
+                  domHeight={'normal'}
+                  gridTitle={'Compare MIDIA and QREADS'}
+                  onRefresh={() =>
+                    this.handleGridRefresh(DATA_DICOM_IIM_SERIES_COMPARE)
+                  }
+                  gridData={this.state.dicomIimsSeriesComparedata}
+                  gridArgsText={''}
+                  onRowSelected={this.onRowSelectExam}
+                />
+              </div>
             </ReactGridLayout>
           </TabContainer>
         )}
         {activeIndex === 2 && (
           <TabContainer>
-            View Inbound Q and JOB Q for given Queue Environment
+            <div>
+              <ReactGridLayout
+                className="layout"
+                onLayoutChange={this.onLayoutChange}
+                rowHeight={30}
+              >
+                <div
+                  key="730"
+                  data-grid={{
+                    x: 0,
+                    y: 0,
+                    w: 14,
+                    h: 1,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{ height: '90%', width: '100%', margin: 0 }}
+                >
+                  <button onClick={this.onCIGQ_Refresh}>Refresh</button>
+                </div>
+                <div
+                  key="740"
+                  data-grid={{
+                    x: 0,
+                    y: 1,
+                    w: 14,
+                    h: 4,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{ height: '90%', width: '100%', margin: 0 }}
+                >
+                  <ApexDataGrid
+                    key="cigq_series"
+                    gridname={DATA_CIG_QUEUE_SERIES}
+                    ShowAllColumns={true}
+                    divHeight={'250px'}
+                    domHeight={'normal'}
+                    gridTitle={'CIG_QUEUE_SERIES'}
+                    onRefresh={() =>
+                      this.handleGridRefresh(DATA_CIG_QUEUE_SERIES)
+                    }
+                    gridData={this.state.dataCigQSeries}
+                    gridArgsText={''}
+                    onRowSelected={this.onRowSelectExam}
+                  />
+                </div>
+
+                <div
+                  key="741"
+                  data-grid={{
+                    x: 0,
+                    y: 8,
+                    w: 14,
+                    h: 4,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{ height: '90%', width: '100%', margin: 0 }}
+                >
+                  <ApexDataGrid
+                    key="cigq_jobs"
+                    gridname={DATA_CIG_QUEUE_JOBS}
+                    ShowAllColumns={true}
+                    divHeight={'250px'}
+                    domHeight={'normal'}
+                    gridTitle={'DATA_CIG_QUEUE_JOBS'}
+                    onRefresh={() =>
+                      this.handleGridRefresh(DATA_CIG_QUEUE_JOBS)
+                    }
+                    gridData={this.state.dataCigQJobs}
+                    gridArgsText={''}
+                    onRowSelected={this.onRowSelectExam}
+                  />
+                </div>
+
+                <div
+                  key="743"
+                  data-grid={{
+                    x: 0,
+                    y: 16,
+                    w: 14,
+                    h: 4,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{ height: '90%', width: '100%', margin: 0 }}
+                >
+                  <ApexDataGrid
+                    key="cigq_jobs_log"
+                    gridname={DATA_CIG_QUEUE_JOBS_LOG}
+                    ShowAllColumns={true}
+                    divHeight={'250px'}
+                    domHeight={'normal'}
+                    gridTitle={'JOBS_LOG'}
+                    onRefresh={() =>
+                      this.handleGridRefresh(DATA_CIG_QUEUE_JOBS_LOG)
+                    }
+                    gridData={this.state.dataCigQJobsLog}
+                    gridArgsText={''}
+                    onRowSelected={this.onRowSelectExam}
+                  />
+                </div>
+
+                <div
+                  key="744"
+                  data-grid={{
+                    x: 0,
+                    y: 23,
+                    w: 14,
+                    h: 4,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{ height: '90%', width: '100%', margin: 0 }}
+                >
+                  <ApexDataGrid
+                    key="cigq_process_log"
+                    gridname={DATA_CIG_QUEUE_JOBS_PROCESS_LOG}
+                    ShowAllColumns={true}
+                    divHeight={'250px'}
+                    domHeight={'normal'}
+                    gridTitle={'Process_LOG'}
+                    onRefresh={() =>
+                      this.handleGridRefresh(DATA_CIG_QUEUE_JOBS_PROCESS_LOG)
+                    }
+                    gridData={this.state.dataCigQProcessLog}
+                    gridArgsText={''}
+                    onRowSelected={this.onRowSelectExam}
+                  />
+                </div>
+
+                <div
+                  key="745"
+                  data-grid={{
+                    x: 0,
+                    y: 30,
+                    w: 14,
+                    h: 4,
+                    static: true,
+                    isResizable: false,
+                  }}
+                  style={{ height: '90%', width: '100%', margin: 0 }}
+                >
+                  <ApexDataGrid
+                    key="cigq_exceptions"
+                    gridname={DATA_CIG_QUEUE_JOBS_EXCEPTIONS}
+                    ShowAllColumns={true}
+                    divHeight={'250px'}
+                    domHeight={'normal'}
+                    gridTitle={'CigQ Exceptions'}
+                    onRefresh={() =>
+                      this.handleGridRefresh(DATA_CIG_QUEUE_JOBS_EXCEPTIONS)
+                    }
+                    gridData={this.state.dataCigQExceptions}
+                    gridArgsText={''}
+                    onRowSelected={this.onRowSelectExam}
+                  />
+                </div>
+              </ReactGridLayout>
+            </div>
           </TabContainer>
         )}
       </div>

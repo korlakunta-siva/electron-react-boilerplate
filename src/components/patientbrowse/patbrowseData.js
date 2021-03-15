@@ -25,6 +25,14 @@ export const DATA_CIGA_EXCEPTIONS = 'ciga_exceptions';
 export const DATA_CIGA_PROCESSOR_LOG = 'ciga_processor_log';
 export const DATA_CIGA_IIMS_NOTIF = 'ciga_iims_notifications';
 export const DATA_DICOM_FOLDER_SERIES = 'dicom_folder_series_summary';
+export const DATA_DICOM_IIM_SERIES_COMPARE = 'iims_series_data_compare';
+
+export const DATA_CIG_QUEUE_SERIES = 'cig_inb_q_series';
+export const DATA_CIG_QUEUE_JOBS = 'cig_inb_q_jobs';
+export const DATA_CIG_QUEUE_JOBS_LOG = 'cig_inb_q_jobs_log';
+export const DATA_CIG_QUEUE_JOBS_PROCESS_LOG = 'cigq_job_process_log';
+export const DATA_CIG_QUEUE_JOBS_EXCEPTIONS = 'cigq_job_exception_log';
+export const DATA_EXAM_LIST_FROM_ACCNLIST = 'examlist_from_accnlist';
 
 export const loadGridData = (gridName, args, recvfn) => {
   console.log('Retrieve Data for :', gridName, args);
@@ -32,6 +40,144 @@ export const loadGridData = (gridName, args, recvfn) => {
   let dataURL = '';
 
   switch (gridName) {
+    case DATA_CIG_QUEUE_SERIES:
+      dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20 SELECT
+    * from  qrddb_rch01${args.DbEnv.iimsOltpExt}..cigtb_inbound_series order by inbs_queue_id desc `;
+      break;
+
+    case DATA_CIG_QUEUE_JOBS:
+      dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20 SELECT
+    * from  qrddb_rch01${args.DbEnv.iimsOltpExt}..cigtb_job_queue order by  job_queue_id desc `;
+      break;
+
+    case DATA_CIG_QUEUE_JOBS_LOG:
+      dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20 SELECT top 100
+    * from  qrddb_rch01${args.DbEnv.iimsOltpExt}..cigtb_job_queue_log order by job_queue_id desc `;
+      break;
+
+    case DATA_CIG_QUEUE_JOBS_EXCEPTIONS:
+      dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20 SELECT top 100
+    * from  qrddb_rch01${args.DbEnv.iimsOltpExt}..cigtb_exception_log order by exception_id desc `;
+      break;
+
+    case DATA_CIG_QUEUE_JOBS_PROCESS_LOG:
+      dataURL = `${args.DbEnv.iimsOltp}&sqltype=customSQL&sqltext=set%20rowcount%201000%20 SELECT top 100
+    * from  qrddb_rch01${args.DbEnv.iimsOltpExt}..cigtb_processor_log order by job_queue_id desc `;
+      break;
+
+    case DATA_DICOM_IIM_SERIES_COMPARE:
+      dataURL = `${args.DbEnv.iimsRepl}&sqltype=customSQL&sqltext=set%20rowcount%201000%20 SELECT
+    matched = (case
+    when ser.imgser_status = 'A' and serl_midia.imgserl_image_count != serl_qreads.imgserl_image_count then 'N'
+    when ser.imgser_status = 'A' and serl_midia.imgserl_image_count = serl_qreads.imgserl_image_count then 'Y'
+    when ser.imgser_status = 'P' and ser.iocm_flag= 'Y' and ( serl_midia.imgserl_status is null  or serl_midia.imgserl_status = serl_qreads.imgserl_status)  then 'Y'
+    when ser.iocm_flag is null  and ser.imgser_status in ( 'P' , 'D' )  and serl_qreads.imgserl_status in ('P', 'D') then 'Y'
+    when ser.modality in ('SR', 'RTSTRUCT')  then 'Y'
+    else 'U' end),
+    imgsty_status,
+    imgser_status,
+    serl_midia.imgserl_status as midia_imgserl_status,
+    serl_qreads.imgserl_status as qreads_imgserl_status,
+    imgser_image_count,
+    serl_midia.imgserl_image_count as midia_imgserl_image_count,
+    serl_qreads.imgserl_image_count as qreads_imgserl_image_count,
+    serl_midia.last_action_time as midia_last_action_time,
+    serl_qreads.last_action_time as qreads_last_action_time,
+
+    examid_value,
+    exm.exam_id,
+    modality,
+    iocm_flag,
+    series_uid,
+
+    exm.dept_id,
+    patient_id,
+    examid_type_code,
+    exam_availability,
+    exam_status,
+    scheduled_for_dt,
+    performed_dt,
+    exam_priority_code,
+    left_right_flag	, emr_flag,
+    archive_ind,
+    sensitive_flag,
+    patient_cmrn,
+    report_status,
+    pred_proc_id,
+
+    imgsty_id,
+    study_uid,
+    study_desc,
+    study_id,
+    primary_imgsys_id,
+    dicom_accession_nbr,
+
+    imgsty_image_count,
+    sty.acq_start_time as sty_acq_start_time,
+    sty.acq_finish_time as sty_acq_finish_time,
+    sty.acq_station_name as sty_acq_station_name,
+    imgser_id,
+
+    series_desc,
+
+    ser.acq_start_time  as ser_acq_start_time ,
+    ser.acq_finish_time as ser_acq_finish_time,
+    ser.acq_station_name as ser_acq_station_name,
+    series_id,
+    projection,
+    sopclass_uid,
+
+    serl_midia.imgserl_id as midia_imgserl_id,
+    serl_midia.imgserl_imgstr_id as midia_imgserl_imgstr_id,
+
+    serl_qreads.imgserl_id as qreads_imgserl_id,
+    serl_qreads.imgserl_imgstr_id as qreads_imgserl_imgstr_id,
+
+    serl_qreads.series_file_name as qreads_series_file_name ,
+    qreads_store_path = (select str.store_path from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_STORE str where imgstr_id = serl_qreads.imgserl_imgstr_id)
+    FROM
+        iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM exm,
+        iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid,
+        iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_STUDY sty,
+        iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_SERIES ser
+       left JOIN  iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_SERIES_LOCATION serl_midia ON serl_midia.imgserl_imgser_id = ser.imgser_id and serl_midia.imgserl_imgstr_id in (select imgstr_id from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_STORE where imgstr_imgsys_id =1)
+       left JOIN  iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_SERIES_LOCATION serl_qreads ON serl_qreads.imgserl_imgser_id = ser.imgser_id and serl_qreads.imgserl_imgstr_id in (select imgstr_id from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_STORE where imgstr_imgsys_id =2)
+    WHERE
+        eid.examid_type_code = 'EPIC_ACCESSION_NBR' AND
+        eid.exam_id = exm.exam_id AND
+        exm.exam_id = sty.exam_id AND
+        sty.imgsty_id = ser.imgser_imgsty_id
+
+        AND imgsty_status = 'A'
+        AND  (case
+    when ser.imgser_status = 'A' and serl_midia.imgserl_image_count != serl_qreads.imgserl_image_count then 'N'
+    when ser.imgser_status = 'A' and serl_midia.imgserl_image_count = serl_qreads.imgserl_image_count then 'Y'
+    when ser.imgser_status = 'P' and ser.iocm_flag= 'Y' and ( serl_midia.imgserl_status is null  or serl_midia.imgserl_status = serl_qreads.imgserl_status)  then 'Y'
+    when ser.iocm_flag is null  and ser.imgser_status in ( 'P' , 'D' )  and serl_qreads.imgserl_status in ('P', 'D') then 'Y'
+    when ser.modality in ('SR', 'RTSTRUCT')  then 'Y'
+    else 'U' end) != 'H'
+    and eid.examid_value = '${args.accession}' `;
+      //        exm.performed_dt between '3/15/2021 0:00am' and getdate()
+      //     when  (series_desc is null or series_desc not like '%:-q%'
+      //     when  (series_desc is null or series_desc not like '%:-q%') then 'Y'
+      break;
+
+    case DATA_EXAM_LIST_FROM_ACCNLIST:
+      dataURL = `${args.DbEnv.iimsRepl}&sqltype=customSQL&sqltext=set%20rowcount%201000%20select
+     oncis = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 2),
+     onMIDIA = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 1),
+     patient_cmrn, exam_id ,
+     (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'iims_accn',
+     (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'epic_accn',
+     clinical_viewer_desc, exam_status, performed_dt , report_status, modality_code, exm.dept_id,
+     scheduled_for_dt, owner_system,	patient_id,	exam_availability, exam_priority_code,	left_right_flag,	emr_flag,	archive_ind,	sensitive_flag	,pred_proc_id,	exm.proc_id
+     ,	proc_code,	proc_desc
+     from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..exam exm , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..DEPT_PROCEDURE pp  where exm.proc_id = pp.proc_id and
+     exam_id in (select exam_id from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.examid_value in (
+      ${args.accnlist} ) ) order by performed_dt desc `;
+
+      break;
+
     case DATA_PATIENT_EXAMS:
       let examkeytype = args.examkeytype;
       console.log('Received Args:', examkeytype, args);
@@ -328,6 +474,7 @@ export const loadGridData = (gridName, args, recvfn) => {
           placeholder: 'Something went wrong in getting data',
         });
       } else {
+        console.log(response);
         return response.json();
       }
     })
@@ -394,7 +541,7 @@ export const cli_parse_ko_folder = (gridName, args, retfunc) => {
   let accession = args.accession;
   let DbEnv = args.DbEnv;
   console.log(accession, DbEnv);
-  dataURL = `${DbEnv.iimsOltp}&sqltype=customSQL&sqltext=declare @accn varchar(20) select @accn = '${accession}'  select serl.imgserl_id, ser.imgser_status, ser.imgser_image_count, serl.imgserl_status, ser.modality, str.store_name, serl.series_file_name, serl.last_action_time,  exm.patient_cmrn, sty.acq_start_time, ser.sopclass_uid, ser.series_uid, sty.study_uid  FROM iimdb_rch${DbEnv.iimsReplDBNum}${DbEnv.iimsOltpExt}..EXAM exm, iimdb_rch${DbEnv.iimsReplDBNum}${DbEnv.iimsOltpExt}..EXAM_IDENTIFIER eid , iimdb_rch${args.DbEnv.iimsReplDBNum}${DbEnv.iimsOltpExt}..IMG_STUDY sty,   iimdb_rch${DbEnv.iimsReplDBNum}${DbEnv.iimsOltpExt}..IMG_SERIES ser, iimdb_rch${DbEnv.iimsReplDBNum}${DbEnv.iimsOltpExt}..IMG_SERIES_LOCATION serl, iimdb_rch${DbEnv.iimsReplDBNum}${DbEnv.iimsOltpExt}..IMG_STORE str   WHERE exm.exam_id = sty.exam_id and sty.imgsty_id = ser.imgser_imgsty_id   and ser.imgser_id = serl.imgserl_imgser_id and serl.imgserl_imgstr_id = str.imgstr_id and str.imgstr_imgsys_id = 2 and  sty.exam_id = eid.exam_id and eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.examid_value = @accn `;
+  dataURL = `${DbEnv.iimsRepl}&sqltype=customSQL&sqltext=declare @accn varchar(20) select @accn = '${accession}'  select serl.imgserl_id, ser.imgser_status, ser.imgser_image_count, serl.imgserl_status, ser.modality, str.store_name, serl.series_file_name, serl.last_action_time,  exm.patient_cmrn, sty.acq_start_time, ser.sopclass_uid, ser.series_uid, sty.study_uid  FROM iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM exm, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_STUDY sty,   iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_SERIES ser, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_SERIES_LOCATION serl, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..IMG_STORE str   WHERE exm.exam_id = sty.exam_id and sty.imgsty_id = ser.imgser_imgsty_id   and ser.imgser_id = serl.imgserl_imgser_id and serl.imgserl_imgstr_id = str.imgstr_id and str.imgstr_imgsys_id = 2 and  sty.exam_id = eid.exam_id and eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.examid_value = @accn `;
 
   console.log('JS to run parse KO: ', dataURL);
   let mesg = '';
@@ -480,6 +627,66 @@ export const runCIGCommand = (hostname, cmdtorun, recvLogFn) => {
         console.log(htmlText);
         recvLogFn(htmlText);
         //refreshHostData();
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// INT Server  SERVER=http://qreadsq3ha1.mayo.edu:9082/MCRQREADS/
+//"C:\WKSAdmin\Replicated Files\Local Launchers\Qreads.vbs" environment=test singleinstancelaunch=testing examid=%1 clinicnumber=%2
+
+export const onOpenQREADS = (rowdata) => {
+  console.log('READY OPEN IN QREADS: ', rowdata);
+  try {
+    exec(
+      '"C:\\WKSAdmin\\Replicated Files\\Local Launchers\\Qreads.vbs" singleinstancelaunch=SIVA  ENVIRONMENT=PROD  MODE=ONLINE CLINICNUMBER=' +
+        rowdata.patient_cmrn +
+        ' ACCESSION=' +
+        rowdata.epic_accn,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const cli_viewdicom_file = (filename) => {
+  //let logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+  let mesg = '';
+  console.log('C:\\Programs\\microdicom\\mDicom.exe  ' + filename);
+  try {
+    exec(
+      'C:\\Programs\\microdicom\\mDicom.exe ' + filename,
+      { maxBuffer: 1024 * 50000 },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+        //console.log(`stdout: ${stdout}`);
+        //console.log(stdout);
+        //retfunc(stdout);
+        //retfunc ((JSON.stringify(stdout)));
       }
     );
   } catch (error) {
