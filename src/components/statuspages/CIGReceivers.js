@@ -129,10 +129,7 @@ class App extends Component {
   render() {
     return this.state.columns_loaded ? (
       <React.Fragment>
-        <div
-          className="container-fluid "
-          style={{ width: '90%', paddingTop: '65px' }}
-        >
+        <div style={{ minWidth: '1400px' }}>
           <label>Multiple Result Sets - Receiver Status </label>
           <DataMultiGrid
             ref={this.customMultiGridElement}

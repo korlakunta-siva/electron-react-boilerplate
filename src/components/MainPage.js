@@ -7,6 +7,8 @@ import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 
 import PatientBrowser from '../components/patientbrowse/AppPatient';
+import CIGQueue from '../components/patientbrowse/CigaQueue';
+import CIGSender from '../components/patientbrowse/CigaSender';
 import LogBrowser from '../components/LogBrowser/App';
 import CigPurge from '../components/patientbrowse/AppPatient';
 import CountsMatch from '../components/countmatch/ImageCountCompareStatus';
@@ -18,8 +20,8 @@ import CIGProcessor from '../components/statuspages/CIGProcessors';
 import CIGReceiver from '../components/statuspages/CIGReceivers';
 import IMSUDashboard from '../components/imsudashboard/App';
 
-const { ipcRenderer } = window.require('electron')
-const { exec } = require('child_process')
+const { ipcRenderer } = window.require('electron');
+const { exec } = require('child_process');
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -92,21 +94,20 @@ export default function MainPage() {
         <Tab label="CIGA-Test" {...a11yProps(5)} />
         <Tab label="Processors" {...a11yProps(6)} />
         <Tab label="Receivers" {...a11yProps(7)} />
-        <Tab label="PINE Queue" {...a11yProps(8)} />                        
+        <Tab label="PINE Queue" {...a11yProps(8)} />
         <Tab label="Dashboard" {...a11yProps(9)} />
-
       </Tabs>
       <TabPanel value={value} index={0}>
-     <PatientBrowser/>
+        <PatientBrowser />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        Item Two
+        <CIGSender />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        <CIGQueue />
       </TabPanel>
       <TabPanel value={value} index={3}>
-       <LogBrowser />
+        <LogBrowser />
       </TabPanel>
       <TabPanel value={value} index={4}>
         <CigaOps />
@@ -118,14 +119,14 @@ export default function MainPage() {
         <CIGProcessor />
       </TabPanel>
       <TabPanel value={value} index={7}>
-       <CIGReceiver />
+        <CIGReceiver />
       </TabPanel>
       <TabPanel value={value} index={8}>
         <PineStatus />
-      </TabPanel>    
+      </TabPanel>
       <TabPanel value={value} index={9}>
-       <IMSUDashboard />
-      </TabPanel>               
+        <IMSUDashboard />
+      </TabPanel>
     </div>
   );
 }

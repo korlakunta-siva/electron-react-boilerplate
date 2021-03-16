@@ -1504,607 +1504,163 @@ class App extends Component {
           width: '100%',
         }}
       >
-        <React.Fragment>
-          <div
-            className="container-fluid "
-            style={{ width: '100%', paddingTop: '2px' }}
+        <div>
+          <ReactGridLayout
+            className="layout"
+            onLayoutChange={this.onLayoutChange}
+            rowHeight={30}
           >
             <div
-              className="form-group "
-              style={{ dislplay: 'inline-block' }}
-              width="200px"
+              key="730"
+              data-grid={{
+                x: 0,
+                y: 0,
+                w: 14,
+                h: 1,
+                static: true,
+                isResizable: false,
+              }}
+              style={{ height: '90%', width: '100%', margin: 0 }}
             >
-              <FormControl required className={classes.formControl}>
-                <InputLabel id="demo-simple-select-required-label">
-                  Environment
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-required-label"
-                  id="demo-simple-select-required"
-                  value={this.state.DBEnvironment}
-                  onChange={this.handleChangeDbEnv}
-                  className={classes.selectEmpty}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value={'Intg'}>Integration</MenuItem>
-                  <MenuItem value={'Test'}>Test</MenuItem>
-                  <MenuItem value={'Prch'}>Prod - Rochester</MenuItem>
-                </Select>
-              </FormControl>
-
-              <TextField
-                id="pat_cmrn"
-                label="Patient CMRN"
-                variant="outlined"
-                onChange={(event) => {
-                  console.log(
-                    'CMRN Input Field New Value:',
-                    event.target.value,
-                    event.target.value.replaceAll(/\D/g, '')
-                  );
-                  this.setState({
-                    dataArgs: {
-                      ...this.state.dataArgs,
-                      patient_cmrn: event.target.value.replaceAll(/\D/g, ''),
-                    },
-                  });
-                }}
-                onKeyPress={(event) => {
-                  if (event.key === 'Enter') {
-                    this.cmrnChange();
-                  }
-                }}
-              />
-
-              <TextField
-                id="pat_accnum"
-                label="Epic Accession"
-                variant="outlined"
-                onChange={(event) => {
-                  console.log(
-                    'Accession Number value:',
-                    event.target.value.trim()
-                  );
-                  this.setState({
-                    dataArgs: {
-                      ...this.state.dataArgs,
-                      accession: event.target.value.trim(),
-                    },
-                  });
-                }}
-                onKeyPress={(event) => {
-                  if (event.key === 'Enter') {
-                    this.accnChange();
-                  }
-                }}
-              />
-
-              <TextField
-                id="pat_examid"
-                label="IIMS Exam ID"
-                variant="outlined"
-                onChange={(event) => {
-                  console.log(
-                    'EXAMID New value:',
-                    event.target.value,
-                    event.target.value.replaceAll(/\D/g, '')
-                  );
-                  this.setState({
-                    dataArgs: {
-                      ...this.state.dataArgs,
-                      examid: event.target.value.replaceAll(/\D/g, ''),
-                    },
-                  });
-                }}
-                onKeyPress={(event) => {
-                  if (event.key === 'Enter') {
-                    this.examidChange();
-                  }
-                }}
-              />
-
-              <FormControl className={classes.formControl}>
-                <InputLabel id="demo-simple-select-required-label">
-                  CIG Queue
-                </InputLabel>
-                <Select
-                  labelId="simple-select-required-label"
-                  id="cig-job-queue"
-                  value={this.state.CIGQueueEnvironment}
-                  onChange={this.handleChangeCIGQueueEnv}
-                  className={classes.selectEmpty}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  <MenuItem value={'Intg'}>Integration</MenuItem>
-                  <MenuItem value={'Test'}>Test</MenuItem>
-                  <MenuItem value={'Prod'}>Prod - Rochester</MenuItem>
-                  <MenuItem value={'PreProd'}>PreProd - Rochester</MenuItem>
-                </Select>
-              </FormControl>
-
-              <TextField
-                id="arg_job_queue_id"
-                label="Job Queue ID"
-                variant="outlined"
-                onChange={(event) => {
-                  console.log(
-                    'JOB Queue ID New value:',
-                    event.target.value,
-                    event.target.value.replaceAll(/\D/g, '')
-                  );
-                  this.setState({
-                    dataArgs: {
-                      ...this.state.dataArgs,
-                      jobqueueid: event.target.value.replaceAll(/\D/g, ''),
-                    },
-                  });
-                }}
-                onKeyPress={(event) => {
-                  if (event.key === 'Enter') {
-                    this.jobqueueIdChange();
-                  }
-                }}
-              />
-              <span>
-                <FormDialog
-                  className="inline"
-                  style={{ display: 'inline' }}
-                  onClose={(textvalue) => {
-                    console.log('Received from DIalog:', textvalue);
-                    let accnNumArr = textvalue.split(/[\s,]+/);
-                    let accnText = '';
-                    accnNumArr.forEach((accn) => {
-                      if (accn != '') {
-                        if (accnText == '') accnText = `'${accn}'`;
-                        else accnText = `${accnText},'${accn}'`;
-                      }
-                    });
-                    console.log('AccnList', accnText);
-                    loadGridData(
-                      DATA_EXAM_LIST_FROM_ACCNLIST,
-                      { accnlist: accnText, DbEnv: this.DbEnvProd },
-                      this.recvGridData
-                    );
-                  }}
-                >
-                  AccnInputs
-                </FormDialog>
-              </span>
+              <button onClick={this.onCIGQ_Refresh}>Refresh</button>
             </div>
-            <React.Fragment>
-              <ReactGridLayout
-                className="layout"
-                onLayoutChange={this.onLayoutChange}
-                rowHeight={30}
-              >
-                <div
-                  key="24"
-                  data-grid={{
-                    x: 0,
-                    y: 0,
-                    w: 14,
-                    h: 3,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="exmgrid"
-                    gridname={DATA_PATIENT_EXAMS}
-                    ShowAllColumns={true}
-                    divHeight={'150px'}
-                    gridTitle={'PATIENT EXAMS'}
-                    onRefresh={() => this.handleGridRefresh(DATA_PATIENT_EXAMS)}
-                    gridData={this.state.dataPatientExams}
-                    gridArgsText={'accn: ' + this.state.dataArgs.accession}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                    button3Label="QREADS"
-                    onButton3Callback={onOpenQREADS}
-                  />
-                </div>
+            <div
+              key="740"
+              data-grid={{
+                x: 0,
+                y: 1,
+                w: 14,
+                h: 4,
+                static: true,
+                isResizable: false,
+              }}
+              style={{ height: '90%', width: '100%', margin: 0 }}
+            >
+              <ApexDataGrid
+                key="cigq_series"
+                gridname={DATA_CIG_QUEUE_SERIES}
+                ShowAllColumns={true}
+                divHeight={'250px'}
+                domHeight={'normal'}
+                gridTitle={'CIG_QUEUE_SERIES'}
+                onRefresh={() => this.handleGridRefresh(DATA_CIG_QUEUE_SERIES)}
+                gridData={this.state.dataCigQSeries}
+                gridArgsText={''}
+                onRowSelected={this.onRowSelectExam}
+              />
+            </div>
 
-                <div
-                  key="241"
-                  data-grid={{
-                    x: 0,
-                    y: 5,
-                    w: 6,
-                    h: 3,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="serwithko"
-                    gridname={DATA_EXAM_SERIES_KO_REFLECTED}
-                    ShowAllColumns={true}
-                    divHeight={'150px'}
-                    gridTitle={'KO_REFLECTED - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_EXAM_SERIES_KO_REFLECTED)
-                    }
-                    gridData={this.state.dataExamSeriesKOReflected}
-                    gridArgsText={'accn: ' + this.state.dataArgs.accession}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
+            <div
+              key="741"
+              data-grid={{
+                x: 0,
+                y: 8,
+                w: 14,
+                h: 4,
+                static: true,
+                isResizable: false,
+              }}
+              style={{ height: '90%', width: '100%', margin: 0 }}
+            >
+              <ApexDataGrid
+                key="cigq_jobs"
+                gridname={DATA_CIG_QUEUE_JOBS}
+                ShowAllColumns={true}
+                divHeight={'250px'}
+                domHeight={'normal'}
+                gridTitle={'DATA_CIG_QUEUE_JOBS'}
+                onRefresh={() => this.handleGridRefresh(DATA_CIG_QUEUE_JOBS)}
+                gridData={this.state.dataCigQJobs}
+                gridArgsText={''}
+                onRowSelected={this.onRowSelectExam}
+              />
+            </div>
 
-                <div
-                  key="249103"
-                  data-grid={{
-                    x: 7,
-                    y: 5,
-                    w: 6,
-                    h: 3,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="folderImagesiims1"
-                    gridname={DATA_DICOM_IIM_SERIES_COMPARE}
-                    ShowAllColumns={true}
-                    divHeight={'150px'}
-                    domHeight={'normal'}
-                    gridTitle={'Compare MIDIA and QREADS'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_DICOM_IIM_SERIES_COMPARE)
-                    }
-                    gridData={this.state.dicomIimsSeriesComparedata}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                  />
-                </div>
+            <div
+              key="743"
+              data-grid={{
+                x: 0,
+                y: 16,
+                w: 14,
+                h: 4,
+                static: true,
+                isResizable: false,
+              }}
+              style={{ height: '90%', width: '100%', margin: 0 }}
+            >
+              <ApexDataGrid
+                key="cigq_jobs_log"
+                gridname={DATA_CIG_QUEUE_JOBS_LOG}
+                ShowAllColumns={true}
+                divHeight={'250px'}
+                domHeight={'normal'}
+                gridTitle={'JOBS_LOG'}
+                onRefresh={() =>
+                  this.handleGridRefresh(DATA_CIG_QUEUE_JOBS_LOG)
+                }
+                gridData={this.state.dataCigQJobsLog}
+                gridArgsText={''}
+                onRowSelected={this.onRowSelectExam}
+              />
+            </div>
 
-                <div
-                  key="244"
-                  data-grid={{
-                    x: 8,
-                    y: 10,
-                    w: 5,
-                    h: 2,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="studygrid"
-                    gridname={DATA_EXAM_STUDIES}
-                    ShowAllColumns={true}
-                    divHeight={'110px'}
-                    gridTitle={'EXAM STUDIES - PROD'}
-                    onRefresh={() => this.handleGridRefresh(DATA_EXAM_STUDIES)}
-                    gridData={this.state.dataExamStudies}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
+            <div
+              key="744"
+              data-grid={{
+                x: 0,
+                y: 23,
+                w: 14,
+                h: 4,
+                static: true,
+                isResizable: false,
+              }}
+              style={{ height: '90%', width: '100%', margin: 0 }}
+            >
+              <ApexDataGrid
+                key="cigq_process_log"
+                gridname={DATA_CIG_QUEUE_JOBS_PROCESS_LOG}
+                ShowAllColumns={true}
+                divHeight={'250px'}
+                domHeight={'normal'}
+                gridTitle={'Process_LOG'}
+                onRefresh={() =>
+                  this.handleGridRefresh(DATA_CIG_QUEUE_JOBS_PROCESS_LOG)
+                }
+                gridData={this.state.dataCigQProcessLog}
+                gridArgsText={''}
+                onRowSelected={this.onRowSelectExam}
+              />
+            </div>
 
-                <div
-                  key="2449"
-                  data-grid={{
-                    x: 8,
-                    y: 14,
-                    w: 5,
-                    h: 2,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="studylocgrid"
-                    gridname={DATA_STUDY_LOCATION}
-                    ShowAllColumns={true}
-                    divHeight={'110px'}
-                    gridTitle={'STUDIES LOCATIONS- PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_STUDY_LOCATION)
-                    }
-                    gridData={this.state.dataExamStudyLocations}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-
-                <div
-                  key="246"
-                  data-grid={{
-                    x: 0,
-                    y: 10,
-                    w: 7,
-                    h: 7,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="sereisgrid"
-                    gridname={DATA_EXAM_SERIES}
-                    ShowAllColumns={true}
-                    divHeight={'230px'}
-                    gridTitle={'EXAM SERIES - PROD'}
-                    onRefresh={() => this.handleGridRefresh(DATA_EXAM_SERIES)}
-                    gridData={this.state.dataExamSeries}
-                    gridArgsText={'accn: ' + this.state.dataArgs.accession}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-
-                <div
-                  key="2463"
-                  data-grid={{
-                    x: 0,
-                    y: 17,
-                    w: 14,
-                    h: 3,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="serlocgrid"
-                    gridname={DATA_SERIES_LOCATIONS}
-                    ShowAllColumns={true}
-                    divHeight={'130px'}
-                    gridTitle={'SERIES LOCATIONS - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_SERIES_LOCATIONS)
-                    }
-                    gridData={this.state.dataSeriesLocations}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-
-                <div
-                  key="51"
-                  data-grid={{
-                    x: 0,
-                    y: 22,
-                    w: 6,
-                    h: 5,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="cmovegrid"
-                    gridname={DATA_EXAM_CMOVES}
-                    ShowAllColumns={true}
-                    divHeight={'140px'}
-                    gridTitle={'CMOVES - PROD'}
-                    onRefresh={() => this.handleGridRefresh(DATA_EXAM_CMOVES)}
-                    gridData={this.state.dataExamCmoves}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-
-                <div
-                  key="52"
-                  data-grid={{
-                    x: 8,
-                    y: 22,
-                    w: 6,
-                    h: 5,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="exceptiongrid"
-                    gridname={DATA_EXAM_EXCEPTIONS}
-                    ShowAllColumns={true}
-                    divHeight={'140px'}
-                    gridTitle={'EXCEPTIONS - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_EXAM_EXCEPTIONS)
-                    }
-                    gridData={this.state.dataExamExceptions}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-
-                <div
-                  key="61"
-                  data-grid={{
-                    x: 0,
-                    y: 27,
-                    w: 6,
-                    h: 5,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="cigseriesgrid"
-                    gridname={DATA_CIGA_SERIES}
-                    ShowAllColumns={true}
-                    divHeight={'150px'}
-                    gridTitle={'INBOUND SERIES - PROD'}
-                    onRefresh={() => this.handleGridRefresh(DATA_CIGA_SERIES)}
-                    gridData={this.state.dataCigaSeriesInbound}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-
-                <div
-                  key="62"
-                  data-grid={{
-                    x: 8,
-                    y: 27,
-                    w: 6,
-                    h: 5,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="cigjobsgrid"
-                    gridname={DATA_CIGA_JOBS}
-                    ShowAllColumns={true}
-                    divHeight={'150px'}
-                    gridTitle={'JOBS QUEUE - PROD'}
-                    onRefresh={() => this.handleGridRefresh(DATA_CIGA_JOBS)}
-                    gridData={this.state.dataCigaJobs}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                    button3Label="View"
-                    onButton3Callback={this.onRowSelectViewLog}
-                  />
-                </div>
-
-                <div
-                  key="72"
-                  data-grid={{
-                    x: 0,
-                    y: 32,
-                    w: 6,
-                    h: 4,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="cigprocessorgrid"
-                    gridname={DATA_CIGA_PROCESSOR_LOG}
-                    ShowAllColumns={true}
-                    divHeight={'120px'}
-                    gridTitle={'PROCESSOR LOG - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_CIGA_PROCESSOR_LOG)
-                    }
-                    gridData={this.state.dataCigaProcessorLog}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-                <div
-                  key="725"
-                  data-grid={{
-                    x: 8,
-                    y: 32,
-                    w: 6,
-                    h: 3,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="cigprocessorgrid"
-                    gridname={DATA_CIGA_IIMS_NOTIF}
-                    ShowAllColumns={true}
-                    divHeight={'120px'}
-                    gridTitle={'IIMS Notification - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_CIGA_IIMS_NOTIF)
-                    }
-                    gridData={this.state.dataCigaIimsNotification}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-
-                <div
-                  key="71"
-                  data-grid={{
-                    x: 0,
-                    y: 36,
-                    w: 15,
-                    h: 6,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{ height: '90%', width: '100%', margin: 0 }}
-                >
-                  <ApexDataGrid
-                    key="cigexceptionsgrid"
-                    gridname={DATA_CIGA_EXCEPTIONS}
-                    ShowAllColumns={true}
-                    divHeight={'250px'}
-                    domHeight={'normal'}
-                    gridTitle={'CIG EXCEPTIONS - PROD'}
-                    onRefresh={() =>
-                      this.handleGridRefresh(DATA_CIGA_EXCEPTIONS)
-                    }
-                    gridData={this.state.dataCigaExceptions}
-                    gridArgsText={''}
-                    onRowSelected={this.onRowSelectExam}
-                    button2Label="View"
-                    onButton2Callback={this.onRowSelectView}
-                  />
-                </div>
-                <div
-                  key="920"
-                  data-grid={{
-                    x: 0,
-                    y: 44,
-                    w: 20,
-                    h: 25,
-                    static: true,
-                    isResizable: false,
-                  }}
-                  style={{
-                    height: '90%',
-                    width: '100%',
-                    margin: 0,
-                    overflow: 'auto',
-                  }}
-                >
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: this.state.LogTextvalue,
-                    }}
-                  />
-                </div>
-                <div>
-                  <h1></h1>
-                </div>
-              </ReactGridLayout>
-            </React.Fragment>
-          </div>
-        </React.Fragment>
+            <div
+              key="745"
+              data-grid={{
+                x: 0,
+                y: 30,
+                w: 14,
+                h: 4,
+                static: true,
+                isResizable: false,
+              }}
+              style={{ height: '90%', width: '100%', margin: 0 }}
+            >
+              <ApexDataGrid
+                key="cigq_exceptions"
+                gridname={DATA_CIG_QUEUE_JOBS_EXCEPTIONS}
+                ShowAllColumns={true}
+                divHeight={'250px'}
+                domHeight={'normal'}
+                gridTitle={'CigQ Exceptions'}
+                onRefresh={() =>
+                  this.handleGridRefresh(DATA_CIG_QUEUE_JOBS_EXCEPTIONS)
+                }
+                gridData={this.state.dataCigQExceptions}
+                gridArgsText={''}
+                onRowSelected={this.onRowSelectExam}
+              />
+            </div>
+          </ReactGridLayout>
+        </div>
       </div>
     ) : (
       <span>Loading ...</span>

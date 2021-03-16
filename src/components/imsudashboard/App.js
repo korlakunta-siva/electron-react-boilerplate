@@ -10,9 +10,9 @@ import cfgDashboard from './dashboard.json';
 const App = (props) => {
   console.log('App.js  - Rendered', props.history);
 
-  const { pathname, hash } = props.location;
+  // const { pathname, hash } = props.location;
 
-  console.log('App Context: ', pathname, hash);
+  // console.log('App Context: ', pathname, hash);
 
   const counters = [
     { id: 1, value: 10 },
@@ -107,10 +107,10 @@ const App = (props) => {
     generateiFrames();
   }, []);
 
-  useEffect(() => {
-    console.log('App - Has Changed to: ', props.location.hash);
-    scrollToAnchor(props.location.hash);
-  }, [props.location.hash]);
+  // useEffect(() => {
+  //   console.log('App - Has Changed to: ', props.location.hash);
+  //   scrollToAnchor(props.location.hash);
+  // }, [props.location.hash]);
 
   // const handleIncrement = (product) => {
   //   console.log('Increment clicked!', product);
