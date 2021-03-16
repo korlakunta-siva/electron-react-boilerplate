@@ -15,6 +15,7 @@ import CIGReceiver from './components/statuspages/CIGReceivers';
 import IMSUDashboard from './components/imsudashboard/App';
 import Navbar from './components/Navbar';
 import Header from './components/header/Header';
+import MainPage from './components/MainPage';
 
 // const history = hashHistory();
 
@@ -32,48 +33,7 @@ const AppWithRouterAccess = (props) => {
 
   return (
     <>
-      <Router history={props.history}>
-        <Route
-          path="/patientbrowser"
-          render={(props) => <PatientBrowse {...props} />}
-        />
-
-        <Route
-          path="/logbrowser"
-          render={(props) => <LogBrowser {...props} />}
-        />
-
-        <Route path="/cispurge" render={(props) => <CigPurge {...props} />} />
-
-        <Route path="/cigaops" render={(props) => <CigaOps {...props} />} />
-
-        <Route
-          path="/cigaopstest"
-          render={(props) => <CigaOpsTest {...props} />}
-        />
-
-        <Route
-          path="/pinestatus"
-          render={(props) => <PineStatus {...props} />}
-        />
-
-        <Route
-          path="/cigprocessor"
-          render={(props) => <CIGProcessor {...props} />}
-        />
-
-        <Route
-          path="/cigreceiver"
-          render={(props) => <CIGReceiver {...props} />}
-        />
-
-        <Route
-          path="/imsudashboard"
-          render={(props) => <IMSUDashboard {...props} />}
-        />
-
-        <Header history={history} />
-      </Router>
+    <MainPage {...props} />
     </>
   );
 };

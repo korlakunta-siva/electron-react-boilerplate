@@ -374,7 +374,7 @@ const App = (props) => {
   );
 };
 
-export default withRouter(App);
+export default App;
 
 //<iframe src="https://hdpr07en03.mayo.edu:5603/app/kibana#/dashboard/bf8fe7e0-f449-11e9-845c-9f27a8f8ddc8?embed=true&_g=(refreshInterval%3A(pause%3A!f%2Cvalue%3A60000)%2Ctime%3A(from%3Anow-75m%2Cmode%3Aquick%2Cto%3Anow-60m))"
 {

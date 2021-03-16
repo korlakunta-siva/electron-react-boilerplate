@@ -2552,4 +2552,4 @@ function TabContainer(props) {
   return <React.Fragment>{props.children}</React.Fragment>;
 }
 
-export default withStyles(styles, { withTheme: true })(withRouter(App));
+export default withStyles(styles, { withTheme: true })(App);
