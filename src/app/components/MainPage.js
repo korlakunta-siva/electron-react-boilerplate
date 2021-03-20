@@ -74,9 +74,9 @@ export default function MainPage() {
         aria-label="Vertical tabs example"
         className={classes.tabs}
       >
-        <Tab label="Plaid" {...a11yProps(0)} />
-        <Tab label="Item Two" {...a11yProps(1)} />
-        <Tab label="Item Three" {...a11yProps(2)} />
+        <Tab label="Browse" {...a11yProps(0)} />
+        <Tab label="CIGA Send" {...a11yProps(1)} />
+        <Tab label="CIGA Queue" {...a11yProps(2)} />
         <Tab label="Item Four" {...a11yProps(3)} />
         <Tab label="Item Five" {...a11yProps(4)} />
         <Tab label="Item Six" {...a11yProps(5)} />
