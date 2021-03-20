@@ -39,7 +39,7 @@ const ApexDataGrid = (props) => {
   }, [forceRefresh]);
 
   React.useEffect(() => {
-    console.log('PROPS CHANGED', props.gridData);
+    console.log('PROPS CHANGED', props.gridname, props.gridData);
 
     if (props.gridData == undefined) return;
 
@@ -115,6 +115,7 @@ const ApexDataGrid = (props) => {
         });
       }
 
+      setColumns(cols);
       if (gridApi && columnsInit == true) {
         console.log('Calling setColumns');
         setColumns(cols);

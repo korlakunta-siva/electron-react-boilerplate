@@ -36,6 +36,7 @@ export default forwardRef((props, ref) => {
                 id="date-picker-dialog"
                 format="MM/dd/yyyy"
                 value={selectedDate}
+                autoOk={true}
                 onChange={handleDateChange}
             />
         </MuiPickersUtilsProvider>

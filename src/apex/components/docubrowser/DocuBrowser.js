@@ -3,13 +3,19 @@ import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import PropTypes from 'prop-types';
 const { exec } = require('child_process');
+import DateFnsUtils from '@date-io/date-fns';
+let shell = require('electron').shell;
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
 
 import ReactDOM from 'react-dom';
 import Moment from 'moment';
 import './DocuBrowser.css';
 import ShowPDF from '../common/pdf/PdfView';
 import DatePicker from 'react-datepicker';
-import DateTimePicker from 'react-datetime-picker';
 import DataProvider from '../common/DataProvider';
 import DataGrid from '../common/DataGridNew';
 import { Toolbar, Data } from 'react-data-grid-addons';
@@ -1642,7 +1648,7 @@ export class DocuBrowser extends React.Component {
                 <FileBrowser
                   style={{
                     height: 850,
-                    width: '100%',
+                    width: 'auto',
                     overflow: 'scroll',
                     backgroundColor: 'powderblue',
                   }}
@@ -1726,25 +1732,47 @@ export class DocuBrowser extends React.Component {
                 />{' '}
               </TabPanel>
               <TabPanel value={this.state.tablValue} index={2}>
-                Item Three
+              <button
+                  onClick={() => {
+                    shell.openExternal('https://access.cardionet.com/');
+                  }}
+                >
+                  Cardionet
+                </button>
+                <button
+                  onClick={() => {
+                    shell.openExternal('https://clc.medtroniccarelink.net/Clinician/home.aspx');
+                  }}
+                >
+                  Medtronic
+                </button>   
+                <p>
+                Cardionet in pps -> emontalvo, Apex@2020c
+Medtronic Reveal and Pacemaker Reports
+ in pps-> hkorlakunta1, Apex@2021c
+</p>             
               </TabPanel>
             </div>
 
             <div className="col-4 py-3" style={{ height: '100vh' }}>
-              <div className="d-inline">
-                <DatePicker
-                  className="mb-1 d-inline"
-                  selected={this.state.recentdate}
-                  onChange={this.onControlsDateChange}
-                  todayButton="Today"
-                  isClearable
-                  peekNextMonth
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
-                  placeholder="Select date"
-                  style={{ width: '100px' }}
-                />
+            <div className="d-inline">
+
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <KeyboardDatePicker
+          disableToolbar
+          variant="inline"
+          format="MM/dd/yyyy"
+          margin="normal"
+          id="date-picker-inline"
+          value={this.state.recentdate}
+          onChange={this.onControlsDateChange}
+          autoOk={true}
+          KeyboardButtonProps={{
+            'aria-label': 'change date',
+          }}
+        />
+        </MuiPickersUtilsProvider>
+
                 <RadioGroup
                   className="d-inline"
                   name="doccontext"

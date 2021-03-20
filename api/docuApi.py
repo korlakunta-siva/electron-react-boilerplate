@@ -65,6 +65,9 @@ def process_document(request_json):
    if processed_input['ecw_encid'] == None :        
        processed_input['ecw_encid'] = 0
 
+   if processed_input['dest_docutype'] ==None :
+       processed_input['dest_docutype'] = ''
+
    if (processed_input['dest_docutype'].lower() == "linq report"  or processed_input['dest_docutype'].lower() == "linq ql") :
         processed_input['file_category'] = "RTHMLR"
 
@@ -83,19 +86,19 @@ def process_document(request_json):
    if 'rename' in processed_input['file_operation']:
        pass
        target_full_file_name = ''
-       print(processed_input['full_file_path'])
+       #print(processed_input['full_file_path'])
        src_dirname = os.path.dirname(processed_input['full_file_path'])
        src_base, src_extension = os.path.splitext(processed_input['full_file_path'])
-       print(src_dirname, src_extension)
+       #print(src_dirname, src_extension)
 
-       print(processed_input['dest_filename'])
-       if processed_input['selected_patient_id'] != None :
-            target_full_file_name = os.path.join(src_dirname, processed_input['dest_filename'] + "_" + str(processed_input['selected_patient_id']) + "_DELETED" + src_extension) 
+       #print(processed_input['dest_filename'])
+       if processed_input['selected_patient_id'] != None and processed_input['selected_patient_id'] != 0 :
+            target_full_file_name = os.path.join(src_dirname, processed_input['dest_filename'].strip() + "_" + str(processed_input['selected_patient_id'])  + src_extension) 
        else:
-            target_full_file_name = os.path.join(src_dirname, processed_input['dest_filename'] + "_DELETED" + src_extension)            
+            target_full_file_name = os.path.join(src_dirname, processed_input['dest_filename'].strip() + src_extension)            
 
-       #os.rename(translatePath(src_filename), translatePath(target_full_file_name))       
-       print ("Call rename: ", processed_input['full_file_path'], processed_input['target_full_file_name']) 
+       os.rename(processed_input['full_file_path'], target_full_file_name)       
+       print ("Call rename: ", processed_input['full_file_path'], target_full_file_name) 
 
        request_json['new_name'] = target_full_file_name                     
 
@@ -105,7 +108,7 @@ def process_document(request_json):
                 'inputjson': request_json
        }
 
-       json.dumps(jsonPS)
+       return json.dumps(jsonPS)
 
        #return JsonResponse(jsonPS, safe=False)
 

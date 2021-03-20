@@ -9,6 +9,8 @@ export const DATA_SERIES_LOCATIONS = 'series_locations';
 export const DATA_PATIENT_LIST = 'data_pat_list';
 export const DATA_DEPOSIT_DETAIL = 'data_deposit_detail';
 export const DATA_APEX_CLAIMS = 'apex_claims_data';
+export const DATA_APEX_EOB_DOCS = 'apex_eob_docs';
+export const DATA_APEX_BL_DOCS = 'apex_bl_docs';
 
 
 export const loadGridData = (gridName, args, recvfn) => {
@@ -16,7 +18,14 @@ export const loadGridData = (gridName, args, recvfn) => {
   let urlPrefix = 'https://192.168.21.199:8044/exsql?dbserver=';
   let dataURL = '';
 
+  
   switch (gridName) {
+    case DATA_APEX_EOB_DOCS:
+      dataURL = "ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 exec apex..apexsp_getEOBDocuments  ";
+      break;    
+    case DATA_APEX_BL_DOCS:
+      dataURL = "ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 exec apex..apexsp_getBillingDocuments  ";
+      break;
     case DATA_APEX_CLAIMS:
       dataURL = "ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  PatientId, patientname, sdos, docname, cptcode, cptdesc, cptcat, cptsubcat, facility, pinsname,  edos ,claimdate from apex.rc.fn_ApexBillingData_2002( null, null,  '2/01/2021', '3/12/2021', null) ";
       break;
@@ -25,7 +34,7 @@ export const loadGridData = (gridName, args, recvfn) => {
       dataURL = 'ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select  Name, PatientId, pat.DOB, pat.Phone1 from apex..vPatient pat order by Name ';
       break;
     case DATA_DEPOSIT_DOCS:
-      dataURL =
+    
       dataURL = 'ecwSQL&sqltype=customSQL&sqltext=set rowcount 0 select docid, filename, customname, dirpath, foldername, depositbatchid from apex..apex_document adoc order by adoc.docID desc ';
       break;
     case DATA_DEPOSIT_DETAIL:
