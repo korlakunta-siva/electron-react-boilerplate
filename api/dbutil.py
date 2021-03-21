@@ -4,6 +4,8 @@ from sqlalchemy import engine, create_engine
 import numpy as np
 import pandas as pd
 from sys import platform as _platform
+import argparse
+from iocmutil import getIOCMReprocessSQL
 
 
 class MailUtil(object):
@@ -420,6 +422,12 @@ def main():
         if command.strip() == 'getdb':
             #createStackFile("api/")
             getdbinfo(dbserver, sqltext)
+
+            sys.exit(0)
+
+        if command.strip() == 'iocmreprocess':
+            #createStackFile("api/")
+            getdbinfo("iimsProd", getIOCMReprocessSQL())
 
             sys.exit(0)
 

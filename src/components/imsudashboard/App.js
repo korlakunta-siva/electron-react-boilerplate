@@ -191,10 +191,7 @@ const App = (props) => {
   //src="https://hdpr07en03.mayo.edu:5603/app/kibana#/dashboard/7f3b5300-d784-11e9-bb3e-11be430d96a3?embed=true&_g=(refreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-4h%2Cmode%3Aquick%2Cto%3Anow))"
   return (
     <React.Fragment>
-      <NavBar
-        totalCounters={counters.filter((c) => c.value > 0).length}
-        history={props.history}
-      />
+      <NavBar totalCounters={1} />
       <div className="tab-content">
         <div className="tab-pane fade " id="home">
           <h2 className="mt-2">Work in progress.</h2>
@@ -244,17 +241,15 @@ const App = (props) => {
             Dashboard Readme
           </a>
         </div>
-        <div className="tab-pane fade" id="qreads_perfmetrics" />
+        <div className="tab-pane fade show active" id="qreads_perfmetrics" />
         <div className="tab-pane fade" id="iims_dearchive_dashb" />
-        <div className="tab-pane fade show active" id="iims-queues">
+        <div className="tab-pane fade" id="iims-queues">
           <ul className="nav nav-tabs">
             <li className="nav-item">
               <a
+                href="#iims_queues_summary"
                 className="nav-link"
                 data-toggle="tab"
-                onClick={() => {
-                  props.history.push('/imsudashboard#iims_queues_summary');
-                }}
               >
                 Current
               </a>
@@ -262,11 +257,9 @@ const App = (props) => {
             <li className="nav-item">
               <a
                 className="nav-link"
+                href="#iims-queues_detail"
                 data-toggle="tab"
                 style={{ display: 'inline-block' }}
-                onClick={() => {
-                  props.history.push('/imsudashboard#iims-queues_detail');
-                }}
               >
                 Details
               </a>
@@ -281,26 +274,20 @@ const App = (props) => {
           <ul className="nav nav-tabs">
             <li className="nav-item">
               <a
+                href="#cis_storage_activity"
                 className="nav-link"
                 data-toggle="tab"
                 style={{ display: 'inline-block' }}
-                onClick={() => {
-                  props.history.push('/imsudashboard#cis_storage_activity');
-                }}
               >
                 Recent Activity
               </a>
             </li>
             <li className="nav-item">
               <a
+                href="#cis_storage_weekly_summary"
                 className="nav-link"
                 data-toggle="tab"
                 style={{ display: 'inline-block' }}
-                onClick={() => {
-                  props.history.push(
-                    '/imsudashboard#cis_storage_weekly_summary'
-                  );
-                }}
               >
                 Weekly Summary
               </a>
@@ -316,48 +303,34 @@ const App = (props) => {
             <li className="nav-item">
               <a
                 style={{ display: 'inline-block' }}
+                href="#ciga_24hour_snapshot"
                 className="nav-link"
                 data-toggle="tab"
-                onClick={() => {
-                  props.history.push('/imsudashboard#ciga_24hour_snapshot');
-                }}
               >
                 CIGA 24 Hr Snapshot
               </a>
             </li>
             <li className="nav-item">
               <a
+                href="#ciga_non-prefetch_processing"
                 className="nav-link"
                 data-toggle="tab"
                 style={{ display: 'inline-block' }}
-                onClick={() => {
-                  props.history.push(
-                    '/imsudashboard#ciga_non-prefetch_processing'
-                  );
-                }}
               >
                 Non-Prefetch Processing
               </a>
             </li>
             <li className="nav-item">
               <a
+                href="#ciga_prefetch_processing"
                 className="nav-link"
                 data-toggle="tab"
-                onClick={() => {
-                  props.history.push('/imsudashboard#ciga_prefetch_processing');
-                }}
               >
                 Prefetch Processing
               </a>
             </li>
             <li className="nav-item">
-              <a
-                className="nav-link"
-                data-toggle="tab"
-                onClick={() => {
-                  props.history.push('/imsudashboard#ciga_receivers');
-                }}
-              >
+              <a href="#ciga_receivers" className="nav-link" data-toggle="tab">
                 CIGA Receiver Metrics
               </a>
             </li>

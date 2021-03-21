@@ -740,7 +740,8 @@ const CigaHost = (props) => {
                 }}
               >
                 {' '}
-                {row.campus} {row.queuekey.replace('queue=', '')}{' '}
+                {row.campus}{' '}
+                {row.queuekey ? row.queuekey.replace('queue=', '') : ''}{' '}
               </span>
               Processors {row.processorCount} <br />
               Receivers {row.receiverCount} <br />

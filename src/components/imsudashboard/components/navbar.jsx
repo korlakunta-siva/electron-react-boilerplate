@@ -1,77 +1,49 @@
-import React from 'react';
-import { withRouter } from 'react-router-dom';
+import React from "react";
 
-const NavBar = (props) => {
-  console.log('NavBar - Rendered', props.history);
-  const { totalCounters } = props;
+const NavBar = ({ totalCounters }) => {
+  console.log("NavBar - Rendered");
   return (
-    <nav className="navbar navbar-light bg-light style={{ marginTop: '50px' }}">
+
+    <nav className="navbar navbar-light bg-light">
       <ul className="nav nav-tabs">
         <li className="nav-item">
-          <a
-            className="nav-link active"
-            data-toggle="tab"
-            onClick={() => {
-              props.history.push('/imsudashboardho#me');
-            }}
-          >
+          <a href="#home" className="nav-link" data-toggle="tab">
             Home
           </a>
         </li>
         <li className="nav-item">
           <a
-            className="nav-link"
+            href="#qreads_perfmetrics"
+            className="nav-link active"
             data-toggle="tab"
-            style={{ display: 'inline-block' }}
-            onClick={() => {
-              props.history.push('/imsudashboard#qreads_perfmetrics');
-            }}
+            style={{ display: "inline-block" }}
           >
             QR Exam load Metrics
           </a>
         </li>
         <li className="nav-item">
           <a
+            href="#iims_dearchive_dashb"
             className="nav-link"
             data-toggle="tab"
-            style={{ display: 'inline-block' }}
-            onClick={() => {
-              props.history.push('/imsudashboard#iims_dearchive_dashb');
-            }}
+            style={{ display: "inline-block" }}
           >
             Dearchive Metrics
           </a>
         </li>
         <li className="nav-item">
-          <a
-            className="nav-link"
-            data-toggle="tab"
-            onClick={() => {
-              props.history.push('/imsudashboard#iims-queues');
-            }}
+          <a href="#iims-queues" className="nav-link" data-toggle="tab"
           >
             IIMS Queues
           </a>
         </li>
         <li className="nav-item">
-          <a
-            className="nav-link"
-            data-toggle="tab"
-            onClick={() => {
-              props.history.push('/imsudashboard#cis-storage');
-            }}
-          >
+          <a href="#cis-storage" className="nav-link" data-toggle="tab">
             CIS Storage Activity
           </a>
         </li>
         <li className="nav-item">
-          <a
-            className="nav-link"
-            data-toggle="tab"
-            onClick={() => {
-              props.history.push('/imsudashboard#ciga');
-            }}
-          >
+          <a href="#ciga" className="nav-link" data-toggle="tab">
             CIGA
           </a>
         </li>

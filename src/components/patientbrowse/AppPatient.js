@@ -67,6 +67,7 @@ import {
   DATA_CIG_QUEUE_JOBS_PROCESS_LOG,
   DATA_CIG_QUEUE_JOBS_EXCEPTIONS,
   DATA_EXAM_LIST_FROM_ACCNLIST,
+  DATA_THIS_CIS_IOCM_SERIES_INFO,
 } from './patbrowseData';
 
 import ApexDataGrid from '../../components/datagrid/ApexDataGrid';
@@ -1154,6 +1155,11 @@ class App extends Component {
 
   handleChangeCIGQueueEnv = (event) => {
     console.log('SELECTED CIG Queue Env: ', event.target.value);
+
+    this.setState({
+      CIGQueueEnvironment: event.target.value,
+    });
+
     // switch (event.target.value) {
     //   case 'Intg':
     //     this.setState({
@@ -1491,6 +1497,51 @@ class App extends Component {
     //selectFiles();
   };
 
+  onSendSeriesFromCISToCIGA = (data, gridname) => {
+    console.log('Ready to Send to PreProd', data);
+    let args = {
+      imgser_id: data.imgser_id,
+    };
+
+    loadGridData(
+      DATA_THIS_CIS_IOCM_SERIES_INFO,
+      args,
+      (gridName, args, data) => {
+        console.log('Recevied', data);
+
+        let seriesFolderPath =
+          data.qreads_store_path + '\\' + data.qreads_series_file_name;
+        let dest_aet = data.dest_desc;
+
+        let ciga_dest_aet = data.ciga_dest_aet;
+        if (!dest_aet && ciga_dest_aet) {
+          dest_aet = ciga_dest_aet.substring(0, 12) + 'STG';
+        }
+
+        let rcvr = Receivers.filter(
+          (rcvr) =>
+            rcvr.recvaet == dest_aet &&
+            rcvr.queue == 'preprod' &&
+            rcvr.recvaet != 'iasp1ei1' &&
+            !rcvr.hostname.includes('iasp1mf1')
+        )[0];
+
+        let destReceiver = `${rcvr.recvaet}@${rcvr.ipaddr}:${rcvr.port},${rcvr.sendaet1},${rcvr.sendaet2}`;
+
+        console.log(
+          'SEND SERIES CIS TO CIGA=>',
+          destReceiver,
+          data,
+          seriesFolderPath
+        );
+
+        this.cli_send2_ciga(seriesFolderPath, destReceiver);
+      }
+    );
+
+    return;
+  };
+
   render() {
     const { classes } = this.props;
     const { activeIndex } = this.state;
@@ -1619,10 +1670,11 @@ class App extends Component {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  <MenuItem value={'Intg'}>Integration</MenuItem>
-                  <MenuItem value={'Test'}>Test</MenuItem>
-                  <MenuItem value={'Prod'}>Prod - Rochester</MenuItem>
-                  <MenuItem value={'PreProd'}>PreProd - Rochester</MenuItem>
+                  <MenuItem value={'test'}>Test</MenuItem>
+                  <MenuItem value={'intg'}>Integration</MenuItem>
+                  <MenuItem value={'preintg'}>Pre-Integration</MenuItem>
+                  <MenuItem value={'preprod'}>Pre-Production</MenuItem>
+                  <MenuItem value={'prod'}>Production</MenuItem>
                 </Select>
               </FormControl>
 
@@ -1845,6 +1897,8 @@ class App extends Component {
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
                     onButton2Callback={this.onRowSelectView}
+                    button3Label="ReProcess in CIGA"
+                    onButton3Callback={this.onSendSeriesFromCISToCIGA}
                   />
                 </div>
 

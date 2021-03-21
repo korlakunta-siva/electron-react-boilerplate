@@ -1626,7 +1626,7 @@ class App extends Component {
             key="24821"
             data-grid={{
               x: 0,
-              y: 2,
+              y: 3,
               w: 10,
               h: 4,
               static: true,
@@ -1659,7 +1659,7 @@ class App extends Component {
             key="2491"
             data-grid={{
               x: 0,
-              y: 10,
+              y: 11,
               w: 10,
               h: 3,
               static: true,
@@ -1689,8 +1689,8 @@ class App extends Component {
             key="249103"
             data-grid={{
               x: 0,
-              y: 17,
-              w: 14,
+              y: 18,
+              w: 10,
               h: 4,
               static: true,
               isResizable: false,

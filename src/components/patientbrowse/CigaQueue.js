@@ -67,6 +67,7 @@ import {
   DATA_CIG_QUEUE_JOBS_PROCESS_LOG,
   DATA_CIG_QUEUE_JOBS_EXCEPTIONS,
   DATA_EXAM_LIST_FROM_ACCNLIST,
+  DATA_CIS_IOCM_SERIES_REPROCESS,
 } from './patbrowseData';
 
 import ApexDataGrid from '../../components/datagrid/ApexDataGrid';
@@ -333,6 +334,7 @@ class App extends Component {
       imgsty_id: 0,
       jobqueueid: 0,
     },
+    dataIocmSeriesToReporcess: [],
     dicomIimsSeriesComparedata: [],
     dataPatientExams: [],
     dataExamSeriesKOReflected: [],
@@ -379,29 +381,108 @@ class App extends Component {
   }
 
   onCIGQ_Refresh = () => {
+    let cigQServer = '';
+    let cigQDatabase = '';
+    let cigQLogDatabase = '';
+
+    //this.state.CIGQueueEnvironment
+    switch (this.state.CIGQueueEnvironment) {
+      case 'test':
+        cigQServer = 'iimsTest';
+        cigQDatabase = '00_test';
+        cigQLogDatabase = '03_test';
+        break;
+      case 'intg':
+        cigQServer = 'iimsTest';
+        cigQDatabase = '00_intg';
+        cigQLogDatabase = '03_intg';
+        break;
+      case 'preintg':
+        cigQServer = 'iimsTest';
+        cigQDatabase = '01_intg';
+        cigQLogDatabase = '01_intg';
+        break;
+      case 'preprod':
+        cigQServer = 'iimsProd';
+        cigQDatabase = '01_prod';
+        cigQLogDatabase = '01_prod';
+        break;
+      case 'prod':
+        cigQServer = 'iimsProd';
+        cigQDatabase = '00_prod';
+        cigQLogDatabase = '03_prod';
+        break;
+
+      default:
+        cigQServer = 'iimsProd';
+        cigQDatabase = '00_prod';
+        cigQLogDatabase = '03_prod';
+    }
+
     loadGridData(
       DATA_CIG_QUEUE_SERIES,
-      { DbEnv: this.DbEnvProd },
+      {
+        DbEnv: this.DbEnvProd,
+        cigq: this.state.CIGQueueEnvironment,
+        cigQServer: cigQServer,
+        cigQDatabase: cigQDatabase,
+        cigQLogDatabase: cigQLogDatabase,
+      },
       this.recvGridData
     );
     loadGridData(
       DATA_CIG_QUEUE_JOBS,
-      { DbEnv: this.DbEnvProd },
+      {
+        DbEnv: this.DbEnvProd,
+        cigq: this.state.CIGQueueEnvironment,
+        cigQServer: cigQServer,
+        cigQDatabase: cigQDatabase,
+        cigQLogDatabase: cigQLogDatabase,
+      },
       this.recvGridData
     );
     loadGridData(
       DATA_CIG_QUEUE_JOBS_LOG,
-      { DbEnv: this.DbEnvProd },
+      {
+        DbEnv: this.DbEnvProd,
+        cigq: this.state.CIGQueueEnvironment,
+        cigQServer: cigQServer,
+        cigQDatabase: cigQDatabase,
+        cigQLogDatabase: cigQLogDatabase,
+      },
       this.recvGridData
     );
     loadGridData(
       DATA_CIG_QUEUE_JOBS_PROCESS_LOG,
-      { DbEnv: this.DbEnvProd },
+      {
+        DbEnv: this.DbEnvProd,
+        cigq: this.state.CIGQueueEnvironment,
+        cigQServer: cigQServer,
+        cigQDatabase: cigQDatabase,
+        cigQLogDatabase: cigQLogDatabase,
+      },
       this.recvGridData
     );
     loadGridData(
       DATA_CIG_QUEUE_JOBS_EXCEPTIONS,
-      { DbEnv: this.DbEnvProd },
+      {
+        DbEnv: this.DbEnvProd,
+        cigq: this.state.CIGQueueEnvironment,
+        cigQServer: cigQServer,
+        cigQDatabase: cigQDatabase,
+        cigQLogDatabase: cigQLogDatabase,
+      },
+      this.recvGridData
+    );
+    loadGridData(
+      DATA_CIS_IOCM_SERIES_REPROCESS,
+      {
+        DbEnv: this.DbEnvProd,
+        cigq: this.state.CIGQueueEnvironment,
+        cigQServer: cigQServer,
+        cigQDatabase: cigQDatabase,
+        cigQLogDatabase: cigQLogDatabase,
+      },
       this.recvGridData
     );
   };
@@ -591,6 +672,8 @@ class App extends Component {
       case DATA_EXAM_SERIES:
         this.setState({ dataExamSeries: [], dataExamSeriesLocations: [] });
         break;
+      case DATA_CIS_IOCM_SERIES_REPROCESS:
+        this.setState({ dataIocmSeriesToReporcess: [] });
 
       default:
     }
@@ -769,12 +852,84 @@ class App extends Component {
     this.cli_send2_ciga(studyFolderPath, this.state.CIGReceiverEnvironment);
   };
 
-  onSendSeriesToCIGA = (data, gridname) => {
-    let seriesFolderPath = data.SeriesPath;
+  sleep_wait = (milliseconds) => {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+      currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+  };
 
-    console.log('SEND SERIES TO CIGA', seriesFolderPath);
+  processAllToReprocess = () => {
+    let counter = 0;
+    let total = this.state.dataIocmSeriesToReporcess.length;
+    this.state.dataIocmSeriesToReporcess.forEach((data) => {
+      let seriesFolderPath =
+        data.qreads_store_path + '\\' + data.qreads_series_file_name;
+      let dest_aet = data.dest_desc;
+      let ciga_dest_aet = data.ciga_dest_aet;
+      if (!dest_aet && ciga_dest_aet) {
+        dest_aet = ciga_dest_aet.substring(0, 12) + 'STG';
+      }
 
-    this.cli_send2_ciga(seriesFolderPath, this.state.CIGReceiverEnvironment);
+      if (dest_aet) {
+        let rcvr = Receivers.filter(
+          (rcvr) =>
+            rcvr.recvaet == dest_aet &&
+            rcvr.queue == 'preprod' &&
+            rcvr.recvaet != 'iasp1ei1' &&
+            !rcvr.hostname.includes('iasp1mf1')
+        )[0];
+
+        // let rcvr = Receivers.filter(
+        //   (rcvr) => rcvr.recvaet == dest_aet && rcvr.queue == 'preprod'
+        // )[0];
+
+        let destReceiver = `${rcvr.recvaet}@${rcvr.ipaddr}:${rcvr.port},${rcvr.sendaet1},${rcvr.sendaet2}`;
+
+        counter += 1;
+        console.log(
+          'SEND SERIES CIS TO CIGA=>',
+          counter,
+          total,
+          destReceiver,
+          seriesFolderPath
+        );
+
+        this.cli_send2_ciga(seriesFolderPath, destReceiver);
+        this.sleep_wait(2000);
+      }
+    });
+  };
+
+  onSendSeriesFromCISToCIGA = (data, gridname) => {
+    let seriesFolderPath =
+      data.qreads_store_path + '\\' + data.qreads_series_file_name;
+    let dest_aet = data.dest_desc;
+
+    let ciga_dest_aet = data.ciga_dest_aet;
+    if (!dest_aet && ciga_dest_aet) {
+      dest_aet = ciga_dest_aet.substring(0, 12) + 'STG';
+    }
+
+    let rcvr = Receivers.filter(
+      (rcvr) =>
+        rcvr.recvaet == dest_aet &&
+        rcvr.queue == 'preprod' &&
+        rcvr.recvaet != 'iasp1ei1' &&
+        !rcvr.hostname.includes('iasp1mf1')
+    )[0];
+
+    let destReceiver = `${rcvr.recvaet}@${rcvr.ipaddr}:${rcvr.port},${rcvr.sendaet1},${rcvr.sendaet2}`;
+
+    console.log(
+      'SEND SERIES CIS TO CIGA=>',
+      destReceiver,
+      data,
+      seriesFolderPath
+    );
+
+    this.cli_send2_ciga(seriesFolderPath, destReceiver);
   };
 
   cmrnChange = (event) => {
@@ -1154,33 +1309,12 @@ class App extends Component {
 
   handleChangeCIGQueueEnv = (event) => {
     console.log('SELECTED CIG Queue Env: ', event.target.value);
-    // switch (event.target.value) {
-    //   case 'Intg':
-    //     this.setState({
-    //       DBEnvironment: event.target.value,
-    //       DbEnv: this.DbEnvIntg,
-    //     });
-    //     break;
-    //   case 'Test':
-    //     this.setState({
-    //       DBEnvironment: event.target.value,
-    //       DbEnv: this.DbEnvProd,
-    //     });
-    //     break;
-    //   case 'Prch':
-    //     this.setState({
-    //       DBEnvironment: event.target.value,
-    //       DbEnv: this.DbEnvProd,
-    //     });
-    //     break;
-    //   default:
-    //     this.setState({
-    //       DBEnvironment: 'Intg',
-    //       DbEnv: this.DbEnvIntg,
-    //     });
-    //     break;
-    // }
+
+    this.setState({
+      CIGQueueEnvironment: event.target.value,
+    });
   };
+
   handleChangeDbEnv = (event) => {
     console.log('SELECTED', event.target.value);
     switch (event.target.value) {
@@ -1215,6 +1349,12 @@ class App extends Component {
     console.log('ReceivedData for :', gridName, args, gridData);
 
     switch (gridName) {
+      case DATA_CIS_IOCM_SERIES_REPROCESS:
+        this.setState({
+          dataIocmSeriesToReporcess: gridData,
+          loaded: true,
+        });
+        break;
       case DATA_CIG_QUEUE_SERIES:
         this.setState({
           dataCigQSeries: gridData,
@@ -1523,13 +1663,34 @@ class App extends Component {
               style={{ height: '90%', width: '100%', margin: 0 }}
             >
               <button onClick={this.onCIGQ_Refresh}>Refresh</button>
+              <FormControl className={classes.formControl}>
+                <InputLabel id="demo-simple-select-required-label">
+                  CIG Queue
+                </InputLabel>
+                <Select
+                  labelId="simple-select-required-label"
+                  id="cig-job-queue"
+                  value={this.state.CIGQueueEnvironment}
+                  onChange={this.handleChangeCIGQueueEnv}
+                  className={classes.selectEmpty}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value={'test'}>Test</MenuItem>
+                  <MenuItem value={'intg'}>Integration</MenuItem>
+                  <MenuItem value={'preintg'}>Pre-Integration</MenuItem>
+                  <MenuItem value={'preprod'}>Pre-Production</MenuItem>
+                  <MenuItem value={'prod'}>Production</MenuItem>
+                </Select>
+              </FormControl>
             </div>
             <div
               key="740"
               data-grid={{
                 x: 0,
-                y: 1,
-                w: 14,
+                y: 2,
+                w: 9,
                 h: 4,
                 static: true,
                 isResizable: false,
@@ -1554,8 +1715,8 @@ class App extends Component {
               key="741"
               data-grid={{
                 x: 0,
-                y: 8,
-                w: 14,
+                y: 9,
+                w: 9,
                 h: 4,
                 static: true,
                 isResizable: false,
@@ -1580,8 +1741,8 @@ class App extends Component {
               key="743"
               data-grid={{
                 x: 0,
-                y: 16,
-                w: 14,
+                y: 17,
+                w: 9,
                 h: 4,
                 static: true,
                 isResizable: false,
@@ -1608,8 +1769,8 @@ class App extends Component {
               key="744"
               data-grid={{
                 x: 0,
-                y: 23,
-                w: 14,
+                y: 24,
+                w: 9,
                 h: 4,
                 static: true,
                 isResizable: false,
@@ -1636,8 +1797,8 @@ class App extends Component {
               key="745"
               data-grid={{
                 x: 0,
-                y: 30,
-                w: 14,
+                y: 31,
+                w: 9,
                 h: 4,
                 static: true,
                 isResizable: false,
@@ -1648,7 +1809,7 @@ class App extends Component {
                 key="cigq_exceptions"
                 gridname={DATA_CIG_QUEUE_JOBS_EXCEPTIONS}
                 ShowAllColumns={true}
-                divHeight={'250px'}
+                divHeight={'180px'}
                 domHeight={'normal'}
                 gridTitle={'CigQ Exceptions'}
                 onRefresh={() =>
@@ -1657,6 +1818,39 @@ class App extends Component {
                 gridData={this.state.dataCigQExceptions}
                 gridArgsText={''}
                 onRowSelected={this.onRowSelectExam}
+              />
+            </div>
+
+            <div
+              key="845"
+              data-grid={{
+                x: 0,
+                y: 37,
+                w: 9,
+                h: 4,
+                static: true,
+                isResizable: false,
+              }}
+              style={{ height: '90%', width: '100%', margin: 0 }}
+            >
+              <button onClick={this.processAllToReprocess}>
+                ReProcess All
+              </button>
+              <ApexDataGrid
+                key="cis_iocm_reprocess"
+                gridname={DATA_CIS_IOCM_SERIES_REPROCESS}
+                ShowAllColumns={true}
+                divHeight={'250px'}
+                domHeight={'normal'}
+                gridTitle={'CIS IOCM Reprocess'}
+                onRefresh={() =>
+                  this.handleGridRefresh(DATA_CIS_IOCM_SERIES_REPROCESS)
+                }
+                gridData={this.state.dataIocmSeriesToReporcess}
+                gridArgsText={''}
+                onRowSelected={this.onRowSelectExam}
+                button2Label="ReProcess in CIGA"
+                onButton2Callback={this.onSendSeriesFromCISToCIGA}
               />
             </div>
           </ReactGridLayout>
