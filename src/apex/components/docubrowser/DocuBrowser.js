@@ -31,6 +31,8 @@ import request from 'superagent';
 import { RadioGroup, Radio } from 'react-radio-group';
 import { Button, Progress, Input, CustomInput } from 'reactstrap';
 
+import TaigaView from './TaigaView';
+
 import { Tabs, Tab } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
@@ -1589,6 +1591,7 @@ export class DocuBrowser extends React.Component {
         <MyTab label="Documents" style={{ transform: [{ rotate: '180deg' }] }} />
         <MyTab label="Claims" />
         <MyTab label="Deposits" />
+        <MyTab label="Taiga" />
       </VerticalTabs>
 
       {activeIndex === 0 && (
@@ -1928,6 +1931,7 @@ Medtronic Reveal and Pacemaker Reports
         </div>
       </React.Fragment>
       </TabContainer>)}
+
         {activeIndex === 1 && (
           <TabContainer>
                       <div className="container-fluid">
@@ -1936,15 +1940,27 @@ Medtronic Reveal and Pacemaker Reports
       </div>
 
              </TabContainer>)}
-        {activeIndex === 2 && <TabContainer>
+
+        {activeIndex === 2 && ( <TabContainer>
 
           <DepositApp />
-          {/* <HostWatcher /> */}
-          </TabContainer>}
+
+
+          </TabContainer>)}
+        {activeIndex === 3 && (<TabContainer>
+          <div className="container-fluid">
+          <TaigaView />
+          </div>
+    
+          </TabContainer> ) }
       </div>
+
+      
     );
   }
 }
+
+//           {/* <HostWatcher /> */}
 
 // const AppDocs = () => (
 //   <DocuBrowser />
