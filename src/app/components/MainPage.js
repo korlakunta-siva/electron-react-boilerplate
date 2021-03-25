@@ -5,6 +5,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
+import TaigaView from './dashboard/TaigaView';
 
 import Dashboard from "./dashboard/Accounting/Dashboard";
 
@@ -74,8 +75,8 @@ export default function MainPage() {
         aria-label="Vertical tabs example"
         className={classes.tabs}
       >
-        <Tab label="Browse" {...a11yProps(0)} />
-        <Tab label="CIGA Send" {...a11yProps(1)} />
+        <Tab label="Plaid" {...a11yProps(0)} />
+        <Tab label="Taiga" {...a11yProps(1)} />
         <Tab label="CIGA Queue" {...a11yProps(2)} />
         <Tab label="Item Four" {...a11yProps(3)} />
         <Tab label="Item Five" {...a11yProps(4)} />
@@ -86,7 +87,7 @@ export default function MainPage() {
       <Dashboard />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        Item Two
+      <TaigaView />
       </TabPanel>
       <TabPanel value={value} index={2}>
         Item Three
