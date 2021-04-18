@@ -6,6 +6,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import TaigaView from './dashboard/TaigaView';
+import InvestView from './dashboard/Investing/Robinhood';
 
 import Dashboard from "./dashboard/Accounting/Dashboard";
 
@@ -93,7 +94,7 @@ export default function MainPage() {
         Item Three
       </TabPanel>
       <TabPanel value={value} index={3}>
-        Item Four
+        <InvestView />
       </TabPanel>
       <TabPanel value={value} index={4}>
         Item Five
