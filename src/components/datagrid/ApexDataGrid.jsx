@@ -112,6 +112,19 @@ const ApexDataGrid = (props) => {
         });
       }
 
+      if (props.button4Label) {
+        cols.splice(1, 0, {
+          field: 'b4',
+          cellRenderer: 'btnCellRenderer',
+          cellRendererParams: {
+            btnLabel: props.button4Label,
+            clicked: function (rowdata) {
+              props.onButton4Callback(rowdata, props.gridname);
+            },
+          },
+        });
+      }
+
       if (gridApi && columnsInit == true) {
         console.log('Calling setColumns');
         setColumns(cols);

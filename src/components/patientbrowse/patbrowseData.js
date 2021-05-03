@@ -438,13 +438,13 @@ ciga_dest_aet = (select RECEIVER_AET from qrddb_rch03_prod..CIGTB_JOB_QUEUE_LOG 
           dataURL = `${args.DbEnv.iimsRepl}&sqltype=customSQL&sqltext=set%20rowcount%201000%20select
      oncis = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 2),
      onMIDIA = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 1),
-     patient_cmrn, exam_id ,
+     patient_cmrn, exm.exam_id , study_uid,
      (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'iims_accn',
      (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'epic_accn',
      clinical_viewer_desc, exam_status, performed_dt , report_status, modality_code, exm.dept_id,
      scheduled_for_dt, owner_system,	patient_id,	exam_availability, exam_priority_code,	left_right_flag,	emr_flag,	archive_ind,	sensitive_flag	,pred_proc_id,	exm.proc_id
      ,	proc_code,	proc_desc
-     from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..exam exm , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..DEPT_PROCEDURE pp  where exm.proc_id = pp.proc_id and
+     from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..exam exm , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..DEPT_PROCEDURE pp  where exm.proc_id = pp.proc_id and sty.exam_id = exm.exam_id and
      exam_id in (select exam_id from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.examid_value =
       '${args.accession}' ) order by performed_dt desc `;
 
@@ -455,13 +455,13 @@ ciga_dest_aet = (select RECEIVER_AET from qrddb_rch03_prod..CIGTB_JOB_QUEUE_LOG 
           dataURL = `${args.DbEnv.iimsRepl}&sqltype=customSQL&sqltext=set%20rowcount%201000%20select
      oncis = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 2),
      onMIDIA = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 1),
-     patient_cmrn, exam_id ,
+     patient_cmrn, exm.exam_id ,study_uid,
      (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'iims_accn',
      (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'epic_accn',
      clinical_viewer_desc, exam_status, performed_dt , report_status, modality_code, exm.dept_id,
      scheduled_for_dt, owner_system,	patient_id,	exam_availability, exam_priority_code,	left_right_flag,	emr_flag,	archive_ind,	sensitive_flag	,pred_proc_id,	exm.proc_id
      ,	proc_code,	proc_desc
-     from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..exam exm , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..DEPT_PROCEDURE pp  where exm.proc_id = pp.proc_id and
+     from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..exam exm , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..DEPT_PROCEDURE pp  where exm.proc_id = pp.proc_id and  sty.exam_id = exm.exam_id and
      exam_id in (select exam_id from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.exam_id =
       ${args.examid} ) order by performed_dt desc `;
 
@@ -472,13 +472,13 @@ ciga_dest_aet = (select RECEIVER_AET from qrddb_rch03_prod..CIGTB_JOB_QUEUE_LOG 
           dataURL = `${args.DbEnv.iimsRepl}&sqltype=customSQL&sqltext=set%20rowcount%201000%20select
      oncis = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 2),
      onMIDIA = (select min('Yes') from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty2, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study_location styl2 , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_store str2 where sty2.exam_id = exm.exam_id and sty2.imgsty_id = styl2.imgstyl_imgsty_id and styl2.imgstyl_status = 'A' and styl2.imgstyl_imgstr_id = str2.imgstr_id and str2.imgstr_imgsys_id = 1),
-     patient_cmrn, exam_id ,
+     patient_cmrn, exm.exam_id , study_uid,
      (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'iims_accn',
      (select examid_value from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..EXAM_IDENTIFIER eid where eid.examid_type_code = 'EPIC_ACCESSION_NBR' and eid.exam_id = exm.exam_id) as 'epic_accn',
      clinical_viewer_desc, exam_status, performed_dt , report_status, modality_code, exm.dept_id,
      scheduled_for_dt, owner_system,	patient_id,	exam_availability, exam_priority_code,	left_right_flag,	emr_flag,	archive_ind,	sensitive_flag	,pred_proc_id,	exm.proc_id
      ,	proc_code,	proc_desc
-     from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..exam exm , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..DEPT_PROCEDURE pp  where exm.proc_id = pp.proc_id and
+     from iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..exam exm , iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..img_study sty, iimdb_rch${args.DbEnv.iimsReplDBNum}${args.DbEnv.iimsReplExt}..DEPT_PROCEDURE pp  where exm.proc_id = pp.proc_id and  sty.exam_id = exm.exam_id and
      patient_cmrn = '${args.patient_cmrn}' order by performed_dt desc `;
 
           break;
@@ -915,6 +915,52 @@ export const onOpenQREADS = (rowdata) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+export const onOpenOHIF = (rowdata) => {
+  console.log('READY OPEN IN QREADS: ', rowdata);
+
+  let viewerUrl;
+  viewerUrl =
+    'http://localhost:3000/Viewer?url=https://localhost:9090/getstudy/' +
+    rowdata.patient_cmrn +
+    '/' +
+    rowdata.epic_accn +
+    '/' +
+    rowdata.study_uid;
+
+  try {
+    window.open(viewerUrl);
+  } catch (ex) {
+    console.error(`_bindPdfLink: ${ex}`);
+  }
+
+  // console.log('READY OPEN IN QREADS: ', rowdata);
+  // try {
+  //   exec(
+  //     '"C:\\WKSAdmin\\Replicated Files\\Local Launchers\\Qreads.vbs" singleinstancelaunch=SIVA  ENVIRONMENT=PROD  MODE=ONLINE CLINICNUMBER=' +
+  //       rowdata.patient_cmrn +
+  //       ' ACCESSION=' +
+  //       rowdata.epic_accn,
+  //     { maxBuffer: 1024 * 50000 },
+  //     (error, stdout, stderr) => {
+  //       if (error) {
+  //         console.log(`error: ${error.message}`);
+  //         return;
+  //       }
+  //       if (stderr) {
+  //         console.log(`stderr: ${stderr}`);
+  //         return;
+  //       }
+  //       //console.log(`stdout: ${stdout}`);
+  //       console.log(stdout);
+  //       //retfunc(stdout);
+  //       //retfunc ((JSON.stringify(stdout)));
+  //     }
+  //   );
+  // } catch (error) {
+  //   console.log(error);
+  // }
 };
 
 export const cli_viewdicom_file = (filename) => {

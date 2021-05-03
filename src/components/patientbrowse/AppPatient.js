@@ -44,6 +44,7 @@ import {
   runCIGCommand,
   cli_getdicom_meta,
   onOpenQREADS,
+  onOpenOHIF,
   cli_viewdicom_file,
 } from './patbrowseData';
 
@@ -1542,6 +1543,51 @@ class App extends Component {
     return;
   };
 
+  onSendSeriesFromMIDIAToCIGA = (data, gridname) => {
+    console.log('Ready to Send from MDIIA to CIGA PROD', data);
+    let args = {
+      imgser_id: data.imgser_id,
+    };
+
+    loadGridData(
+      DATA_THIS_CIS_IOCM_SERIES_INFO,
+      args,
+      (gridName, args, data) => {
+        console.log('Recevied', data);
+
+        let seriesFolderPath =
+          data.qreads_store_path + '\\' + data.qreads_series_file_name;
+        let dest_aet = data.dest_desc;
+
+        let ciga_dest_aet = data.ciga_dest_aet;
+        if (!dest_aet && ciga_dest_aet) {
+          dest_aet = ciga_dest_aet.substring(0, 12) + 'STG';
+        }
+
+        let rcvr = Receivers.filter(
+          (rcvr) =>
+            rcvr.recvaet == dest_aet &&
+            rcvr.queue == 'preprod' &&
+            rcvr.recvaet != 'iasp1ei1' &&
+            !rcvr.hostname.includes('iasp1mf1')
+        )[0];
+
+        let destReceiver = `${rcvr.recvaet}@${rcvr.ipaddr}:${rcvr.port},${rcvr.sendaet1},${rcvr.sendaet2}`;
+
+        console.log(
+          'SEND SERIES CIS TO CIGA=>',
+          destReceiver,
+          data,
+          seriesFolderPath
+        );
+
+        this.cli_send2_ciga(seriesFolderPath, destReceiver);
+      }
+    );
+
+    return;
+  };
+
   render() {
     const { classes } = this.props;
     const { activeIndex } = this.state;
@@ -1759,6 +1805,8 @@ class App extends Component {
                     onButton2Callback={this.onRowSelectView}
                     button3Label="QREADS"
                     onButton3Callback={onOpenQREADS}
+                    button4Label="OHIF"
+                    onButton4Callback={onOpenOHIF}
                   />
                 </div>
 
@@ -1897,8 +1945,8 @@ class App extends Component {
                     onRowSelected={this.onRowSelectExam}
                     button2Label="View"
                     onButton2Callback={this.onRowSelectView}
-                    button3Label="ReProcess in CIGA"
-                    onButton3Callback={this.onSendSeriesFromCISToCIGA}
+                    button3Label="Send MIDIA to CIGA"
+                    onButton3Callback={this.onSendSeriesFromMIDIAToCIGA}
                   />
                 </div>
 
