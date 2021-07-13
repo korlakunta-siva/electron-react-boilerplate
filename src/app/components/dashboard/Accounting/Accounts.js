@@ -65,7 +65,7 @@ class Accounts extends Component {
     this.setState({ filepath: frame_element })
   }
 
-  
+
   recvGridData = (gridName, args, gridData) => {
     console.log('ReceivedData for :', gridName, args, gridData);
 
@@ -84,7 +84,7 @@ class Accounts extends Component {
           }
         );
         break;
-     
+
 
       default:
     }
@@ -257,7 +257,7 @@ class Accounts extends Component {
       if (iframePdf !== undefined) {
         let iframePdf2 = iframePdf.contentWindow
         //iframePdf.PDFViewerApplication.open();
-        
+
         iframePdf.PDFViewerApplication.open(blob)
         //iframePdf.PDFViewerApplication.toolbar.openFile.click(); // iframePdf.PDFViewerApplication
         //iframePdf.print();
@@ -267,7 +267,7 @@ class Accounts extends Component {
     // ipcRenderer.send('show-file', 'ping')
   }
 
-  
+
   loadblobPDFURL = pdfURL => {
     console.log('Ready to Loadin PDF from base64', pdfURL)
 
@@ -287,7 +287,7 @@ class Accounts extends Component {
       //   //iframePdf.PDFViewerApplication.toolbar.openFile.click(); // iframePdf.PDFViewerApplication
       //   //iframePdf.print();
 
-      
+
       url = {
         url : pdfURL,
         originalUrl: "Temp File Name"
@@ -300,14 +300,14 @@ class Accounts extends Component {
       if (iframePdf !== undefined) {
         let iframePdf2 = iframePdf.contentWindow
       //   //iframePdf.PDFViewerApplication.open();
-        
-      
+
+
       //iframePdf2.PDFViewerApplication.open(pdfURL)
 
 
 
       //   //iframePdf.PDFViewerApplication.toolbar.openFile.click(); // iframePdf.PDFViewerApplication
-      //   //iframePdf.print();      
+      //   //iframePdf.print();
 
 
       //PDFViewerApplication.open(url);
@@ -402,7 +402,7 @@ class Accounts extends Component {
             id: tran.id,
             account: tran.account,
             date: tran.date,
-            category: tran.category[0],
+            category: tran.category,
             name: tran.transaction_name,
             amount: tran.amount
           }
